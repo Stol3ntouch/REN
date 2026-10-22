@@ -1,0 +1,137 @@
+.admin-shell {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 100vh;
+  flex: 1;
+}
+
+.admin-aside {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-brand {
+  margin: 0;
+  font-weight: 700;
+}
+
+.admin-nav__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-nav__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-size);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.admin-nav__link:hover {
+  background: var(--color-border);
+}
+
+.admin-nav__link[aria-current='page'] {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.admin-user__name,
+.admin-user__role {
+  margin: 0;
+}
+
+.admin-user__role {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  margin-bottom: var(--space-2);
+}
+
+.admin-main {
+  padding: var(--space-4) var(--space-3);
+  min-width: 0;
+}
+
+.admin-main:focus {
+  outline: none;
+}
+
+.admin-login {
+  max-width: 24rem;
+  margin: var(--space-5) auto;
+  padding-inline: var(--space-3);
+}
+
+.admin-form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.admin-field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.admin-field label {
+  font-weight: 600;
+}
+
+.admin-trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.admin-cards {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  padding: 0;
+  list-style: none;
+}
+
+.admin-card a {
+  display: block;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.admin-card a:hover {
+  border-color: var(--color-primary);
+}
+
+@media (min-width: 60rem) {
+  .admin-shell {
+    grid-template-columns: 16rem 1fr;
+  }
+
+  .admin-aside {
+    border-bottom: 0;
+    border-right: 1px solid var(--color-border);
+  }
+
+  .admin-nav__list {
+    flex-direction: column;
+  }
+
+  .admin-main {
+    padding: var(--space-5);
+  }
+}

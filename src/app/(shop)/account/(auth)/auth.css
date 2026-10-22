@@ -1,0 +1,66 @@
+.auth-card {
+  max-width: 28rem;
+  margin-inline: auto;
+}
+
+.auth-form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.auth-field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.auth-field label {
+  font-weight: 600;
+}
+
+.auth-field__hint {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.auth-field__error {
+  margin: 0;
+  color: var(--color-error);
+  font-size: 0.875rem;
+}
+
+.auth-field input[aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+
+.auth-consent {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+
+.auth-consent input {
+  min-height: 1.5rem;
+  min-width: 1.5rem;
+  margin-top: 0.15rem;
+}
+
+/* Honeypot: скрыт от людей и скринридеров, но остаётся в DOM для ботов */
+.auth-trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.auth-links {
+  margin-top: var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.auth-form .button[disabled] {
+  opacity: 0.7;
+  cursor: progress;
+}
