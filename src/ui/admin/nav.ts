@@ -13,7 +13,7 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
   { key: 'catalog', label: 'Каталог', href: '/admin/catalog', permission: 'catalog.read' },
   { key: 'orders', label: 'Заказы', href: '/admin/orders', permission: 'orders.read' },
   { key: 'stock', label: 'Склад', href: '/admin/stock', permission: 'catalog.read' },
-  { key: 'pricing', label: 'Цены и акции', href: '/admin/pricing', permission: 'catalog.read' },
+  { key: 'pricing', label: 'Цены и акции', href: '/admin/promos', permission: 'catalog.read' },
   { key: 'customers', label: 'Покупатели', href: '/admin/customers', permission: 'customers.read' },
   { key: 'content', label: 'Контент и услуги', href: '/admin/content', permission: 'content.write' },
   { key: 'integrations', label: 'Импорт и интеграции', href: '/admin/integrations', permission: 'integrations.read' },

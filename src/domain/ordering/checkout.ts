@@ -1,0 +1,223 @@
+import { audit } from '@/domain/admin/audit';
+import { enqueueMail } from '@/domain/admin/mail-enqueue';
+import { consent } from '@/domain/customers/consent';
+import type { PricedCart } from '@/domain/pricing';
+import { getConfig } from '@/server/config';
+import { getDb, withTransaction, type Db } from '@/server/db/connection';
+import { cartsRepo, type CartRow } from '@/server/db/repositories/carts';
+import { methodsRepo, type DeliveryMethodRow, type PaymentMethodRow } from '@/server/db/repositories/methods';
+import { ordersRepo } from '@/server/db/repositories/orders';
+import { promosRepo } from '@/server/db/repositories/promos';
+import { ConflictError, NotFoundError, ValidationError } from '@/server/http/errors';
+import type { OwnerRef } from '@/server/http/owner';
+import { cart as cartApi, computeCart } from './cart';
+import { parsePlaceInput, phoneDigits } from './contact';
+import { orderUrlFor, toOrder } from './orders';
+import type { CartView, Change, Opts, Order } from './types';
+
+export type CheckoutOpts = Opts & {
+  /** Подмена production-режима в тестах; по умолчанию берётся из конфигурации. */
+  production?: boolean;
+};
+
+/** Корзина изменилась с момента, когда покупатель её видел: заказ не создан до подтверждения. */
+export class CheckoutChangesError extends ConflictError {
+  constructor(readonly changes: Change[]) {
+    super('Цены или наличие изменились. Проверьте корзину и подтвердите изменения.');
+  }
+}
+
+export type ValidatedCart = PricedCart & { discount: number; totalKopecks: number; view: CartView };
+
+function isProduction(opts: CheckoutOpts): boolean {
+  if (opts.production !== undefined) return opts.production;
+  try {
+    return getConfig().isProduction;
+  } catch {
+    return false;
+  }
+}
+
+function ownedCart(db: Db, cartId: number, owner: OwnerRef): CartRow {
+  const c = cartsRepo.findById(db, cartId);
+  const mine =
+    c && (owner.kind === 'user' ? c.userId === owner.userId : c.guestId !== null && c.guestId === owner.guestId);
+  if (!c || !mine) throw new NotFoundError('Корзина не найдена');
+  return c;
+}
+
+function sameOwner(order: { userId: number | null; guestId: string | null }, owner: OwnerRef): boolean {
+  return owner.kind === 'user' ? order.userId === owner.userId : order.guestId !== null && order.guestId === owner.guestId;
+}
+
+export const checkout = {
+  /** Способы получения и оплаты, доступные сейчас: включённые; тестовые оплаты — не в production. */
+  methods(opts: CheckoutOpts = {}): { delivery: DeliveryMethodRow[]; payment: PaymentMethodRow[] } {
+    const db = opts.db ?? getDb();
+    const prod = isProduction(opts);
+    return {
+      delivery: methodsRepo.listDelivery(db, { enabledOnly: true }),
+      payment: methodsRepo.listPayment(db, { enabledOnly: true }).filter((m) => !(prod && m.testOnly)),
+    };
+  },
+
+  /**
+   * Серверный пересчёт перед оформлением. ok:true — можно оформлять, priced — серверные суммы;
+   * ok:false — список изменений цены/наличия/промокода (после «Подтвердить» — cart.acknowledgeChanges).
+   */
+  async validate(
+    cartId: number | null,
+    owner: OwnerRef,
+    opts: CheckoutOpts = {},
+  ): Promise<{ ok: true; priced: ValidatedCart } | { ok: false; changes: Change[] }> {
+    const db = opts.db ?? getDb();
+    const now = opts.now ?? Date.now();
+    if (cartId === null) throw new ValidationError('Корзина пуста');
+    const computed = computeCart(db, ownedCart(db, cartId, owner), now);
+    if (computed.items.length === 0) throw new ValidationError('Корзина пуста');
+    if (computed.changes.length > 0) return { ok: false, changes: computed.changes };
+    return {
+      ok: true,
+      priced: { ...computed.priced, discount: computed.discount, totalKopecks: computed.priced.subtotal - computed.discount, view: computed.view },
+    };
+  },
+
+  /**
+   * Создаёт заказ. Всё считается на сервере по БД; цены, суммы и позиции из запроса не читаются.
+   * Идемпотентно по idempotencyKey (UNIQUE): повтор возвращает тот же заказ. В одной транзакции:
+   * пересчёт → способы → заказ и строки (снимок) → событие → согласие → расход промокода → очистка корзины.
+   */
+  async place(rawInput: unknown, opts: CheckoutOpts = {}): Promise<Order> {
+    const db = opts.db ?? getDb();
+    const now = opts.now ?? Date.now();
+    const owner = (rawInput as { owner?: OwnerRef } | null)?.owner;
+    if (!owner || (owner.kind !== 'user' && owner.kind !== 'guest')) throw new ValidationError('Не определён владелец корзины');
+    const input = parsePlaceInput(rawInput);
+    const prod = isProduction(opts);
+
+    const result = withTransaction(db, () => {
+      const existing = ordersRepo.findByIdempotencyKey(db, input.idempotencyKey);
+      if (existing) {
+        if (!sameOwner(existing, owner)) throw new ConflictError('Этот ключ запроса уже использован');
+        return { order: toOrder(db, existing), created: false };
+      }
+
+      const c = ownedCart(db, input.cartId, owner);
+      const computed = computeCart(db, c, now);
+      if (computed.items.length === 0) throw new ValidationError('Корзина пуста');
+      if (computed.changes.length > 0) throw new CheckoutChangesError(computed.changes);
+
+      const delivery = methodsRepo.findDelivery(db, input.deliveryMethodId);
+      if (!delivery || !delivery.enabled) {
+        throw new ValidationError('Выбранный способ получения недоступен', { deliveryMethodId: ['Выберите доступный способ получения'] });
+      }
+      const payment = methodsRepo.findPayment(db, input.paymentMethodId);
+      if (!payment || !payment.enabled || (prod && payment.testOnly)) {
+        throw new ValidationError('Выбранный способ оплаты недоступен', { paymentMethodId: ['Выберите доступный способ оплаты'] });
+      }
+      const address = input.contact.address ?? null;
+      if (delivery.requiresAddress && (address === null || address.length < 5)) {
+        throw new ValidationError('Укажите адрес доставки', { 'contact.address': ['Укажите адрес доставки'] });
+      }
+
+      if (computed.promo) {
+        if (!promosRepo.tryConsume(db, computed.promo.id)) {
+          throw new CheckoutChangesError([
+            { kind: 'promo_invalid', code: computed.promo.code, message: 'Промокод уже использован максимальное число раз.' },
+          ]);
+        }
+      }
+
+      const subtotal = computed.priced.subtotal;
+      const discount = computed.discount;
+      const total = subtotal - discount + (delivery.priceKopecks ?? 0);
+
+      const { id } = ordersRepo.insert(db, {
+        owner,
+        status: payment.kind === 'online' ? 'awaiting_payment' : 'new',
+        contactName: input.contact.name,
+        contactEmail: input.contact.email,
+        contactPhone: input.contact.phone,
+        phoneDigits: phoneDigits(input.contact.phone),
+        comment: input.contact.comment ?? null,
+        address,
+        delivery: { id: delivery.id, code: delivery.code, name: delivery.name, kind: delivery.kind, kopecks: delivery.priceKopecks },
+        payment: { id: payment.id, code: payment.code, name: payment.name, kind: payment.kind },
+        subtotalKopecks: subtotal,
+        discountKopecks: discount,
+        totalKopecks: total,
+        promo: computed.promo ? { id: computed.promo.id, code: computed.promo.code } : null,
+        idempotencyKey: input.idempotencyKey,
+        now,
+      });
+
+      for (const i of computed.items) {
+        ordersRepo.insertItem(db, id, {
+          productId: i.row.productId,
+          name: i.row.product.name,
+          sku: i.row.product.sku,
+          priceKopecks: i.row.product.priceKopecks,
+          discountPriceKopecks: i.original !== null ? i.unit : null,
+          unitKopecks: i.unit,
+          qty: i.row.qty,
+          lineKopecks: i.unit * i.row.qty,
+        });
+      }
+      ordersRepo.insertEvent(db, {
+        orderId: id,
+        at: now,
+        kind: 'created',
+        toStatus: payment.kind === 'online' ? 'awaiting_payment' : 'new',
+        actorType: 'customer',
+        actorId: owner.kind === 'user' ? String(owner.userId) : null,
+      });
+      consent.record(
+        {
+          kind: 'privacy',
+          source: 'checkout',
+          userId: owner.kind === 'user' ? owner.userId : null,
+          guestId: owner.kind === 'guest' ? owner.guestId : null,
+          subject: input.contact.email,
+        },
+        { db, now },
+      );
+      audit.record(
+        {
+          actorId: owner.kind === 'user' ? owner.userId : null,
+          actorType: owner.kind === 'user' ? 'user' : 'system',
+          action: 'order.create',
+          entity: 'order',
+          entityId: id,
+          after: { total, items: computed.items.length, promo: computed.promo?.code },
+        },
+        { db, now },
+      );
+      cartApi.clear(owner, { db, now });
+      return { order: toOrder(db, ordersRepo.findById(db, id)!), created: true };
+    });
+
+    if (result.created) {
+      const o = result.order;
+      enqueueMail(
+        'order.created',
+        {
+          to: o.contact.email,
+          name: o.contact.name,
+          orderNumber: o.number,
+          status: o.status,
+          subtotalKopecks: o.subtotalKopecks,
+          discountKopecks: o.discountKopecks,
+          deliveryName: o.delivery.name,
+          deliveryPending: o.delivery.pending,
+          deliveryKopecks: o.deliveryKopecks,
+          paymentName: o.payment.name,
+          totalKopecks: o.totalKopecks,
+          items: o.items.map((i) => ({ name: i.name, sku: i.sku, qty: i.qty, unitKopecks: i.unitKopecks, lineKopecks: i.lineKopecks })),
+          orderUrl: orderUrlFor(o, opts),
+        },
+        { db, now },
+      );
+    }
+    return result.order;
+  },
+};

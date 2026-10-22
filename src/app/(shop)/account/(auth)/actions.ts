@@ -1,5 +1,6 @@
 'use server';
 
+import '@/domain/hooks'; // регистрирует слияние гостевой корзины при входе/регистрации
 import { redirect } from 'next/navigation';
 import { login, logout, register, requestPasswordReset, resetPassword, safeRedirectPath } from '@/domain/customers/auth';
 import type { FormState } from './form-state';

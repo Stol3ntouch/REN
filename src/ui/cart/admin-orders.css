@@ -1,0 +1,91 @@
+/* Админка: заказы и промокоды (T05). */
+.adm-filters {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  align-items: end;
+  margin-bottom: var(--space-3);
+}
+
+.adm-field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.adm-field label {
+  font-weight: 600;
+}
+
+.adm-table-wrap {
+  overflow-x: auto;
+}
+
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.adm-table th,
+.adm-table td {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.adm-table td.num,
+.adm-table th.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.adm-grid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.adm-card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.adm-card h2,
+.adm-card h3 {
+  margin: 0;
+}
+
+.adm-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: end;
+}
+
+.adm-flash {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-success);
+  border-radius: var(--radius);
+  color: var(--color-success);
+}
+
+.adm-flash--error {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.adm-pager {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  margin-top: var(--space-3);
+}
+
+@media (min-width: 60rem) {
+  .adm-grid--two {
+    grid-template-columns: 2fr 1fr;
+    align-items: start;
+  }
+}
