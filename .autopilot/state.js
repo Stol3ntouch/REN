@@ -4,16 +4,16 @@ window.STATE =
   "slug": "remtehsad-shop",
   "dir": "2026-10-22-remtehsad-shop--wip",
   "title": "Интернет-магазин РемТехСад",
-  "mode": "semi",
+  "mode": "full",
   "depth": "normal",
   "tier": "T3",
   "briefFile": "2026-10-22-brief.md",
   "memoryFile": "AGENTS.md",
   "memoryOwner": "autopilot",
   "skillDir": "C:/Users/OxO/Desktop/RemTexSad/skills-2.2.0/skills/autopilot",
-  "baseCommit": null,
+  "baseCommit": "2ee729c",
   "startedAt": "2026-10-22T21:26:04+03:00",
-  "updatedAt": "2026-10-22T21:38:41+03:00",
+  "updatedAt": "2026-10-22T22:14:09+03:00",
   "finishedAt": null,
   "stages": [
     {
@@ -42,12 +42,14 @@ window.STATE =
     },
     {
       "id": "plan",
-      "status": "active",
-      "startedAt": "2026-10-22T21:36:52+03:00"
+      "status": "done",
+      "startedAt": "2026-10-22T21:36:52+03:00",
+      "finishedAt": "2026-10-22T21:39:19+03:00"
     },
     {
       "id": "build",
-      "status": "pending"
+      "status": "active",
+      "startedAt": "2026-10-22T21:39:19+03:00"
     },
     {
       "id": "review",
@@ -60,8 +62,8 @@ window.STATE =
   ],
   "requirements": {
     "total": 54,
-    "done": 0,
-    "inTicket": 54,
+    "done": 3,
+    "inTicket": 51,
     "inSpec": 0,
     "placeholder": 0,
     "deferred": 0,
@@ -99,9 +101,16 @@ window.STATE =
       ],
       "review": "да — фундамент",
       "model": "сильная",
-      "status": "pending",
+      "status": "done",
+      "startedAt": "2026-10-22T21:39:19+03:00",
+      "finishedAt": "2026-10-22T21:56:36+03:00",
       "retries": 0,
-      "repairs": 0
+      "repairs": 0,
+      "tests": {
+        "passed": 56,
+        "failed": 0
+      },
+      "commit": "df69d59"
     },
     {
       "id": "02",
@@ -132,9 +141,16 @@ window.STATE =
       ],
       "review": "нет",
       "model": "сильная",
-      "status": "pending",
+      "status": "done",
+      "startedAt": "2026-10-22T21:54:02+03:00",
+      "finishedAt": "2026-10-22T22:08:32+03:00",
       "retries": 0,
-      "repairs": 0
+      "repairs": 0,
+      "tests": {
+        "passed": 248,
+        "failed": 0
+      },
+      "commit": "b05f3fb"
     },
     {
       "id": "03",
@@ -167,9 +183,16 @@ window.STATE =
       ],
       "review": "да — вход, пароли, сессии",
       "model": "сильная",
-      "status": "pending",
+      "status": "done",
+      "startedAt": "2026-10-22T21:54:02+03:00",
+      "finishedAt": "2026-10-22T22:09:40+03:00",
       "retries": 0,
-      "repairs": 0
+      "repairs": 0,
+      "tests": {
+        "passed": 243,
+        "failed": 0
+      },
+      "commit": "c43094f"
     },
     {
       "id": "04",
@@ -206,7 +229,8 @@ window.STATE =
       ],
       "review": "нет",
       "model": "обычная",
-      "status": "pending",
+      "status": "in-progress",
+      "startedAt": "2026-10-22T22:08:33+03:00",
       "retries": 0,
       "repairs": 0
     },
@@ -251,7 +275,8 @@ window.STATE =
       ],
       "review": "да — деньги",
       "model": "сильная",
-      "status": "pending",
+      "status": "in-progress",
+      "startedAt": "2026-10-22T22:08:33+03:00",
       "retries": 0,
       "repairs": 0
     },
@@ -352,6 +377,8 @@ window.STATE =
         "migrations/0500-0599",
         "src/app/(shop)/{page.tsx,pages,news,services,promotions,about,contacts,buyers}/**",
         "src/ui/layout/**",
+        "src/ui/theme.css",
+        "public/brand/**",
         "src/ui/home/**",
         "src/ui/map/**",
         "src/app/admin/(panel)/content/**",
@@ -513,7 +540,10 @@ window.STATE =
       "repairs": 0
     }
   ],
-  "tests": null,
+  "tests": {
+    "passed": 243,
+    "failed": 0
+  },
   "debt": {
     "placeholders": [],
     "assumptions": [],
@@ -531,7 +561,19 @@ window.STATE =
       "выбор конфигурации 1С — решение владельца"
     ]
   },
-  "concerns": [],
+  "concerns": [
+    "src/server/http/rate-limit.ts:19 — очистка окон может сбросить длинное окно раньше срока",
+    "src/server/http/rate-limit.ts:51 — при TRUST_PROXY=false все клиенты в одном бакете 'unknown'",
+    "src/server/db/transaction.ts:9 — withTransaction не защищена от async-функции (откат потеряется)",
+    "src/server/http/origin.ts:30 — ветка по SITE_URL не покрыта тестом",
+    "tests/foundation — нет проверки 360 px/контраста; docs/local-setup.md ещё не создан (T12)",
+    "src/server/http/rate-limit.ts:51 + src/domain/customers/auth-throttle.ts:20 — при TRUST_PROXY=false все клиенты в одном бакете: 5 неверных входов блокируют настоящего admin (безопасность, чинить в F1)",
+    "src/domain/customers/auth.ts:113 — токен сброса пароля открыт в mail_stub_queue/email_outbox: T09 не должен показывать ссылку сброса в админке и должен очищать тело письма после отправки",
+    "src/domain/customers/auth-throttle.ts:11 — проверка блокировки и запись неудачи не атомарны (параллельные попытки)",
+    "src/app/admin/layout.tsx — защита только вызовом requireStaffPage на странице: нужен тест, перечисляющий admin/(panel)/**/page.tsx (T12/F1)",
+    "src/domain/admin/mask.ts — audit не вычищает поля password/token/hash",
+    "server actions (Origin, honeypot, редиректы) не покрыты тестами"
+  ],
   "blind": null,
   "beats": [
     "2026-10-22T21:26:04+03:00",
@@ -546,9 +588,25 @@ window.STATE =
     "2026-10-22T21:38:34+03:00",
     "2026-10-22T21:38:35+03:00",
     "2026-10-22T21:38:40+03:00",
-    "2026-10-22T21:38:41+03:00"
+    "2026-10-22T21:38:41+03:00",
+    "2026-10-22T21:38:54+03:00",
+    "2026-10-22T21:39:19+03:00",
+    "2026-10-22T21:43:55+03:00",
+    "2026-10-22T21:54:02+03:00",
+    "2026-10-22T21:54:09+03:00",
+    "2026-10-22T21:56:36+03:00",
+    "2026-10-22T21:56:37+03:00",
+    "2026-10-22T22:01:06+03:00",
+    "2026-10-22T22:01:07+03:00",
+    "2026-10-22T22:07:35+03:00",
+    "2026-10-22T22:07:37+03:00",
+    "2026-10-22T22:08:31+03:00",
+    "2026-10-22T22:08:32+03:00",
+    "2026-10-22T22:08:33+03:00",
+    "2026-10-22T22:09:40+03:00",
+    "2026-10-22T22:14:09+03:00"
   ],
-  "rev": 15,
+  "rev": 34,
   "waiting": null,
   "waits": [
     {
@@ -642,6 +700,149 @@ window.STATE =
       "g": "G3",
       "ok": true,
       "problems": 0
+    },
+    {
+      "t": "2026-10-22T21:39:19+03:00",
+      "k": "stage",
+      "id": "build",
+      "act": "start"
+    },
+    {
+      "t": "2026-10-22T21:39:19+03:00",
+      "k": "ticket",
+      "ids": [
+        "01"
+      ],
+      "act": "start"
+    },
+    {
+      "t": "2026-10-22T21:54:02+03:00",
+      "k": "ticket",
+      "ids": [
+        "01"
+      ],
+      "act": "done",
+      "tests": {
+        "passed": 56,
+        "failed": 0
+      }
+    },
+    {
+      "t": "2026-10-22T21:54:02+03:00",
+      "k": "ticket",
+      "ids": [
+        "02",
+        "03"
+      ],
+      "act": "start"
+    },
+    {
+      "t": "2026-10-22T21:54:09+03:00",
+      "k": "ticket",
+      "ids": [
+        "01"
+      ],
+      "act": "review"
+    },
+    {
+      "t": "2026-10-22T21:56:36+03:00",
+      "k": "ticket",
+      "ids": [
+        "01"
+      ],
+      "act": "done",
+      "tests": {
+        "passed": 56,
+        "failed": 0
+      }
+    },
+    {
+      "t": "2026-10-22T21:56:37+03:00",
+      "k": "add",
+      "key": "concerns",
+      "n": 5
+    },
+    {
+      "t": "2026-10-22T22:01:06+03:00",
+      "k": "tickets",
+      "n": 12
+    },
+    {
+      "t": "2026-10-22T22:01:07+03:00",
+      "k": "gate",
+      "g": "G3",
+      "ok": true,
+      "problems": 0
+    },
+    {
+      "t": "2026-10-22T22:07:35+03:00",
+      "k": "ticket",
+      "ids": [
+        "03"
+      ],
+      "act": "done",
+      "tests": {
+        "passed": 243,
+        "failed": 0
+      }
+    },
+    {
+      "t": "2026-10-22T22:07:37+03:00",
+      "k": "ticket",
+      "ids": [
+        "03"
+      ],
+      "act": "review"
+    },
+    {
+      "t": "2026-10-22T22:08:31+03:00",
+      "k": "add",
+      "key": "report",
+      "n": 2
+    },
+    {
+      "t": "2026-10-22T22:08:32+03:00",
+      "k": "ticket",
+      "ids": [
+        "02"
+      ],
+      "act": "done",
+      "tests": {
+        "passed": 248,
+        "failed": 0
+      }
+    },
+    {
+      "t": "2026-10-22T22:08:33+03:00",
+      "k": "ticket",
+      "ids": [
+        "04",
+        "05"
+      ],
+      "act": "start"
+    },
+    {
+      "t": "2026-10-22T22:09:40+03:00",
+      "k": "ticket",
+      "ids": [
+        "03"
+      ],
+      "act": "done",
+      "tests": {
+        "passed": 243,
+        "failed": 0
+      }
+    },
+    {
+      "t": "2026-10-22T22:09:40+03:00",
+      "k": "add",
+      "key": "concerns",
+      "n": 6
+    },
+    {
+      "t": "2026-10-22T22:14:09+03:00",
+      "k": "tickets",
+      "n": 12
     }
   ],
   "reqList": [
@@ -658,7 +859,7 @@ window.STATE =
     {
       "id": "R03",
       "text": "«Публичный сайт и отдельная закрытая админ-панель»",
-      "status": "in-ticket"
+      "status": "done"
     },
     {
       "id": "R04",
@@ -738,7 +939,7 @@ window.STATE =
     {
       "id": "R19",
       "text": "«Регистрация, вход, восстановление доступа»",
-      "status": "in-ticket"
+      "status": "done"
     },
     {
       "id": "R20",
@@ -843,7 +1044,7 @@ window.STATE =
     {
       "id": "R40",
       "text": "«Повтор импорта не создаёт дубликаты товаров/категорий»",
-      "status": "in-ticket"
+      "status": "done"
     },
     {
       "id": "R41",
@@ -932,9 +1133,13 @@ window.STATE =
     },
     "G3": {
       "ok": true,
-      "at": "2026-10-22T21:38:41+03:00",
+      "at": "2026-10-22T22:01:07+03:00",
       "problems": 0
     }
   },
-  "result": null
+  "result": null,
+  "report": [
+    "В выгрузке 4 товара без цены (id 217943, 217944, 217946, 217947) — не импортированы, нужна цена от владельца",
+    "Фото скачиваются командой import:yml --images; по сети на реальном champion.ru не проверялось"
+  ]
 }

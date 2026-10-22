@@ -2,7 +2,7 @@
 
 **Требования:** R24, R25, R26, R27, R27.1, R28, R29, R30, R31, R32, R33, R46, R50, R51, R52, R45
 **Зависит от:** 03, 04, 05, 07
-**Зона:** `src/domain/content/**` · `src/server/db/repositories/{pages,slides,news,promotions,services,settings,company-reviews}.ts` · `migrations/0500-0599` · `src/app/(shop)/{page.tsx,pages,news,services,promotions,about,contacts,buyers}/**` · `src/ui/layout/**` · `src/ui/home/**` · `src/ui/map/**` · `src/app/admin/(panel)/content/**` · `tests/content/**`
+**Зона:** `src/domain/content/**` · `src/server/db/repositories/{pages,slides,news,promotions,services,settings,company-reviews}.ts` · `migrations/0500-0599` · `src/app/(shop)/{page.tsx,pages,news,services,promotions,about,contacts,buyers}/**` · `src/ui/layout/**` · `src/ui/theme.css` · `public/brand/**` · `src/ui/home/**` · `src/ui/map/**` · `src/app/admin/(panel)/content/**` · `tests/content/**`
 **Волна:** 5
 **Ревью:** нет
 **Модель:** обычная
@@ -34,3 +34,11 @@
 - [ ] Отзывы о компании и новости: пустой раздел не показывается; ни одного выдуманного отзыва или рейтинга в seed (тест-grep)
 - [ ] Админ-раздел «Контент и услуги» доступен только admin (тест прав); у каждой сущности редактируются title, description, H1, slug, alt
 - [ ] Логотип загружается в админке и заменяет заглушку без правки кода
+
+## Логотип и эталон внешнего вида
+
+Пользователь передал логотип: `.autopilot/2026-10-22-remtehsad-shop--wip/inputs/logo.jpg`. Этот таск копирует его в `public/brand/logo.jpg` (при необходимости делает компактные варианты и favicon через `sharp`), подставляет в шапку и подвал вместо метки `[ЛОГОТИП — загрузи]` (админка по-прежнему может заменить его), и приводит палитру темы `src/ui/theme.css` к палитре логотипа (чёрный, тёмно-зелёный → светло-зелёный; проверить контраст ≥4.5:1). Зона таска дополнена: `src/ui/theme.css`, `public/brand/**`. Приложен `reference.md` (читать целиком; образцы главной — `inputs/reference/home-desktop.webp` и `board-home-catalog-product-cart.webp`): компоновка главной, шапки, мобильной панели, подвала — как на образцах, но **выдуманное содержимое макетов не копировать** (отзывы клиентов, рейтинги, адрес, телефон, бонусные баллы, баннерные тексты про скидки) — только метки-заглушки и реальные данные.
+
+## Телефон магазина (факт от пользователя)
+
+Пользователь дал телефон магазина: **+7 916-655-06-06** (брифовое «Дополнение» от 2026-10-22). Этот таск кладёт его в начальные настройки магазина (seed настроек `phone`, в т.ч. ссылка `tel:+79166550606`), шапка и подвал выводят его вместо метки `[ТЕЛЕФОН — впиши]`; админ может изменить в настройках. Остальные факты (адрес, часы, реквизиты, координаты) остаются метками.
