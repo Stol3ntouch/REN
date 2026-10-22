@@ -6,7 +6,7 @@ import type { OwnerRef } from '@/server/http/owner';
 export type { OrderStatus, OwnerRef };
 
 /** Общие опции доменных функций: БД и время подменяются в тестах. */
-export type Opts = { db?: Db; now?: number; secret?: string };
+export type Opts = { db?: Db; now?: number; secret?: string; /** Только orders.refund: возврат у провайдера уже проведён. */ viaRefund?: boolean };
 
 /** Кто меняет заказ. system — проверенный webhook, импорт; staff — сотрудник; customer — сам покупатель. */
 export type Actor =

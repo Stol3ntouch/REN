@@ -91,7 +91,9 @@ describe('orders.transition: правила сверх таблицы', () => {
     const db = setupDb();
     const o = rawOrder(db, 'processing', { paid: true });
     await expect(orders.transition(o.id, 'refunded', MANAGER, undefined, { db })).rejects.toBeInstanceOf(ForbiddenError);
-    const refunded = await orders.transition(o.id, 'refunded', ADMIN, 'по просьбе клиента', { db });
+    // Обычной сменой статуса сотрудник вернуть не может — только через orders.refund (после возврата платежа).
+    await expect(orders.transition(o.id, 'refunded', ADMIN, 'по просьбе клиента', { db })).rejects.toBeInstanceOf(ForbiddenError);
+    const refunded = await orders.transition(o.id, 'refunded', ADMIN, 'по просьбе клиента', { db, viaRefund: true });
     expect(refunded.status).toBe('refunded');
     expect(refunded.isPaid).toBe(false);
   });

@@ -106,19 +106,19 @@ export const orderOps = {
 
   async changeStatus(session: StaffSession | null, orderId: number, to: OrderStatus, note: string | undefined, opts: Opts = {}): Promise<Order> {
     requirePermission(session, 'orders.write');
-    return orders.transition(orderId, to, actorOf(session), note, opts);
+    return orders.transition(orderId, to, actorOf(session), note, { ...opts, viaRefund: false });
   },
 
   /** Отмена (admin и manager). Оплаченный заказ отменить нельзя — возврат. */
   async cancel(session: StaffSession | null, orderId: number, reason: string | undefined, opts: Opts = {}): Promise<Order> {
     requirePermission(session, 'orders.write');
-    return orders.transition(orderId, 'cancelled', actorOf(session), reason, opts);
+    return orders.transition(orderId, 'cancelled', actorOf(session), reason, { ...opts, viaRefund: false });
   },
 
   /** Возврат оплаченного — только администратор. */
   async refund(session: StaffSession | null, orderId: number, note: string | undefined, opts: Opts = {}): Promise<Order> {
     requirePermission(session, REFUND_PERMISSION);
-    return orders.refund(orderId, actorOf(session), note, opts);
+    return orders.refund(orderId, actorOf(session), note, { ...opts, viaRefund: false });
   },
 
   assign(session: StaffSession | null, orderId: number, staffId: number | null, opts: Opts = {}): Order {

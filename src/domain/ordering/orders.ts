@@ -89,7 +89,7 @@ function cleanNote(note: string | undefined): string | null {
 }
 
 /** Права по роли, которые не выражены таблицей переходов. Бросает ForbiddenError. */
-function assertActorMayMove(actor: Actor, to: OrderStatus): void {
+function assertActorMayMove(actor: Actor, to: OrderStatus, viaRefund = false): void {
   if (actor.type === 'staff' && !hasPermission(actor.role, 'orders.write')) {
     throw new ForbiddenError('Недостаточно прав для смены статуса заказа');
   }
@@ -100,6 +100,10 @@ function assertActorMayMove(actor: Actor, to: OrderStatus): void {
   // Возврат — администратор (R16.2) или система.
   if (to === 'refunded' && !(actor.type === 'system' || (actor.type === 'staff' && actor.role === 'admin'))) {
     throw new ForbiddenError('Возврат средств доступен только администратору');
+  }
+  // Сотрудник ставит «возвращён» только через orders.refund (после успешного возврата платежа), не обычной сменой статуса.
+  if (to === 'refunded' && actor.type === 'staff' && !viaRefund) {
+    throw new ForbiddenError('Возврат оформляется действием «Вернуть деньги», а не сменой статуса');
   }
   if (actor.type === 'customer') throw new ForbiddenError('Покупатель не может менять статус заказа');
 }
@@ -118,7 +122,7 @@ export const orders = {
     const result = withTransaction(db, () => {
       const row = ordersRepo.findById(db, orderId);
       if (!row) throw new NotFoundError('Заказ не найден');
-      assertActorMayMove(actor, to);
+      assertActorMayMove(actor, to, opts.viaRefund === true);
       if (!TRANSITIONS[row.status].includes(to)) {
         throw new ConflictError(`Нельзя перевести заказ из статуса «${STATUS_LABELS[row.status]}» в «${STATUS_LABELS[to]}»`);
       }
@@ -175,12 +179,13 @@ export const orders = {
     const db = opts.db ?? getDb();
     const row = ordersRepo.findById(db, orderId);
     if (!row) throw new NotFoundError('Заказ не найден');
-    assertActorMayMove(actor, 'refunded');
+    assertActorMayMove(actor, 'refunded', true);
     if (!row.isPaid) throw new ConflictError('Возврат возможен только для оплаченного заказа');
     const refunder = getPaymentRefunder();
     if (!refunder) throw new ConflictError('Возврат через платёжную систему пока недоступен: оплата не подключена');
-    await refunder(toOrder(db, row));
-    return orders.transition(orderId, 'refunded', actor, note, opts);
+    // Ключ идемпотентности: возвратчик резервирует платёж до внешнего вызова, второй параллельный клик получает 409.
+    await refunder(toOrder(db, row), { idempotencyKey: `refund:${row.id}` });
+    return orders.transition(orderId, 'refunded', actor, note, { ...opts, viaRefund: true });
   },
 
   /** Заказ покупателя; чужой или несуществующий → null (страница отвечает 404). ref — номер RTS-… или id. */
