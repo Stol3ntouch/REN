@@ -6,3 +6,10 @@ __pycache__/
 .DS_Store
 skills-2.2.0/
 .autopilot/serve.*
+.next/
+data/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+.autopilot/serve.*
