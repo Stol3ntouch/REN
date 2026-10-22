@@ -1,0 +1,1173 @@
+<?xml version="1.0" encoding="UTF-8"?><yml_catalog date="2026-10-19 17:47">
+ <shop>
+  <name>champion</name>
+  <company>Вальд</company>
+  <url>https://champion.ru</url>
+  <categories>
+   <category id="1">Пилы цепные</category>
+   <category id="20" parentId="1">Бензиновые пилы</category>
+   <category id="21" parentId="1">Электрические пилы</category>
+   <category id="7">Генераторы</category>
+   <category id="659" parentId="7">Бензиновые генераторы</category>
+   <category id="1322" parentId="7">Сварочные генераторы</category>
+   <category id="10">Воздуходувки</category>
+   <category id="4229" parentId="10">Бензиновые воздуходувки</category>
+   <category id="671">Триммеры</category>
+   <category id="1324" parentId="671">Бензиновые триммеры</category>
+   <category id="2">Газонокосилки</category>
+   <category id="656" parentId="2">Бензиновые газонокосилки</category>
+   <category id="11">Строительная техника</category>
+   <category id="1369" parentId="11">Вибраторы</category>
+   <category id="1368" parentId="11">Виброплиты</category>
+   <category id="8">Двигатели</category>
+   <category id="663" parentId="8">Двигатели с горизонтальным валом</category>
+   <category id="1374">Садовые ножницы</category>
+   <category id="1377">Высоторезы</category>
+  </categories>
+  <offers>
+   <offer id="35" available="true">
+    <name>Бензиновая цепная пила CHAMPION 125T-10&quot;</name>
+    <model>125T-10</model>
+    <categoryId>20</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>10990.00000000</price>
+    <url>https://champion.ru/catalog/pily-tsepnye/benzinovye-pily/champion-125t-10-quot/</url>
+    <package_photos>https://disk.yandex.ru/d/LrlbOEuTdoAqyw</package_photos>
+    <item_description><![CDATA[Бензиновая цепная пила Champion 125T-10 благодаря своей компактности и небольшому весу оптимально подходит садоводам и альпинистам для легких работ на высоте.<br>Легкий запуск двигателя / Easy Engine Start<br>В конструкции стартера есть дополнительная пружина, которая снижает необходимое усилие при запуске.<br>Легкий холодный запуск / Easy cold start<br>Праймер и фиксатор курка газа облегчают запуск холодного двигателя. Достаточно подкачать топливо праймером и зафиксировать курок газа стопором. После этого мотор заводится без усилий даже после длительного перерыва в работе.<br>Антивибрационная система / Anti-Vibration System<br>Эффективные антивибрационные элементы в рукоятке уменьшают дискомфорт при работе и способствуют снижению нагрузки на руки и суставы.<br>Боковое натяжение цепи<br>Боковое натяжение цепи позволяет быстро, удобно и безопасно подтянуть пильную цепь.<br>Автоматическая система смазки цепи<br>Продлевает срок службы цепи и снижает расход масла для её смазки, особенно на холостых оборотах.<br>Многоразовый нейлоновый фильтр<br>Воздушный фильтр легко моется и используется многократно. Это особенно важно при работе в пыльных условиях, например, при распиле сухой древесины.<br>Металлический цепеуловитель<br>Перехватывает разорвавшуюся или соскочившую с шины цепь, уменьшая риск получения травм оператором. С ним вы можете работать с полной уверенностью в своей безопасности.<br>Инерционный тормоз цепи<br>Механический инерционный тормоз мгновенно останавливает цепь при отскоке или отдаче, защищая от возможных травм и повышая комфорт работы.<br>Защита от случайного запуска<br>Рычаг блокировки предотвращает непреднамеренное нажатие на рычаг газа и позволяет управлять оборотами двигателя только после разблокировки.<br>Срок службы 10+ лет<br>Долговечность обеспечивается обслуживаемым воздушным фильтром и хромированным цилиндром повышенной надёжности, которые сохраняют работоспособность инструмента на протяжении многих лет.]]></item_description>
+    <picture>https://champion.ru/upload/iblock/43a/9d7zum80qel3lnszvaia6ly7btn1962l/A_125_T_10_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ca6/a87pj39t9xzky3v9008w1t632yp59tuf/A_125_T_10_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/a67/5g6ecox2kq057ioh61vhlx3tvg0ba69x/A_125_T_10_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/a94/idzasjgai8vyk1qqh2c47n29jkte2f1a/A_125_T_10_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/8ae/za43y06tnp9zbzneu5dgcgovpg8jw035/A_125_T_10_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/af9/45xoxq8ddn8q8crg3dprxvxuedrnv8fm/A_125_T_10_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/edf/v97bbm74nes6d2pyb3n4ddwcoorzrwit/A_125_T_10_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/d13/w2hqb6ztot0fanhy5i6fxblvc2g4gcu1/A_125_T_10_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/31e/6nj7rjuc50yauxkvtfm0vr8psf944qmw/A_125_T_10_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/822/tmae21a7xdaohkvplua2u8nirk5ek3ey/A_125_T_10_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ad1/enmp69l4927hfq8qgwrp15phtzhfir92/A_125_T_10_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/8e4/9swmuqbgki97l7xuuuivsdbxudshwpbt/A_125_T_10_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/a61/7lh5x9bxwcfwv6xml5znzkpluf19vxuh/A_125_T_10_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/f5b/rdb1s5jwwskrqkpzbmpgjiq3slzky7xj/A_125_T_KOMP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/3a8/4duppwm5livfz25y14wqot7mxw20h9q9/compressed_a_125_t_10_fhd.mp4</video_360>
+    <description><![CDATA[Бензиновая цепная пила Champion 125T-10 благодаря своей компактности и небольшому весу оптимально подходит садоводам и альпинистам для легких работ на высоте.]]></description>
+    <param name="Вес, без шины и цепи с пустыми баками, (кг)">3,2</param>
+    <param name="Длина шины, (дюйм/см)">10/25</param>
+    <param name="Количество звеньев цепи, (шт)">40</param>
+    <param name="Максимальные обороты без нагрузки, (об/мин)">12000</param>
+    <param name="Максимальный расход топлива, (г/кВт ч)/(л/ч)">420</param>
+    <param name="Обороты холостого хода, (об/мин)">3000</param>
+    <param name="Объем масляного бака, (л)">0,160</param>
+    <param name="Объем топливного бака, (л)">0,230</param>
+    <param name="Удельный расход топлива, не более, г/кВт час">420</param>
+    <param name="Уровень звукового давления, (дБ)">105</param>
+    <param name="Шаг пильной цепи, (дюймы)">3/8</param>
+    <param name="Ширина паза пильной шины, (мм)">1,3</param>
+   </offer>
+   <offer id="37" available="true">
+    <name>Электрическая цепная пила CHAMPION 118-14&quot;</name>
+    <model>118-14</model>
+    <categoryId>21</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>7490.00000000</price>
+    <url>https://champion.ru/catalog/pily-tsepnye/elektricheskie-pily/champion-118-14/</url>
+    <package_photos>https://disk.yandex.ru/d/e1vHgiwNqcdZqQ</package_photos>
+    <item_description><![CDATA[Электрическая цепная пила Champion 118-14 предназначена для бытового использования: на даче, на участке загородного дома, для заготовки дров и спила небольших деревьев.<br>Производительность<br>Мощность 1,8 кВт. Подойдет для валки тонких деревьев, обрезки сучьев, распила бревен небольшого диаметра (до 20 см), заготовки дров и других бытовых работ по дереву.<br>Автоматическая система смазки цепи<br>Масло непрерывно подается на пильную цепь во время работы, что увеличивает срок службы расходных материалов.<br>Контроль уровня масла<br>Полупрозрачное окошко в корпусе пилы позволяет визуально контролировать уровень масла, что помогает своевременно пополнять его запас и поддерживать оптимальную смазку цепи.
+<br>Легкая модель<br>Малые весовые габариты пилы обеспечивают удобство при транспортировке и работе, снижая утомляемость пользователя.<br>Безопасность<br>Безопасный механический инерционный тормоз мгновенно останавливает цепь при отскоке или отдаче, защищая пользователя от возможных травм и повышая комфорт работы.<br>Экологичность<br>Электрические пилы не выделяют вредных выхлопов и отличаются низким уровнем шума, что делает их комфортными для работы в закрытых помещениях и жилых зонах.]]></item_description>
+    <picture>https://champion.ru/upload/iblock/b11/rryusw71jjdqtj5fgc3zb6cznwz0qstz/C_118_14_360_anons.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/a38/flaq3azoov61atnxw0hka8sozzzsh5q6/C_118_14_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ef8/j0taf729hqsqtd20kgmvmsb78yl7ldj0/C_118_14_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/4a9/tijx7arvzhf69wzuh13up3fy5t0yr35h/C_118_14_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/2e8/z80r0o0lrha99tmx2sbpreqgf1vo8j59/C_118_14_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/eca/h6m600nd2e8fr1um173z57439bx3c16b/C_118_14_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/159/mhjufqu9qycs3ys4goapsi06vmnr8rh1/C_118_14_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/9f8/dqarxhvnrcc9rxld6si5wsxv9ay0mpyn/C_118_14_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/d6b/5mljeepaq806cvi4z7cq38ru0u4g2fcd/C_118_14_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/611/pofooz5ch0m0ydofdutxfnyc8beo3lvn/C_118_14_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/b47/g9o3y2xwrgdpixpsk83pfskk3m3jcr5y/C_118_14_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/180/4rupx6n7wiwkgmytl6kbkroqaeu8i32q/C_118_14_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/c0d/wf8m513ui7ff0yqmh2j3esurfwws3xp5/C_118_14_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/3fe/ls4ek08bwdguwhc9rqdx7vtbbf5skl8u/C_118_14_KOMP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/6a2/tr6a0bi4fw7e95s9gfejnegueyf9tmzf/C_118_14_fhd-_video_converter.com_.mp4</video_360>
+    <description><![CDATA[Электрическая цепная пила Champion 118-14 предназначена для бытового использования: на даче, на участке загородного дома, для заготовки дров и спила небольших деревьев.]]></description>
+    <param name="Номинальная мощность двигателя, (кВт)">1,8</param>
+    <param name="Вес, (кг)">3,72</param>
+    <param name="Безынструментальный механизм натяжения цепи">нет</param>
+    <param name="Длина шины, (дюйм/см)">14/35</param>
+    <param name="Количество звеньев цепи, (шт)">52</param>
+    <param name="Максимальные обороты двигателя, (об/мин)">7 600</param>
+    <param name="Напряжение сети, (В/Гц)">230/50</param>
+    <param name="Объем масляного бака, (л)">0,1</param>
+    <param name="Расположение двигателя">поперечное</param>
+    <param name="Тепловой предохранитель">нет</param>
+    <param name="Шаг пильной цепи, (дюймы)">3/8</param>
+    <param name="Ширина паза пильной шины, (мм)">1,3</param>
+   </offer>
+   <offer id="684" available="true">
+    <name>Бензоножницы CHAMPION HT625R</name>
+    <model>HT625R</model>
+    <categoryId>1374</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>18990.00000000</price>
+    <url>https://champion.ru/catalog/sadovye-nozhnitsy/champion-ht625r/</url>
+    <package_photos>https://disk.yandex.ru/d/ekQcFgEpOvYQtg</package_photos>
+    <picture>https://champion.ru/upload/iblock/3a0/croojo7y1iv40e46033znoyxhhuwrngh.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/46c/1odgpdfvkaap8yabgpj0kkx21ep0vncv.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/8f4/7tvd8kr77r541q7hs3xcv8nox00yoqel.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/b9f/3oam29v8j3tjkpii43o3ukxjz1bpxllp.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/2dd/3vjvalwrjyyn3z0tpyo4mb9xj9uad71a.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/107/vg28sp3xpg5ri3l0trioxcntq7grvxmn.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/65b/mywdusta42ogd5pfgn32oyiveuddkrha.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/531/shq93gf4jo6vx8dl445d2eknh542nvns.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/af3/24ceqw3bu49nv20ktv6gyllf22cg3rf4.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/bcf/yeuxrjuuueo7g3jluywp9ssw8ncnm7yh.jpg</picture>
+    <param name="Мощность двигателя, (кВт/л.с.) при 7500 об/мин">0,75/ 1,02</param>
+    <param name="Объем двигателя, (см3)">25,4</param>
+    <param name="Вес с пустым баком, (кг)">5,4</param>
+    <param name="Длина ножей, (мм)">600</param>
+    <param name="Обороты холостого хода, (об/мин)">3000</param>
+    <param name="Объем топливного бака, (л)">0,65</param>
+    <param name="Уровень вибрации на рукоятке, (м/с2)">6,3</param>
+    <param name="Уровень звукового давления, (дБ)">89</param>
+    <param name="Уровень мощности звука, (дБ)">108</param>
+   </offer>
+   <offer id="685" available="true">
+    <name>Бензоножницы CHAMPION HT726R</name>
+    <model>HT726R</model>
+    <categoryId>1374</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>19990.00000000</price>
+    <url>https://champion.ru/catalog/sadovye-nozhnitsy/champion-ht726r/</url>
+    <package_photos>https://disk.yandex.ru/d/q9uyxQIwZtKeQQ</package_photos>
+    <picture>https://champion.ru/upload/iblock/85c/ahtub12o4qntzb6da40no31qjclcnpkx.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/200/en2taempsp9xt01ubsft7ycy21jz5wur.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/114/sfwl36tl2c1y7h9fudiaqign9r1of9gn.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/9c8/j7xezzs8qdb2e7q9yrrbg1cpjxjbi1fn.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/574/iwb3formx455uyiqido8wcyt0smjwc0r.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ba1/pl8hl5e0eev5iwkjvjqppuodxm6us4lj.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/b16/azn3v2u008nkdwibzq1acr8bgyspyy74.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/f64/e9e3914wk4hnldj22lvha532lh41cefr.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/4b7/dw1e6o4mvdm8slf2u9ikveea1dchb50g.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/831/0m08bkt5qa0mocwypkwjlc85k1nj462t.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/665/zo92qe90sd5811ru6penjvunkfeipejf.jpg</picture>
+    <param name="Мощность двигателя, (кВт/л.с.) при 7500 об/мин">0,75</param>
+    <param name="Объем двигателя, (см3)">25,4</param>
+    <param name="Вес с пустым баком, (кг)">5,6</param>
+    <param name="Длина ножей, (мм)">720</param>
+    <param name="Задняя рукоятка">поворотная</param>
+    <param name="Заточка режущих зубцов">двухсторонняя</param>
+    <param name="Количество режущих ножей">2</param>
+    <param name="Максимальный расход топлива, (г/кВт ч)/(л/ч)">720/1,4</param>
+    <param name="Обороты холостого хода, (об/мин)">3 000</param>
+    <param name="Объем топливного бака, (л)">0,65</param>
+   </offer>
+   <offer id="687" available="true">
+    <name>Бензиновая цепная пила CHAMPION 240-16&quot;</name>
+    <model>240-16</model>
+    <categoryId>20</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>13990.00000000</price>
+    <url>https://champion.ru/catalog/pily-tsepnye/benzinovye-pily/champion-240-16-quot/</url>
+    <package_photos>https://disk.yandex.ru/d/kltv6tAXtkw6kw</package_photos>
+    <additional_mediacontent>https://disk.yandex.ru/d/i1J87UAFvLltfg</additional_mediacontent>
+    <item_description><![CDATA[Champion 240-16 – компактная и простая в эксплуатации пила, подходящая для большинства видов работ на участке загородного дома.<br>Легкий запуск двигателя / Easy Engine Start<br>В конструкции стартера есть дополнительная пружина, которая снижает необходимое усилие при запуске.<br>Легкий холодный запуск / Easy cold start<br>Праймер и фиксатор курка газа облегчают запуск холодного двигателя. Достаточно подкачать топливо праймером и зафиксировать курок газа стопором. После этого мотор заводится без усилий даже после длительного перерыва в работе.<br>Антивибрационная система / Anti-Vibration System<br>Эффективные антивибрационные элементы в рукоятке уменьшают дискомфорт при работе и способствуют снижению нагрузки на руки и суставы.<br>Боковое натяжение цепи<br>Боковое натяжение цепи позволяет быстро, удобно и безопасно подтянуть пильную цепь.<br>Автоматическая система смазки цепи<br>Продлевает срок службы цепи и снижает расход масла для её смазки, особенно на холостых оборотах.<br>Воздушный фильтр с легким доступом<br>Бумажно-воздушный фильтр усиленной конструкции надёжно удерживает мелкодисперсную пыль, продлевая ресурс двигателя. А благодаря удобному безинструментальному доступу замена фильтра занимает всего несколько секунд.<br>Металлический цепеуловитель<br>Перехватывает разорвавшуюся или соскочившую с шины цепь, уменьшая риск получения травм оператором. С ним вы можете работать с полной уверенностью в своей безопасности. <br>Инерционный тормоз цепи<br>Механический инерционный тормоз мгновенно останавливает цепь при отскоке или отдаче, защищая от возможных травм и повышая комфорт работы.<br>Защита от случайного запуска<br>Рычаг блокировки предотвращает непреднамеренное нажатие на рычаг газа и позволяет управлять оборотами двигателя только после разблокировки.<br>Срок службы 10+ лет<br>Долговечность обеспечивается обслуживаемым воздушным фильтром и хромированным цилиндром повышенной надёжности, которые сохраняют работоспособность инструмента на протяжении многих лет.<br>Щиток задней рукоятки<br>Расширение нижней части задней ручки бензопилы для защиты руки от цепи в случае разрыва цепи или ее соскока с направляющей шины.]]></item_description>
+    <picture>https://champion.ru/upload/iblock/a4c/swy619j508pyr7ile1x3x3mlqx412hc0/A_240_16_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/fa5/zbflhbm7vz34r0vsw09l2ue1xz3clhqr/A_240_16_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/9ec/372jrkux78u90cfwk3u6oyzzjtkt6o2f/A_240_16_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/a94/q3pklpmwpqq8snp0mgbjd6duw3acq2mx/A_240_16_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/04b/om0hov0fxi3phdtg9rz05j0mjws5icpm/A_240_16_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/735/5iw457tvq62m0txcoluwkdqs63746pdd/A_240_16_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/cbf/n6rxghvv67gvjqz0lrzcxkobnrdccrd8/A_240_16_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/b24/lp8xi1zee02zxw9sg9enkjlcr2izkh0h/A_240_16_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/6d8/f2vky0zyjcc29la3dz6c78czwjuev60f/A_240_16_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/040/zwfgzygs7lueo99dxk0xtbx0w5yang6z/A_240_16_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/4bf/ct4u4bfeifp9lz4gq4kunptbmtdgligr/A_240_16_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/4d1/fhwzylz0flmzl4bemliirxr1e5z99qxg/A_240_16_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/732/3qn80fi4ktqfp4vecsbni6bbkdh7b5pv/A_240_16_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/d32/3ovb2lovotr18hi1qxbuh6a4s12a6e7l/A_240_16_KOMP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/811/kyah5qd06mv0o2astbd6x7srk98qf6it/compressed_a_240_16_fhd.mp4</video_360>
+    <description><![CDATA[Champion 240-16 – компактная и простая в эксплуатации пила, подходящая для большинства видов работ на участке загородного дома.]]></description>
+    <param name="Вес, без шины и цепи с пустыми баками, (кг)">4,3</param>
+    <param name="Длина шины, (дюйм/см)">16/40</param>
+    <param name="Количество звеньев цепи, (шт)">56</param>
+    <param name="Максимальные обороты без нагрузки, (об/мин)">12 500</param>
+    <param name="Максимальный расход топлива, (г/кВт ч)/(л/ч)">680</param>
+    <param name="Мощность двигателя, (кВт/л.с.)">1,7/2,31</param>
+    <param name="Обороты холостого хода, (об/мин)">3 000</param>
+    <param name="Объем двигателя, (см3)">39,6</param>
+    <param name="Объем масляного бака, (л)">0,24</param>
+    <param name="Объем топливного бака, (л)">0,41</param>
+    <param name="Уровень вибрации передней/задней рукоятки, (м/с2)">7,63</param>
+    <param name="Уровень мощности звука, (дБ)">113,08</param>
+    <param name="Шаг пильной цепи, (дюймы)">3/8</param>
+    <param name="Ширина паза пильной шины, (мм)">1,3</param>
+   </offer>
+   <offer id="689" available="true">
+    <name>Бензиновая цепная пила CHAMPION 254-18&quot;</name>
+    <model>254-18</model>
+    <categoryId>20</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>18990.00000000</price>
+    <url>https://champion.ru/catalog/pily-tsepnye/benzinovye-pily/champion-254-18-quot/</url>
+    <package_photos>https://disk.yandex.ru/d/ii8CFHoBlfUWyQ</package_photos>
+    <additional_mediacontent>https://disk.yandex.ru/d/HmK8Ct0SDiHWpw</additional_mediacontent>
+    <item_description><![CDATA[Champion 254-18 относится к профессиональной технике бренда. Рекомендована для широкого спектра строительных работ и интенсивного использования. <br>Легкий запуск двигателя / Easy Engine Start<br>В конструкции стартера есть дополнительная пружина для облегченного запуска, которая снижает необходимое усилие при запуске.<br>Легкий холодный запуск / Easy cold start<br>Праймер и фиксатор курка газа облегчают запуск холодного двигателя. Достаточно подкачать топливо праймером и зафиксировать курок газа стопором. После этого мотор заводится без усилий даже после длительного перерыва в работе.<br>Антивибрационная система / Anti-Vibration System<br>Эффективные антивибрационные элементы в рукоятке уменьшают дискомфорт при работе и способствуют снижению нагрузки на руки и суставы.<br>Боковое натяжение цепи<br>Боковое натяжение цепи позволяет быстро, удобно и безопасно подтянуть пильную цепь, не снимая крышку шины.<br>Автоматическая система смазки цепи<br>Продлевает срок службы цепи и снижает расход масла для её смазки, особенно на холостых оборотах.<br>Многоразовый нейлоновый фильтр<br>Воздушный фильтр легко моется и используется многократно. Это особенно важно при работе в пыльных условиях, например, при распиле сухой древесины.<br>Металлический цепеуловитель<br>Перехватывает разорвавшуюся или соскочившую с шины цепь, уменьшая риск получения травм оператором. С ним вы можете работать с полной уверенностью в своей безопасности.<br>Инерционный тормоз цепи<br>Механический инерционный тормоз мгновенно останавливает цепь при отскоке или отдаче, защищая от возможных травм и повышая комфорт работы.<br>Защита от случайного запуска<br>Рычаг блокировки предотвращает непреднамеренное нажатие на рычаг газа и позволяет управлять оборотами двигателя только после разблокировки.<br>Срок службы 10+ лет<br>Долговечность обеспечивается обслуживаемым воздушным фильтром и хромированным цилиндром повышенной надёжности, которые сохраняют работоспособность инструмента на протяжении многих лет.<br>Щиток задней рукоятки<br>Расширение нижней части задней ручки бензопилы для защиты руки от цепи в случае разрыва цепи или ее соскока с направляющей шины.]]></item_description>
+    <picture>https://champion.ru/upload/iblock/71f/ndc5336vmn46xnuczvlch3dbiwamwbqu/254_18_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/323/0pdienp3c0fpr1cou5hxyq15kt5xxf4v/254_18_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/c75/0xzucvaerdcbixxsw8yg3lycz1ybbxmt/254_18_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/1bf/w04lqulyde50clfzvf6nahrp1tbodqtz/254_18_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/8cc/v1uub4x6g33otlegj6csprko7zleanam/254_18_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/7ea/kxews272ip2eo0pyc8lmyxa5od23m3bo/254_18_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/860/ddsls4ptl90herxym9i2qdghkbiu9tdb/254_18_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/9b6/peu1idmpgsjmmc17x3hxjnhgzuol8y01/254_18_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/263/3mj20rl1hf5p4opo3wkahyjo5x32lk61/254_18_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/4e3/f6cp6bdsm1p3dw1r7jvb162mlcddaosh/254_18_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/820/i2is67kv4n93frgehlklkvcc03fps0hm/254_18_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ff6/p62zqf85sodjfyhdr42yav183dpauh0m/254_18_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/fce/w3563za5fd3hw6ujisi2wkcngnf8v7jf/254_18_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/783/xzt2b2ski2eq4ac1fnxmp536ox3ett71/254_18_KOMP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/11e/bomyu20le0294gn49rypgsv7sl011jbj/compressed_254_18_fhd.mp4</video_360>
+    <description><![CDATA[Champion 254-18 относится к профессиональной технике бренда. Рекомендована для широкого спектра строительных работ и интенсивного использования. ]]></description>
+    <param name="Вес, без шины и цепи с пустыми баками, (кг)">5,1</param>
+    <param name="Длина шины, (дюйм/см)">18/45</param>
+    <param name="Количество звеньев цепи, (шт)">72</param>
+    <param name="Максимальные обороты без нагрузки, (об/мин)">11 000</param>
+    <param name="Максимальный расход топлива, (г/кВт ч)/(л/ч)">510</param>
+    <param name="Мощность двигателя, (кВт/л.с.)">2,5/3,4</param>
+    <param name="Обороты холостого хода, (об/мин)">2 800</param>
+    <param name="Объем двигателя, (см3)">54</param>
+    <param name="Объем масляного бака, (л)">0,26</param>
+    <param name="Объем топливного бака, (л)">0,52</param>
+    <param name="Уровень вибрации передней/задней рукоятки, (м/с2)">7,01</param>
+    <param name="Уровень мощности звука, (дБ)">113,61</param>
+    <param name="Шаг пильной цепи, (дюймы)">0,325</param>
+    <param name="Ширина паза пильной шины, (мм)">1,5</param>
+   </offer>
+   <offer id="693" available="true">
+    <name>Вибратор глубинный электрический CHAMPION ECV550</name>
+    <model>ECV550</model>
+    <categoryId>1369</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>13490.00000000</price>
+    <url>https://champion.ru/catalog/stroitelnaya-tekhnika/vibratory/champion-ecv550/</url>
+    <package_photos>https://disk.yandex.ru/d/L9Bpb-BSoQZAXg</package_photos>
+    <picture>https://champion.ru/upload/iblock/112/1123e3b25c819860ab837311b1ce7f81.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/7c7/7c764cd158c21706af0217f7af3bbbff.jpg</picture>
+    <param name="Мощность двигателя, (кВт)">0,55</param>
+    <param name="Вес, (кг)">7,2</param>
+    <param name="Диаметры вибронаконечника (доп. опция), (мм)">28/32/38/45</param>
+    <param name="Длина вала (дополнительная опция), (м)">4</param>
+    <param name="Напряжение сети, (В/Гц)">230/50</param>
+    <param name="Тип двигателя">однофазный</param>
+    <param name="Частота вибрации, (Гц)">183</param>
+   </offer>
+   <offer id="694" available="true">
+    <name>Виброплита бензиновая CHAMPION PC5431F</name>
+    <model>PC5431F</model>
+    <categoryId>1368</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>51990.00000000</price>
+    <url>https://champion.ru/catalog/stroitelnaya-tekhnika/vibroplity/champion-pc5431f/</url>
+    <picture>https://champion.ru/upload/iblock/daa/7lovgh73nidwmf2g1kygpwjlpgvdu5iz/PC5431F_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/4ec/wfipp1cbtz3tg9h24mnmpmslkm6bhlkw/PC5431F_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/543/781oi4b2v2k26g80pgkds3rcjs0y9thy/PC5431F_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/692/csvqiypg3qy80e2ffksyg459iqxkfls8/PC5431F_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/6d5/ogs5h83v4nxt3ijkufk88046evvhqsbk/PC5431F_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/5d4/msf4awxk5asvfihzdsmniipj3bamvjr4/PC5431F_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/07e/avc3dhny6plnag8n6wvo35mvcu9c5ac1/PC5431F_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/e9c/wrt4bplv9suqjeutridkt7y2xczhwu0v/PC5431F_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/c25/kgmpubuwilj4i0o32jxi3dh8r11p8kky/PC5431F_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/0b6/snc5y99bwfrs860phdzp047yk907ro26/PC5431F_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/d59/l2ib26kpzunna7an0oxjsw30ug22kslb/PC5431F_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/57c/dw27qmvxzfllcv3fsoprzm80g0iluvob/PC5431F_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/8c8/pci2ts6c4mv7gw69rk5i0fecjvh11ru0/PC5431F_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/8ec/503jan80c60aa2udumnu0x46g3st91wg/PC5431F_KOMP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/da0/87vrs02nln26rrwme1gymmtgioqedjhm/PC5431F_fhd.mp4</video_360>
+    <param name="Мощность двигателя, (кВт/л.с.)">1,65/2,3</param>
+    <param name="Объем двигателя, (см3)">87</param>
+    <param name="Вес, (кг)">50</param>
+    <param name="Вынуждающая сила, (кН)">8,2</param>
+    <param name="Глубина уплотнения, (см)">20</param>
+    <param name="Максимальный расход топлива, (г/кВт ч)/(л/ч)">450</param>
+    <param name="Материал плиты">Сталь</param>
+    <param name="Накладка резиновая">нет</param>
+    <param name="Объем бака для воды, (л)">нет</param>
+    <param name="Объем картера, (л)">0,35</param>
+    <param name="Объем масла вибратора, (л)">0,1</param>
+    <param name="Объем топливного бака, (л)">1,6</param>
+    <param name="Размер плиты, длина/ширина/толщина, (см)">43/31/1</param>
+    <param name="Расход воды, (л/мин)">нет</param>
+    <param name="Реверс">нет</param>
+    <param name="Система запуска">ручной стартер</param>
+    <param name="Тележка транспортировочная">нет</param>
+    <param name="Тип двигателя">бензиновый, 4-тактный</param>
+    <param name="Уровень мощности звука, (дБ)">98,8</param>
+   </offer>
+   <offer id="695" available="false">
+    <name>Виброплита бензиновая CHAMPION PC9045F</name>
+    <model>PC9045F</model>
+    <categoryId>1368</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>64990.00000000</price>
+    <url>https://champion.ru/catalog/stroitelnaya-tekhnika/vibroplity/champion-pc9045f/</url>
+    <picture>https://champion.ru/upload/iblock/b5a/ksanmikvh0hb7mpnzcuh038puhmivgam/PC9045F_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/71a/cyj04ic0saj56ljwrayoqocuunz2sfmg/PC9045F_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/604/4ubkta4f80af6uabfsajexwo99lou9sc/PC9045F_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/232/lky87g1svfzph4uloygm1jvmxd8n12l1/PC9045F_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/361/d2qn3eocx487afd70b40cqkb1qte8w1w/PC9045F_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/7d9/0n0nnzzg32zm8itvs98etw3xnnwi7szl/PC9045F_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/7c5/lxjbsiuksxobkzhf9g9n34x1twd7ofit/PC9045F_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/a73/i7kwy9ve99o1f413tqd8awikd5ipevxu/PC9045F_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/423/go1kk67f4tdxf6j6fr090emdotmx7g7p/PC9045F_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/733/gf0l3p565yx3kcbzbvi3f2dehp3rgjer/PC9045F_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/720/34o3wsyph75k9awx611gyaz4zqa6n5cw/PC9045F_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/aac/4s9p1vz0lnh2omut9re40abyxbs9rhpv/PC9045F_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/35a/22n4olzkgo2fxzvzial7i7ypmhp1ssjl/PC9045F_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/07b/3mryawbrinsr3g3sz0pax3sf2imphytw/PC9045F_KOMP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/d2f/3sal66uaeg0lyhxxt8vno4g35akkoxoo/PC9045F_fhd.mp4</video_360>
+    <param name="Материал плиты">Сталь</param>
+    <param name="Вес, (кг)">89,3</param>
+    <param name="Вынуждающая сила, (кН)">15</param>
+    <param name="Глубина уплотнения, (см)">30</param>
+    <param name="Максимальный расход топлива, (г/кВт ч)/(л/ч)">≤395</param>
+    <param name="Мощность двигателя, (кВт/л.с.)">4,8/6,5</param>
+    <param name="Накладка резиновая">да</param>
+    <param name="Объем бака для воды, (л)">нет</param>
+    <param name="Объем двигателя, (см3)">196</param>
+    <param name="Объем картера, (л)">0,6</param>
+    <param name="Объем масла вибратора, (л)">0,35</param>
+    <param name="Объем топливного бака, (л)">3,6</param>
+    <param name="Размер плиты, длина/ширина/толщина, (см)">50/45/0,8</param>
+    <param name="Расход воды, (л/мин)">нет</param>
+    <param name="Реверс">нет</param>
+    <param name="Система запуска">ручной стартер</param>
+    <param name="Тележка транспортировочная">да</param>
+    <param name="Тип двигателя">бензиновый, 4-тактный</param>
+   </offer>
+   <offer id="697" available="true">
+    <name>Виброплита бензиновая CHAMPION PC1645RH</name>
+    <model>PC1645RH</model>
+    <categoryId>1368</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>199490.00000000</price>
+    <url>https://champion.ru/catalog/stroitelnaya-tekhnika/vibroplity/champion-pc1645rh/</url>
+    <package_photos>https://disk.yandex.ru/d/mS8TcHMWoyiSCQ</package_photos>
+    <picture>https://champion.ru/upload/iblock/3d4/2xw8yymt7tz0bu1z88ej4m5ohd3lejjo/PC_1645_RH_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/562/week4400v7dd8yp2xw1213b0jwl57pc1/PC_1645_RH_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/fd6/wy7jk9ih9hwdaqd6tg97qyddgb9qhucd/PC_1645_RH_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/79b/4xz2mlbby6xneip5hfjb7vkgf71bjb1u/PC_1645_RH_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/4f6/h39wh4c70honnt7p4d8rcs56nzw43i8z/PC_1645_RH_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/5a4/vpe4z4vfprtdx0tspud8o3qnaqo8qkq8/PC_1645_RH_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/a6b/k7u65j2w3i6wvir8of7prdkruaqwixdg/PC_1645_RH_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/d8a/oexgxznjj4g0gwcwgj1vtlznqbyvftka/PC_1645_RH_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/d9e/4n25tgmziccxcx6wvlqji1gjck3yad9r/PC_1645_RH_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/981/11n0tv05a1l9nbhmsdf0rkmj1sekgi65/PC_1645_RH_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/db0/deueh0zcje4dhmdh7w8cqcqfofvpdcxm/PC_1645_RH_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/0a7/df813ghkqrlcp11bkm2zjcso1o8okf0z/PC_1645_RH_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/c04/32rnsw1b0yowvnqotjkfi1bxvh23e7cj/PC_1645_RH_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/413/9lyf2xv8zcn4ts6w9b32bcdz21resczr/PC_1645_RH_KOMP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/777/6orqop23fxw6qfdrnx5hjyiywp72qjtk/PC_1645_RH_fhd.mp4</video_360>
+    <param name="Мощность двигателя, (кВт/л.с.)">6,6/9</param>
+    <param name="Объем двигателя, (см3)">270</param>
+    <param name="Вес, (кг)">152</param>
+    <param name="Вынуждающая сила, (кН)">30,5</param>
+    <param name="Глубина уплотнения, (см)">50</param>
+    <param name="Максимальный расход топлива, (г/кВт ч)/(л/ч)">230</param>
+    <param name="Материал плиты">Сталь</param>
+    <param name="Накладка резиновая">нет</param>
+    <param name="Объем бака для воды, (л)">нет</param>
+    <param name="Объем картера, (л)">1,1</param>
+    <param name="Объем масла вибратора, (л)">0,4</param>
+    <param name="Объем топливного бака, (л)">5,3</param>
+    <param name="Размер плиты, длина/ширина/толщина, (см)">73/45/0,8</param>
+    <param name="Расход воды, (л/мин)">нет</param>
+    <param name="Реверс">да</param>
+    <param name="Система запуска">ручной стартер</param>
+    <param name="Тележка транспортировочная">нет</param>
+    <param name="Тип двигателя">бензиновый, 4-тактный, Honda</param>
+    <param name="Уровень мощности звука, (дБ)">107</param>
+   </offer>
+   <offer id="698" available="true">
+    <name>Бензиновая воздуходувка CHAMPION GВ226</name>
+    <model>GB226</model>
+    <categoryId>4229</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>12990.00000000</price>
+    <url>https://champion.ru/catalog/vozdukhoduvnye-ustroystva/benzinovye/champion-gb226/</url>
+    <package_photos>https://disk.yandex.ru/d/THxrC_N60g10TA</package_photos>
+    <item_description><![CDATA[Бензиновая воздуходувка Champion GВ226 работает в режиме нагнетания воздуха. Подойдет для легких работ на загородном участке<br>Производительность<br>Мощность 0,75 кВт оптимальна для ежедневной уборки свежеопавшей листвы и легкого мусора.<br>Легкая модель<br>Воздуходувка весит всего 4 кг, поэтому с ней можно работать длительное время без усталости рук и спины.<br>Транспортировочная рукоятка<br>Рукоятка делает переноску воздуходувки максимально комфортной. Она не скользит в руке и облегчает частые перемещения по территории.
+<br>Легкий холодный запуск / Easy Cold Start<br>Система Easy cold start обеспечивает легкий запуск холодного двигателя. Достаточно подкачать топливо праймером и зафиксировать курок газа стопором. После этого мотор заводится без усилий даже после длительного перерыва в работе.<br>Безынструментальное соединение труб<br>Позволяет быстро собрать и разобрать инструмент без дополнительных инструментов. Это экономит время при подготовке к работе, упрощает транспортировку и обслуживание.<br>Хромированный цилиндр двигателя<br>Стенки цилиндра имеют специальное хромированное покрытие. Оно снижает трение поршня, уменьшает износ и повышает срок службы двигателя.]]></item_description>
+    <picture>https://champion.ru/upload/iblock/b2c/c2j1rzc3gr15qkckmyegeevfqlzowro0/GB_226_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/15f/kb9yqai7cjt4eu0xw3l92ncd5u0rzva6/GB_226_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/e9a/cu2rbsxg424bzdwm74ojvvmv36z6j3jk/GB_226_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/372/4qwjn15xuur0adzqky3liuxla7rzyj83/GB_226_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/30f/hlunbuwoofnti6e26azqsniy5rym81dj/GB_226_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/915/e4pwcg6tky9hozbohdas87advbm7n7md/GB_226_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/fe9/ptbcwn3st3bmnr4haija0j4568dae9xz/GB_226_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/27c/ayzxit0ocq7jdqcwn184jdd6z0l8ooun/GB_226_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/164/a2xmy9cluc1z46r01zbbjjn1wt0kimcx/GB_226_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/556/t8pcffufyar92epdfpipyrljhkg2y1gm/GB_226_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/eb1/ihtl8s3lrmohqmxgk98lmn8tjgwwybrp/GB_226_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/3e8/hoaume7hasm3wr0gcka19o2qlxvn3dbu/GB_226_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/7a1/t1tfk6a5p5w07q89svt2xk7wi1jihxqh/GB_226_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/0dd/hm9r6vrknrjm8lfwujstklc1ti26dk7r/GB_226_KOMP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/350/ms32odcj1szh11gy0dk0csq2hrp7navi/GB_226_fhd.mp4</video_360>
+    <description><![CDATA[Бензиновая воздуходувка Champion GВ226 работает в режиме нагнетания воздуха. Подойдет для легких работ на загородном участке]]></description>
+    <param name="Вес, (кг)">4</param>
+    <param name="Максимальные обороты без нагрузки, (об/мин)">8000</param>
+    <param name="Максимальный расход топлива, (г/кВт ч)/(л/ч)">600/0,6</param>
+    <param name="Мощность двигателя, (кВт/л.с.)">0,75/1</param>
+    <param name="Обороты холостого хода, (об/мин)">3000-3500</param>
+    <param name="Объем двигателя, (см3)">26</param>
+    <param name="Объем топливного бака, (л)">0,5</param>
+    <param name="Производительность воздуха, (м3/ч)">612</param>
+    <param name="Скорость воздуха, (м/с)">60</param>
+    <param name="Уровень вибрации, (м/с²)">17,8</param>
+    <param name="Уровень звукового давления, (дБ)">98,6</param>
+    <param name="Уровень мощности звука, (дБ)">108,5</param>
+    <param name="Функция всасывания">нет</param>
+   </offer>
+   <offer id="699" available="true">
+    <name>Бензиновая воздуходувка-измельчитель CHAMPION GВV326S</name>
+    <model>GBV326S</model>
+    <categoryId>4229</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>16490.00000000</price>
+    <url>https://champion.ru/catalog/vozdukhoduvnye-ustroystva/benzinovye/champion-gbv326s/</url>
+    <package_photos>https://disk.yandex.ru/d/Xat1TuH4KhKwEg</package_photos>
+    <item_description><![CDATA[Воздуходувка-измельчитель Champion GBV326S с функцией нагнетания и пылесоса. Рекомендована для бытового использования на дачном участке.<br>Производительность<br>Мощность 0,75 кВт. Подойдет для уборки свежеопавшей листвы и легкого мусора. Работает в двух режимах: нагнетания и всасывания с функцией измельчения листьев.<br>Транспортировочная рукоятка<br>Рукоятка делает переноску воздуходувки максимально комфортной. Она не скользит в руке и облегчает частые перемещения по территории.
+<br>Легкий холодный запуск / Easy Cold Start<br>Система Easy cold start обеспечивает легкий запуск холодного двигателя. Достаточно подкачать топливо праймером и зафиксировать курок газа стопором. После этого мотор заводится без усилий даже после длительного перерыва в работе.<br>Безынструментальное соединение труб<br>Позволяет быстро собрать и разобрать инструмент без дополнительных инструментов. Это экономит время при подготовке к работе, упрощает транспортировку и обслуживание.<br>Хромированный цилиндр двигателя<br>Стенки цилиндра имеют специальное хромированное покрытие. Оно снижает трение поршня, уменьшает износ и повышает срок службы двигателя.<br>Функция измельчения<br>Работает за счёт металлического ножа на крыльчатке: он сразу режет листву и мелкий мусор, поэтому в мешок попадает уже измельчённый материал — так мешок заполняется заметно медленнее. Работать в этом режиме можно только на чистой территории без камней, стекла и другого твёрдого мусора, иначе нож и крыльчатка быстро повредятся. <br>Объемный мешок<br>Воздуходувка оснащена вместительным мешком для сбора мусора объёмом 50 литров.]]></item_description>
+    <picture>https://champion.ru/upload/iblock/1a5/4cmn0xbo3jc3xvyonf7rtwi4zd5kfa0r/GBV_326_S_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/a61/1lhc0hdgc0wy6f96vzm1og9m1i982dwv/GBV_326_S_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/7df/yz76aw35t7gcpjt2r9le5dye1cxlrekl/GBV_326_S_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ec8/0fn9yolqgcw91kj2i5t8z75telbdjt40/GBV_326_S_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/74e/bjtc7kj80cr9k5e36m76ohypupbzj7xv/GBV_326_S_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/3dd/jdk0kgj53cumje6eed1n534h7ovboaeg/GBV_326_S_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/513/f93p4p0b1xhhqw99s9c2yn1nbplnckyj/GBV_326_S_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/642/12s9xst29v7x9n0md5t2pwjvii988jm0/GBV_326_S_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/11d/l6ogjrtr23in7gyl90fwhzpj65jhs7ny/GBV_326_S_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/3c5/ykc156x26lw4nm30v7hf3x7jrmva29p0/GBV_326_S_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/82a/a5daq8ba1kttshsg3wd7utu9p5clxdmd/GBV_326_S_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/163/elz7awej752lveh645hc3z54fv5fwfko/GBV_326_S_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/616/kscj3fnhgpm5eyfl60w03taf051216ah/GBV_326_S_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/156/oce7xlmyd9wm7q5m07s1ra130gx84cfu/GBV_326_S_KOMP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/664/gv4us76vvzpq6q04vaewvaxa9syrw9gm/GBV326S_fhd-_video_converter.com_.mp4</video_360>
+    <description><![CDATA[Воздуходувка-измельчитель Champion GBV326S с функцией нагнетания и пылесоса. Рекомендована для бытового использования на дачном участке.]]></description>
+    <param name="Мощность двигателя, (кВт/л.с.)">0,75/1</param>
+    <param name="Объем двигателя, (см3)">26</param>
+    <param name="Вес, (кг)">4</param>
+    <param name="Максимальные обороты без нагрузки, (об/мин)">8 000</param>
+    <param name="Максимальный расход топлива, (г/кВт ч)/(л/ч)">600/0,6</param>
+    <param name="Обороты холостого хода, (об/мин)">3000-3500</param>
+    <param name="Объем мешка для мусора, (л)">40</param>
+    <param name="Объем топливного бака, (л)">0,5</param>
+    <param name="Производительность воздуха, (м3/ч)">612</param>
+    <param name="Скорость воздуха, (м/с)">60</param>
+    <param name="Уровень вибрации, (м/с²)">17,8</param>
+    <param name="Уровень звукового давления, (дБ)">98,6</param>
+    <param name="Уровень мощности звука, (дБ)">108,3</param>
+    <param name="Функция всасывания">есть</param>
+   </offer>
+   <offer id="701" available="true">
+    <name>Высоторез CHAMPION PP126</name>
+    <model>PP126</model>
+    <categoryId>1377</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>44990.00000000</price>
+    <url>https://champion.ru/catalog/vysotorezy/champion-pp126/</url>
+    <package_photos>https://disk.yandex.ru/d/WQZ_CqJiBvImQQ</package_photos>
+    <picture>https://champion.ru/upload/iblock/9d5/9d5f1bbf162c3034d92e95e026808226.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/f38/id8dasfy9x0p44qz2lmxv61nu10nzz4w.jpg</picture>
+    <param name="Вес, (кг)">9,5</param>
+    <param name="Длина в сложенном/развернутом состоянии, (м)">3/4,25</param>
+    <param name="Длина шины, (дюйм/см)">12/30</param>
+    <param name="Количество звеньев цепи, (шт)">44</param>
+    <param name="Максимальные обороты без нагрузки, (об/мин)">10 000</param>
+    <param name="Максимальный расход топлива, (г/кВт ч)/(л/ч)">720/1</param>
+    <param name="Мощность двигателя, (кВт/л.с.)">0,75/1,02</param>
+    <param name="Обороты холостого хода, (об/мин)">2 800</param>
+    <param name="Объем двигателя, (см3)">26</param>
+    <param name="Объем масляного бака, (л)">0,2</param>
+    <param name="Объем топливного бака, (л)">0,6</param>
+    <param name="Тип запуска двигателя">ручной</param>
+    <param name="Тип стартера">простой</param>
+    <param name="Шаг пильной цепи, (дюймы)">3/8</param>
+    <param name="Ширина паза пильной шины, (мм)">1,3</param>
+   </offer>
+   <offer id="702" available="true">
+    <name>Бензиновая газонокосилка CHAMPION LM4215</name>
+    <model>LM4215</model>
+    <categoryId>656</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>23990.00000000</price>
+    <url>https://champion.ru/catalog/gazonokosilki/benzinovye-gazonokosilki/champion-lm4215/</url>
+    <package_photos>https://disk.yandex.ru/d/tfqURSv0ZHKwUQ</package_photos>
+    <additional_mediacontent>https://disk.yandex.ru/d/Sg4yOuNE9KpXwg</additional_mediacontent>
+    <item_description><![CDATA[Бензиновая газонокосилка Champion LM4215 рекомендована для бытового использования. Отлично подойдет для небольших участков до 5-6 соток с ровным рельефом, для ухода за аккуратным газонов возле дома или дачи<br>Производительность<br>4х-тактный двигатель мощностью 2 л.с. делает эту модель оптимальным вариантом для небольших участков с ровным рельефом.<br>Удобство в эксплуатации<br>Это достаточно легкая газонокосилка весом всего 20,7 кг, за счет чего она проста в управлении и более маневренная по сравнению с другими моделями.<br>Быстрая обработка трека<br>Имеет ширину скашивания 420 мм, что оптимально для дачного участка небольшой площади в 5-6 соток.<br>Точная настройка под любые задачи<br>Высота скашивания удобно регулируется одним рычагом. Предусмотрено 5 положений высоты, что позволяет выбрать оптимальную высоту травы в зависимости от назначения газона.<br>Легкое обслуживание воздушного фильтра<br>Воздушный фильтр Champion легко обслуживать: крышка снимается руками, без использования инструментов. При этом поролоновый воздушный  фильтр с объемной фильтрацией можно мыть и использовать повторно, обеспечивая высокую пылеёмкость и многоразовость.<br>Легкий запуск / Easy start<br>Праймер облегчает запуск холодного двигателя, так как устройство принудительно подает дополнительный бензин для обогащения топливной смеси.<br>Комфорт в управлении<br>Прорезиненное покрытие на рукоятках обеспечивает надежный хват и комфортную работу пользователя.<br>Легкое обслуживание деки<br>Легкая очистка деки: достаточно подключить садовый шланг к быстросъемному коннектору штуцера и запустить двигатель. Вода под давлением попадает внутрь, а вращающийся нож создает турбулентный поток, который мгновенно смывает все остатки травы.<br>Профессиональный подход: дека из прочной стали<br>Стальная дека обеспечивает жесткость и ударопрочность конструкции, что продлевает срок службы газонокосилки в разы.<br>Беспрерывная работа<br>Большой травосборник объемом 40 литров позволяет реже прерывать работу для его очистки. Он легко снимается и устанавливается.<br>Эргономичность<br>Складные рукоятки упрощают хранение и транспортировку агрегата.<br>Срок службы: 10+ лет<br>Благодаря чугунной гильзе цилиндр не деформируется при перегревах, что исключает прорыв газов, сохраняет компрессию и мощность, а значит, техника служит в разы дольше без капремонта.]]></item_description>
+    <picture>https://champion.ru/upload/iblock/6fd/mu9urkp357p9s23pzc1e2b2q3ntv3p03/anons.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/d96/kuocz6wvfg0niw3s0py7txnx8m4iaocr/LM_4215_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/167/zrobcpfwgsr92xdz7j3r131e397u30ny/LM_4215_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/1e5/jy38uxjbe25oz7m6dme3t3lzof7szxb0/LM_4215_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/d2c/pxej5wj4fzrtb2rxmrv6yhvg774q3y17/LM_4215_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/824/bpa7tfue5145ba1snh48hcuf2o31cy6w/LM_4215_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/f33/3454a7pbj3rycj0f987b601znj5lhel4/LM_4215_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/7e1/7ndqu734jvdjdlgyk89ud3fo6tpcc0pt/LM_4215_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/c76/645abpekk22mf9xili0va7i0rytamib4/LM_4215_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/599/74k0wc6sdlfyeqs407qsf4jeknku7bbq/LM_4215_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/935/fltxrbrivqbymf1y2xakne7ib68us42a/LM_4215_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/e83/gnbyoq6kgs351i8rgs6r1svu1p0jxy3c/LM_4215_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/59e/igmnlnk45x2zjgefve37hs9uqh3g3ihu/LM_4215_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ed6/qjphzc21qzj9v9lma0ei3ncx7i6szjg0/LM_4215_KOMP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/710/jy9qggz7cbj9pa1bxsdnnv4cz46y7ka2/compressed_lm_4215_fhd.mp4</video_360>
+    <description><![CDATA[Бензиновая газонокосилка Champion LM4215 рекомендована для бытового использования. Отлично подойдет для небольших участков до 5-6 соток с ровным рельефом, для ухода за аккуратным газонов возле дома или дачи]]></description>
+    <param name="Боковой выброс">нет</param>
+    <param name="Вес без травосборника, (кг)">20,7</param>
+    <param name="Высота скашивания, (мм)">25-70</param>
+    <param name="Максимальный расход топлива, (г/кВт ч)/(л/ч)">392/0,59</param>
+    <param name="Материал корпуса">сталь</param>
+    <param name="Мощность двигателя, (кВт/л.с.)">1,5/2</param>
+    <param name="Мульчирование">нет</param>
+    <param name="Объем двигателя, (см3)">99</param>
+    <param name="Объем картера, (л)">0,45</param>
+    <param name="Объем топливного бака, (л)">0,6</param>
+    <param name="Привод хода">несамоходная</param>
+    <param name="Регулировка высоты скашивания/количество положений">один рычаг/5</param>
+    <param name="Тип стартера">ручной</param>
+    <param name="Тип/объем травосборника, (л)">мягкий/40</param>
+    <param name="Уровень вибрации на рукоятке, (м/с2)">9,1</param>
+    <param name="Уровень звукового давления, (дБ)">96</param>
+    <param name="Уровень мощности звука, (дБ)">7,24</param>
+    <param name="Ширина скашивания, (мм)">420</param>
+   </offer>
+   <offer id="703" available="true">
+    <name>Бензиновая газонокосилка CHAMPION LM4627</name>
+    <model>LM4627</model>
+    <categoryId>656</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>33990.00000000</price>
+    <url>https://champion.ru/catalog/gazonokosilki/benzinovye-gazonokosilki/champion-lm4627/</url>
+    <package_photos>https://disk.yandex.ru/d/oAqVp2iPXtoqzg</package_photos>
+    <additional_mediacontent>https://disk.yandex.ru/d/MYWCxTdmA3UGxA</additional_mediacontent>
+    <item_description><![CDATA[Бензиновая самоходная газонокосилка Champion LM4627 отлично подходит для эффективного ухода за газоном на небольшом участке 5-8 соток.<br>Производительность<br>Благодаря 4х-тактному двигателю 3,5 л.с. такая газонокосилка является отличным решением для небольших участков.<br>Эргономичность<br>Складные рукоятки упрощают хранение и транспортировку.<br>Быстрая обработка трека<br>Имеет ширину скашивания 457 мм, что оптимально для дачного участка небольшой площади в 5-6 соток.<br>Легкое обслуживание воздушного фильтра<br>Воздушный фильтр Champion легко обслуживать: крышка снимается руками, без использования инструментов. При этом поролоновый воздушный  фильтр с объемной фильтрацией можно мыть и использовать повторно, обеспечивая высокую пылеёмкость и многоразовость.<br>Легкий запуск / Easy start<br>Праймер облегчает запуск холодного двигателя, так как устройство принудительно подает дополнительный бензин для обогащения топливной смеси.<br>Легкое обслуживание деки<br>Легкая очистка деки: достаточно подключить садовый шланг к быстросъемному коннектору штуцера и запустить двигатель. Вода под давлением попадает внутрь, а вращающийся нож создает турбулентный поток, который мгновенно смывает все остатки травы.<br>Беспрерывная работа<br>Большой травосборник объемом 60 литров позволяет реже прерывать работу для его очистки. Он легко снимается и устанавливается.<br>Хорошая проходимость<br>Задние колеса газонокосилки больше передних на 30%, благодаря чему с ней комфортно работать даже на неровной местности.<br>Гибкий выбор утилизации<br>Газонокосилка 4 в 1: мульчирование, боковой выброс, выброс назад, травосборник.<br>Точная настройка под любые задачи<br>Регулировка высоты среза позволяет настроить необходимую высоту скашивания одним движением. В данной модели предусмотрено 7 ступеней высоты в зависимости от назначения газона.<br>Профессиональный подход: дека из прочной стали<br>Дека, корпус и передний бампер выполнены из стали, что гарантирует долговечность и прочность газонокосилки даже при интенсивной эксплуатации.<br>Срок службы: 10+ лет<br>Благодаря чугунной гильзе цилиндр не деформируется при перегревах, что исключает прорыв газов, сохраняет компрессию и мощность, а значит, техника служит в разы дольше без капремонта.<br>Комфорт в работе<br>Привод на задние колёса облегчает управление, поэтому оператору не требуется прилагать усилий для её толкания, что экономит его силы и ускоряет процесс кошения. 
+
+
+]]></item_description>
+    <picture>https://champion.ru/upload/iblock/4e6/eyjo9qgtb1oz68sg4rgzkhjf7qz1o5in/anons4627.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/938/zbqosutcf1l7jj1f3yt3c8ll1db6kpaq/LM_4627_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/7e6/s5ju34nhewpmkuijt9yp3m2dwobcel8l/LM_4627_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/790/xhwku83vos4tg23rifdb7bloye9h0ygx/LM_4627_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/4e4/pyoeg1shq3w0bykfpzlyb9yvcdswojcj/LM_4627_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/c9f/q20qcvam16pq383adm0mcclovn9zl1pd/LM_4627_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/5e4/13e2v895ti9jv2feetkuk16b7qd2fc92/LM_4627_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/cdf/mn3sls4jvxb6so8xmg9yjojz5dhi7wj3/LM_4627_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/2fc/40bda7x7ll98a35r6knr6gjmzybc9xr0/LM_4627_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/05a/j298z3at3xy9myitu12rg2sqhkp6dgpt/LM_4627_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/00f/dothf1d19tzsiomcmwr8lwjg3ahoyha2/LM_4627_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/a7a/fmxpsc8br4t903euqykc5ui0bccj2sfq/LM_4627_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/da1/94x57bl132b7ni218kee2rhnfp1kedxz/LM_4627_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/66e/1aa9wxcu31y9y2jxz893qpxtg9wqqx7b/sm_LM_4627_KOMP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/680/uytvi932heh33sai1u1qv55zxl463xke/compressed_lm_4627_fhd.mp4</video_360>
+    <description><![CDATA[Бензиновая самоходная газонокосилка Champion LM4627 отлично подходит для эффективного ухода за газоном на небольшом участке 5-8 соток.]]></description>
+    <param name="Боковой выброс">есть</param>
+    <param name="Вес без травосборника, (кг)">28,7</param>
+    <param name="Высота скашивания, (мм)">25-75</param>
+    <param name="Максимальный расход топлива, (г/кВт ч)/(л/ч)">395/1,1</param>
+    <param name="Мощность двигателя, (кВт/л.с.)">2,6/3,5</param>
+    <param name="Мульчирование">есть</param>
+    <param name="Объем двигателя, (см3)">146</param>
+    <param name="Объем картера, (л)">0,5</param>
+    <param name="Объем топливного бака, (л)">0,8</param>
+    <param name="Привод хода">самоходная</param>
+    <param name="Регулировка высоты скашивания/количество положений">один рычаг/7</param>
+    <param name="Тип/объем травосборника, (л)">/60</param>
+    <param name="Уровень вибрации на рукоятке, (м/с2)">6,06</param>
+    <param name="Уровень мощности звука, (дБ)">96</param>
+    <param name="Ширина скашивания, (мм)">457</param>
+   </offer>
+   <offer id="704" available="false">
+    <name>Бензиновая газонокосилка CHAMPION LM4630</name>
+    <model>LM4630</model>
+    <categoryId>656</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>36990.00000000</price>
+    <url>https://champion.ru/catalog/gazonokosilki/benzinovye-gazonokosilki/champion-lm4630/</url>
+    <package_photos>https://disk.yandex.ru/d/7A3N7comRIQjig</package_photos>
+    <additional_mediacontent>https://disk.yandex.ru/d/2WWrirFuKeAZrQ</additional_mediacontent>
+    <item_description><![CDATA[Бензиновая самоходная газонокосилка Champion LM4630 рекомендована для окашивания газонов средней площади 5-8 соток. Имеет мульчирующую заглушку и патрубок бокового выброса, что позволяет использовать эту газонокосилку для разных задач.<br>Производительность<br>4х-тактный двигатель с воздушным охлаждением и мощностью 4,1 л.с. отличается надежностью и производительностью.<br>Быстрая обработка трека<br>Имеет ширину скашивания 457 мм, что оптимально для дачного участка небольшой площади в 5-6 соток.<br>Точная настройка под любые задачи<br>Центральная регулировка высоты среза позволяет настроить необходимую высоту скашивания одним движением. В данной модели предусмотрено 7 ступеней высоты в зависимости от назначения газона<br>Легкое обслуживание воздушного фильтра<br>Воздушный фильтр Champion легко обслуживать: крышка снимается руками, без использования инструментов. При этом бумажный фильтр обеспечивает максимальную защиту двигателя от пыли и сохраняет мощность даже в сложных условиях.<br>Легкий запуск / Easy start<br>Праймер облегчает запуск холодного двигателя, так как устройство принудительно подает дополнительный бензин для обогащения топливной смеси.<br>Легкое обслуживание деки<br>Легкая очистка деки: достаточно подключить садовый шланг к быстросъемному коннектору штуцера и запустить двигатель. Вода под давлением попадает внутрь, а вращающийся нож создает турбулентный поток, который мгновенно смывает все остатки травы.<br>Эргономичность<br>Складные рукоятки для удобства хранения и транспортировки.<br>Беспрерывная работа<br>Большой травосборник объемом 60 литров позволяет реже прерывать работу для его очистки. Он легко снимается и устанавливается.<br>Гибкий выбор утилизации<br>4 режима работы в 1 газонокосилке (травосборник, боковой и задний выброс, мульчирование) позволяет по-разному использовать ее в зависимости от предстоящих задач.<br>Комфортная работа<br>Привод на задние колёса облегчает управление, поэтому оператору не требуется прилагать усилий для её толкания, что экономит его силы и ускоряет процесс кошения.
+<br>Профессиональный подход: дека из прочной стали<br>Стальная дека обеспечивает жесткость и ударопрочность конструкции, что продлевает Срок службы газонокосилки в разы<br>Срок службы: 10+ лет<br>Благодаря чугунной гильзе цилиндр не деформируется при перегревах, что исключает прорыв газов, сохраняет компрессию и мощность, а значит, техника служит в разы дольше без капремонта.]]></item_description>
+    <picture>https://champion.ru/upload/iblock/41e/yaqwg1xd58twuyss185vuiglali6a2zd/anons4630.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/f6c/e2llccic2out1gduuktgocrlb6zud5vf/LM_4630_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/e50/dpyu5l1zmqpsp78kragr37j7113tqrzo/LM_4630_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/0e5/e94eb0qg7k7ylq7soft9tvf12eq5q9ev/LM_4630_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/aaf/96h67dzwxzctxcotu7sgm6z0b5fmn1w0/LM_4630_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/c22/ks53nofvqy80rtjdlor931y679cojhyb/LM_4630_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/7e4/ry0fi0pin9207iwzln8om832zbauq2cp/LM_4630_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/276/wqupnt19qasxerqnolvkbjknn0q0sbve/LM_4630_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/769/v2j2yrdty67hoxjxo1ecbps2fv3k48wz/LM_4630_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/bce/64el96m08gs7nvejc7gchu8ictdmcgwj/LM_4630_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/0c4/iustgofq7vesf15zjtsla2nvqqarcf3x/LM_4630_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/6ff/dmppyw29ix0njmi6xlgloo6bhpjzm4f1/LM_4630_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/6a1/9wrnl09tzomr2txvzycbg9ohgb239zw5/LM_4630_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/b3f/xgpp1g2ofkpn7inhraphtea88fblq1gz/sm_LM_4630_KOMP.jpg</picture>
+    <description><![CDATA[Бензиновая самоходная газонокосилка Champion LM4630 рекомендована для окашивания газонов средней площади 5-8 соток. Имеет мульчирующую заглушку и патрубок бокового выброса, что позволяет использовать эту газонокосилку для разных задач.]]></description>
+    <param name="Боковой выброс">есть</param>
+    <param name="Вес без травосборника, (кг)">32</param>
+    <param name="Высота скашивания, (мм)">25-75</param>
+    <param name="Мощность двигателя, (кВт/л.с.)">3/4,1</param>
+    <param name="Мульчирование">есть</param>
+    <param name="Объем двигателя, (см3)">173</param>
+    <param name="Объем картера, (л)">0,6</param>
+    <param name="Объем топливного бака, (л)">1</param>
+    <param name="Привод хода">самоходная</param>
+    <param name="Регулировка высоты скашивания/количество положений">один рычаг/7</param>
+    <param name="Тип/объем травосборника, (л)">/60</param>
+    <param name="Ширина скашивания, (мм)">457</param>
+   </offer>
+   <offer id="715" available="true">
+    <name>Бензиновый генератор CHAMPION GG951DC</name>
+    <model>GG951DC</model>
+    <categoryId>659</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>12490.00000000</price>
+    <url>https://champion.ru/catalog/generatory/benzinovye-/champion-gg951dc/</url>
+    <package_photos>https://disk.yandex.ru/d/nIbE-_CSEcmhKw</package_photos>
+    <additional_mediacontent>https://disk.yandex.ru/d/9hIceHonLttcaA</additional_mediacontent>
+    <item_description><![CDATA[Бензиновый генератор Champion GG951DC подойдет для кемпинга, организации освещения небольшого загородного дома и дачи.<br>Производительность<br>Номинальная мощность 0,65 кВт. Этого достаточно для питания базовой электроники и организации освещения на природе.<br>Стабильный запуск<br>Качество сборки всех узлов и использование комплектующих высокого уровня обеспечивают стабильный запуск в практически любых условиях.<br>Высокий ресурс<br>Чугунная гильза цилиндра в двигателе Champion  повышает износостойкость  и увеличивает его ресурс.<br>Компактность<br>Благодаря небольшому весу 15,9 кг и компактным размерам этот генератор легко переносить и перевозить, что делает его подходящим для походов и поездок за город.<br>Безопасность<br>Бесщеточная конструкция исключает искрообразование, повышая пожаробезопасность.
+<br>Срок службы 10+ лет<br>Благодаря применению медного провода (вместо алюминиевого) обеспечены низкое электросопротивление и высокая теплопроводность обмотки. Это исключает перегрев двигателя при пиковых нагрузках, предотвращает разрушение межвитковой изоляции и гарантирует заявленный срок службы генератора.]]></item_description>
+    <picture>https://champion.ru/upload/iblock/053/uf7lov85y2x9n4thoei3jhlieff8tjyf/GG951DC_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/1d5/bh8ypq8vrtbzrbjfm3pgfzo698nk8aul/GG951DC_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/122/676aq46chlbffgpnk91sb0sz813rxsz4/GG951DC_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/d5a/uiykhbtlgyoux47fe43usjrdlopnj4a0/GG951DC_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/6c6/olv6tspk0br9e76n31mcuwckifl09i6f/GG951DC_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/bbb/assvsvzot63x5zhtzg153r5q7o4r1rmw/GG951DC_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/66b/tpxl6jxk1whn0egzxghzhes77sotoxhn/GG951DC_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/00b/zejylmpq8dlhfjpfvj5x2exr0vo2aojd/GG951DC_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/faf/91skflr1pxn3cj8tc8r88mgv4yelulua/GG951DC_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/19c/7qgw20ivdindegpsxpxxgjpiqrsevf5g/GG951DC_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/4e4/mogvao0ir7h8jkl6x1wc1uyli3m4plta/GG951DC_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/b54/et1lq24i7872lpnr4grnsi0vchxx3mbk/GG951DC_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/234/qa32qc3gesktfzs3gt4k20wpfqscis7m/GG951DC_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/a59/1va7qcayo3s8c99w3oh4yw9sy4pwxx5u/GG951DC_KOMP.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/f17/zwuir8l9i7ejq9uu4gn8z7kvbtxvo3o5/GG951DC_UP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/2d3/lfp4647k20ew4lh47icw9216lunty6ti/GG951DC_fhd-_video_converter.com_.mp4</video_360>
+    <description><![CDATA[Бензиновый генератор Champion GG951DC подойдет для кемпинга, организации освещения небольшого загородного дома и дачи.]]></description>
+    <param name="Вес, (кг)">15,9</param>
+    <param name="Количество фаз/напряжение сети, (В/Гц)">1/230/50</param>
+    <param name="Коэффициент мощности, (cosФ)">1</param>
+    <param name="Максимальная мощность генератора, (кВт)">0,72</param>
+    <param name="Максимальный расход топлива, (г/кВт ч)/(л/ч)">950</param>
+    <param name="Материал обмоток ротора и статора">алюминий</param>
+    <param name="Мощность двигателя, (кВт/л.с.)">1/1,36</param>
+    <param name="Номинальная мощность генератора, (кВт)">0,65</param>
+    <param name="Объем двигателя, (см3)">63</param>
+    <param name="Объем топливного бака, (л)">4,2</param>
+    <param name="Регулировка напряжения">конденсаторная</param>
+    <param name="Розетки, (В/А)">12/8,3 +230/16</param>
+    <param name="Счетчик моточасов">нет</param>
+    <param name="Тип генератора">синхронный</param>
+    <param name="Тип двигателя/топливо">2-тактный/ топливная смесь</param>
+    <param name="Тип ротора">щеточный</param>
+    <param name="Тип стартера">ручной</param>
+    <param name="Транспортировочный комплект">нет</param>
+   </offer>
+   <offer id="720" available="false">
+    <name>Бензиновый генератор CHAMPION GG3000</name>
+    <model>GG3000</model>
+    <categoryId>659</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>29490.00000000</price>
+    <url>https://champion.ru/catalog/generatory/benzinovye-/champion-gg3000/</url>
+    <package_photos>https://disk.yandex.ru/d/9K5B_kmPM1n6HQ</package_photos>
+    <additional_mediacontent>https://disk.yandex.ru/d/5ybP4W3O-UtWgw</additional_mediacontent>
+    <item_description><![CDATA[Бензиновый генератор Champion GG3000 — эргономичное и надежное устройство, подходящее для подключения приборов номинальной мощностью до 2,3 кВт.
+ Может использоваться как резервный источник электроэнергии в частных домах, на дачах, в походах.<br>Производительность<br>Номинальная мощность двигателя 2,3 кВт. Этого достаточно для одновременного подключения небольших бытовых (микроволновка, чайник, вентилятор и т.п.) и строительных приборов.<br>Простота в обслуживании<br>Большой топливный бак объемом 15 л и малый расход топлива позволяют генератору работать продолжительное время без дозаправки. Показатель уровня топлива облегчает обслуживание устройства.<br>Надежная конструкция<br>Металлическая рама защищает генератор от механических повреждений. Узлы генератора устанавливаются на демпферную систему, что гарантирует минимум вибраций во время работы.<br>Удобство в эксплуатации<br>Блок AVR автоматически стабилизирует напряжение и минимизирует колебания параметров тока. Вольтметр позволяет мониторить напряжение в цепи для предотвращения повреждений оборудования.]]></item_description>
+    <picture>https://champion.ru/upload/iblock/f49/nrl63lkmpxbc1zzgfskaytsq0kn71dzo/GG_3000_360_02_anons.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/a9f/ew2xbpg4bhfoss2d0zk4l91qio0bq85u/GG_3000_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/a01/zopm9r4hp4w4el484ab193u7j3e34mby/GG_3000_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ed7/gr70mnv0hd425jto32z3i9gv1hvzcyd0/GG_3000_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/56b/k3utdj5u79xma6d8dqs2gor7hlh1gcqu/GG_3000_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ebc/va09c7c9iju72pxq5pv3da4v74ofra0v/GG_3000_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/1ed/cju3wl2d9xiwkxz1pnz3nnnf6svzsm2c/GG_3000_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/55a/sq04jfv4qvb6ef4zl81hynee22dgugfy/GG_3000_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/b9c/tzlsvtc6w0i85fzctl5la9armz96ebc9/GG_3000_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/e17/ddmjhjiif9fj8k5xwd0v04cnxpb0o2rh/GG_3000_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/031/9rc3sb1qsjemkewi4r56z051cmaiqm47/GG_3000_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/4a4/rll4pfap3fjq3p03jfdu1n7wvouq1wt9/GG_3000_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/723/yptngp42e8hmwi70ix3jp053jtqzv8jq/GG_3000_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/2ca/ghoi8gou001ikh4bs8k0fd28p0g6k0e8/GG_3000_KOMP.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/84b/4s2gsspoq634nyiqinsbomy8lwuupill/GG_3000_UP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/a05/aeh3vv9n6pau2iivis3el72zq1gdui4g/GG3000_fhd-_video_converter.com_.mp4</video_360>
+    <description><![CDATA[Бензиновый генератор Champion GG3000 — эргономичное и надежное устройство, подходящее для подключения приборов номинальной мощностью до 2,3 кВт.
+ Может использоваться как резервный источник электроэнергии в частных домах, на дачах, в походах.]]></description>
+    <param name="Вес, (кг)">40</param>
+    <param name="Исполнение">рама</param>
+    <param name="Количество фаз/напряжение сети, (В/Гц)">1/230/50</param>
+    <param name="Коэффициент мощности, (cosФ)">1</param>
+    <param name="Максимальная мощность генератора, (кВт)">2,5</param>
+    <param name="Материал обмоток ротора и статора">алюминий</param>
+    <param name="Мощность двигателя, (кВт/л.с.)">4,4/6</param>
+    <param name="Номинальная мощность генератора, (кВт)">2,3</param>
+    <param name="Объем двигателя, (см3)">208</param>
+    <param name="Объем картера, (л)">0,6</param>
+    <param name="Объем топливного бака, (л)">15</param>
+    <param name="Регулировка напряжения">блок AVR</param>
+    <param name="Розетки, (В/А)">2*230/16</param>
+    <param name="Счетчик моточасов">нет</param>
+    <param name="Тип генератора">синхронный</param>
+    <param name="Тип двигателя/топливо">4-тактный/ бензин</param>
+    <param name="Тип ротора">щеточный</param>
+    <param name="Тип стартера">ручной</param>
+    <param name="Транспортировочный комплект">нет</param>
+    <param name="Уровень звукового давления, (дБ)">94</param>
+    <param name="Уровень мощности звука, (дБ)">96</param>
+   </offer>
+   <offer id="722" available="false">
+    <name>Бензиновый генератор CHAMPION GG6500</name>
+    <model>GG6500</model>
+    <categoryId>659</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>59990.00000000</price>
+    <url>https://champion.ru/catalog/generatory/benzinovye-/champion-gg6500/</url>
+    <package_photos>https://disk.yandex.ru/d/yzmpkuIEvthxIA</package_photos>
+    <additional_mediacontent>https://disk.yandex.ru/d/jS1ROwpP1JQoog</additional_mediacontent>
+    <item_description><![CDATA[Бензиновый генератор Champion GG6500 рекомендован для использования на строительных площадках, в автомастерских и при другой профессиональной деятельности, а также на территории загородного дома и дачи в качестве резервного источника энергии.<br>Производительность<br>Номинальная мощность генератора 5 кВт. Подходит для дачи, строительных работ, мастерской. Может запитать бытовую технику, инструменты и использоваться в качестве резервного питания при отключении электричества. <br>Стабильный запуск<br>Качество сборки всех узлов и использование комплектующих высокого уровня обеспечивают стабильный запуск в практически любых условиях.<br>Высокий ресурс<br>Чугунная гильза цилиндра в двигателе Champion  повышает износостойкость  и увеличивает его ресурс.<br>Надежная конструкция<br>Металлическая рама защищает генератор от механических повреждений.<br>Удобство в эксплуатации<br>Блок AVR автоматически стабилизирует напряжение и минимизирует колебания параметров тока. Вольтметр позволяет мониторить напряжение в цепи. Счетчик моточасов позволяет определить состояние генератора и прогнозировать необходимость техобслуживания.<br>Срок службы: 10+ лет<br>Благодаря применению медного провода (вместо алюминиевого) обеспечены низкое электросопротивление и высокая теплопроводность обмотки. Это исключает перегрев двигателя при пиковых нагрузках, предотвращает разрушение межвитковой изоляции и гарантирует заявленный срок службы генератора.]]></item_description>
+    <picture>https://champion.ru/upload/iblock/c4c/hq397uh6urybzvjh4phedxbvra8n2040/GG_6500_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/04c/43pt0ltj7qxs9wo879zq4xts383v9179/GG_6500_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/6ce/71fove1fz2x0b61c2j80vckuyjs7srhm/GG_6500_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/7f2/j6c46fhcv4w36gibktfrtvl2soz4mmqc/GG_6500_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/8cb/x6ovi6wlqyzkwnf7rckq1fkmisf3vbi6/GG_6500_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/082/md752hg2vrzuh8d34ub18r44j21j1bw8/GG_6500_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/9c3/ova0esiaja43fnalco3kun0tzzito4ua/GG_6500_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/04c/0sa52x26skqjzf366ln3yr6qkoobcr5j/GG_6500_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ae3/cx60u7zzlrftg2lkikri0w57yoaua5ii/GG_6500_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ed9/p1ohjvayv0425y1hlimxjaf7705tg795/GG_6500_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/9bb/w4f2b946xlc7p20trqswi2wgp0z4r63x/GG_6500_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/fc1/saj1i9a1g04pwiljhps3gd49ycusmc1h/GG_6500_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/3f7/v6rm1x0dl2950oez8feiox1ap003b2cx/GG_6500_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/418/yv6rhgjnms5xpufiw8wmk8z49m7i7pju/GG_6500_KOMP.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/715/f6sbygmjauo6m99lp4q6l406txgli0f8/GG_6500_UP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/1e4/xm0mw5zk4ar451m9r2tjosj6hjfuqudw/GG6500_fhd-_video_converter.com_.mp4</video_360>
+    <description><![CDATA[Бензиновый генератор Champion GG6500 рекомендован для использования на строительных площадках, в автомастерских и при другой профессиональной деятельности, а также на территории загородного дома и дачи в качестве резервного источника энергии.]]></description>
+    <param name="Вес, (кг)">72</param>
+    <param name="Исполнение">рама</param>
+    <param name="Количество фаз/напряжение сети, (В/Гц)">1/230/50</param>
+    <param name="Коэффициент мощности, (cosФ)">1</param>
+    <param name="Максимальная мощность генератора, (кВт)">5,5</param>
+    <param name="Материал обмоток ротора и статора">медь</param>
+    <param name="Мощность двигателя, (кВт/л.с.)">11/15</param>
+    <param name="Номинальная мощность генератора, (кВт)">5</param>
+    <param name="Объем двигателя, (см3)">420</param>
+    <param name="Объем картера, (л)">1,1</param>
+    <param name="Объем топливного бака, (л)">25</param>
+    <param name="Регулировка напряжения">блок AVR</param>
+    <param name="Розетки, (В/А)">2*230/16+1*230/32</param>
+    <param name="Счетчик моточасов">есть</param>
+    <param name="Тип генератора">синхронный</param>
+    <param name="Тип двигателя/топливо">4-тактный/ бензин</param>
+    <param name="Тип ротора">щеточный</param>
+    <param name="Тип стартера">ручной</param>
+    <param name="Транспортировочный комплект">нет</param>
+   </offer>
+   <offer id="729" available="false">
+    <name>Бензиновый сварочный генератор CHAMPION GW200AE</name>
+    <model>GW200AE</model>
+    <categoryId>1322</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>111490.00000000</price>
+    <url>https://champion.ru/catalog/generatory/svarochnye/champion-gw200ae/</url>
+    <package_photos>https://disk.yandex.ru/d/gVshnRoyxFLKIQ</package_photos>
+    <item_description><![CDATA[Бензиновый сварочный генератор Champion GW200AE подойдет для использования в качестве резервного источника электроэнергии в частных домах, на даче и при проведении профессиональных работ.<br>Производительность<br>Мощность 4,5 кВА подходит для питания бытовых приборов, электроинструментов или небольшого оборудования. Может обеспечивать работу холодильника, телевизора, освещения и маломощных строительных инструментов.<br>Универсальность<br>Два режима работы: сварочный аппарат или генератор (запрещается подключать потребители в розетки 220В при проведении сварочных работ).<br>Комфортная работа<br>Электрический стартер позволяет без усилий запустить генератор.<br>Надежная конструкция<br>Металлическая рама защищает узлы от механических повреждений.<br>Мобильность<br>В комплекте поставляются транспортировочные колеса, рукоятки и опоры рамы.<br>Простота в обслуживании<br>Индикатор уровня топлива в баке позволяет контролировать расход топлива.<br>Удобство в эксплуатации<br>Блок AVR автоматически стабилизирует напряжение и минимизирует колебания параметров тока. Вольтметр позволяет мониторить напряжение в цепи. Счетчик моточасов позволяет определить состояние устройства и прогнозировать необходимость техобслуживания.]]></item_description>
+    <picture>https://champion.ru/upload/iblock/7f5/03pknoff1b8hd0247jgxevfvs8if0ot4/GW200AE_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/8e6/1acwayljuub4mdb6rjhcrzf1gy4zn6pr/GW200AE_360_01_sm.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/8a0/robjbb10oxqhnkku6v5eniztn7wgwrst/GW200AE_360_02_sm.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/fd8/hs9lif0cie360iwchiub3gznz7bx75pu/GW200AE_360_03_sm.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/bb1/g6yo9c3rm33lwf56jakkctcmo6i579c4/GW200AE_360_04_sm.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/2fe/aomnql969e653cvu435xwn4d10s9tqel/GW200AE_360_05_sm.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/508/23eci80tf8oh2r14gqb8dowh684a5e95/GW200AE_360_06_sm.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ee8/aowkuy88vodt22ok2k3qukmejg10zsed/GW200AE_360_07_sm.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/a7d/odc4prkh4mkh68p6yn3hdw1kxdfqgcwj/GW200AE_360_08_sm.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/472/uyz0lzu1ssl1tc70bkhlo0iffs69nx6j/GW200AE_360_09_sm.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ef9/5rjgmg7vz0qwogwmtxsoh89lfw400h3d/GW200AE_360_10_sm.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/37e/0qp4pzjoo2xwj4k3fikhyyxyregp4r80/GW200AE_360_11_sm.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/3bc/soexdakyzo9ux8p199a2nf5pev4lrlsd/GW200AE_360_12_sm.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/690/8yj0498tnpwxkj6hnj4qmkvch3fo3lg6/GW200AE_fhd-_video_converter.com_.mp4</video_360>
+    <description><![CDATA[Бензиновый сварочный генератор Champion GW200AE подойдет для использования в качестве резервного источника электроэнергии в частных домах, на даче и при проведении профессиональных работ.]]></description>
+    <param name="Вес, (кг)">85,5</param>
+    <param name="Исполнение">Открытая рама</param>
+    <param name="Количество фаз/напряжение сети, (В/Гц)">1 / 230 / 50</param>
+    <param name="Коэффициент мощности, (cosФ)">1</param>
+    <param name="Максимальная мощность генератора, (кВт)">5</param>
+    <param name="Максимальный диаметр электрода, (мм)">2,0 ~ 4,0</param>
+    <param name="Мощность двигателя, (кВт/л.с.)">11/15</param>
+    <param name="Номинальная мощность генератора, (кВт)">4,5</param>
+    <param name="Объем двигателя, (см3)">420</param>
+    <param name="Объем картера, (л)">1,1</param>
+    <param name="Объем топливного бака, (л)">25</param>
+    <param name="Регулировка напряжения">AVR</param>
+    <param name="Розетки, (В/А)">2 х 230/16</param>
+    <param name="Счетчик моточасов">Есть</param>
+    <param name="Тип генератора">Переменного тока, однофазный, синхронный, щеточный</param>
+    <param name="Тип двигателя/топливо">Бензиновый, 4х-тактный, одноцилиндровый, с воздушным охлаждением</param>
+    <param name="Тип сварочного тока">постоянный</param>
+    <param name="Тип стартера">Ручной/электрический</param>
+    <param name="Ток сварки, (А)">50 ~ 140</param>
+    <param name="Транспортировочный комплект">есть</param>
+   </offer>
+   <offer id="740" available="true">
+    <name>Двигатель с горизонтальным валом CHAMPION G100HK</name>
+    <model>G100HK</model>
+    <categoryId>663</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>14490.00000000</price>
+    <url>https://champion.ru/catalog/dvigateli/gorizontalnyy-val/champion-g100hk/</url>
+    <package_photos>https://disk.yandex.ru/d/2AGQagvTIpaMJQ</package_photos>
+    <picture>https://champion.ru/upload/iblock/21c/3nzh0vshfz2grurojf1g62nfimk4v2ia/G_100_HK_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/6ae/anvhvf1k58yndqlgqehk1gewrjfgh09o/G_100_HK_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/d95/b5mm1p6i5odpgx4ngu7x1ha44hwracm3/G_100_HK_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/322/dgafnpwbriqy2omxo9ggrcgs39ncjkid/G_100_HK_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/05b/kwty1h2e7gjsmsdk0d19mh2y8q8xcu68/G_100_HK_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/9e9/t6q2s4l0bu01in3upbgs32n0p281txta/G_100_HK_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/e47/op5rcm9rgeyjob87gbjrw38kcakubnnj/G_100_HK_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/240/jb6hkm98a8dinyu5gbrxs9g3nhbsuyry/G_100_HK_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/0cb/sv8o1kkuo5ve53ae9z1ls4b0x302tb37/G_100_HK_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/2b6/7uwfkzsh71cljgttmbdzpv915zujgpq1/G_100_HK_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/9b5/20mui94h16lgx8cym38cy513hmrd163p/G_100_HK_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/320/wj2jwzusk7xmjtvq2bj4eyv3sb2v08zl/G_100_HK_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ffe/gbv2jvuto19z87wmfg0irmfocxk7bgs5/G_100_HK_360_08.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/9cb/tqrqsfhtrf75qu7d2kmd5sbcewrs5s1n/G_100_HK_fhd.mp4</video_360>
+    <param name="Мощность двигателя, (кВт/л.с.)">1,84/2,5</param>
+    <param name="Объем двигателя, (см3)">99</param>
+    <param name="Вес с пустым баком, (кг)">10,4</param>
+    <param name="Выход вала, (мм)">60,1</param>
+    <param name="Двигатель">да</param>
+    <param name="Диаметр вала, (мм)">16</param>
+    <param name="Максимальные обороты без нагрузки, (об/мин)">3 600</param>
+    <param name="Максимальный крутящий момент двигателя, Нм">4,7/2500 об/мин</param>
+    <param name="Максимальный расход топлива, (г/кВт ч)/(л/ч)">450</param>
+    <param name="Материал кожуха шнека">чугун</param>
+    <param name="Обороты холостого хода, (об/мин)">1 400</param>
+    <param name="Объем картера, (л)">0,4</param>
+    <param name="Объем топливного бака, (л)">2</param>
+    <param name="Охлаждение">воздушное</param>
+    <param name="Расположение вала двигателя">горизонтальное</param>
+    <param name="Тип вала">шпонка</param>
+    <param name="Тип двигателя">4-тактный, одноцилиндровый</param>
+    <param name="Тип стартера">ручной</param>
+    <param name="Уровень звукового давления, (дБ)">70</param>
+   </offer>
+   <offer id="744" available="true">
+    <name>Двигатель с горизонтальным валом CHAMPION G160HK</name>
+    <model>G160HK</model>
+    <categoryId>663</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>16990.00000000</price>
+    <url>https://champion.ru/catalog/dvigateli/gorizontalnyy-val/champion-g160hk/</url>
+    <package_photos>https://disk.yandex.ru/d/q3QxrqHpjND57g</package_photos>
+    <picture>https://champion.ru/upload/iblock/495/no2clgleeb32zhrepgr8spz1ryzdz8sc/G_160_HK_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/165/wcz7ei1e8o496k8qs194t1vus97s3xvn/G_160_HK_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/873/i9kcjpmiuc9wmlxphfbtqit8j7p0wttc/G_160_HK_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/4d9/sdfksac68t6qw6zsl2ahuke0xuz01tly/G_160_HK_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/1b6/mmdyqjleov0a47stdoru2e3he73gmbz1/G_160_HK_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/d9b/zpdb905vgp73glju352uxfu5b2b51iqu/G_160_HK_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/8c4/m3lxvr77jn262ei635vsb1z6wu1cqhuw/G_160_HK_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/873/lqqxfr5c1gpxiap4ghzzqaz31z66hy18/G_160_HK_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/909/pkc98ip011d0kbycuell71f1ab1968lz/G_160_HK_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/428/wj8nesqtv47c0klavxsn4tj29e3jp8sr/G_160_HK_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/7e3/lzot9lmqyzbvhypw8os71qsntcr28br9/G_160_HK_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/161/ilhe2y18t7dn9k69h0hlkbr5yze3nb0y/G_160_HK_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/4e6/e9ji1tzpjlmz3k01tk0luvkm0bhk5wrm/G_160_HK_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/61b/lp7hgie2se661deekqqc6nt2dvukt8o1/G_160_HK_KOMP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/0ed/ur1ric1vbdjsz83vyae0zbs2zf2ttjtm/G_160_HK_fhd.mp4</video_360>
+    <param name="Мощность двигателя, (кВт/л.с.)">4/5,5</param>
+    <param name="Объем двигателя, (см3)">163</param>
+    <param name="Вес с пустым баком, (кг)">15</param>
+    <param name="Выход вала, (мм)">60</param>
+    <param name="Двигатель">да</param>
+    <param name="Диаметр вала, (мм)">19</param>
+    <param name="Максимальные обороты без нагрузки, (об/мин)">3 600</param>
+    <param name="Максимальный крутящий момент двигателя, Нм">10,3/2500 об/мин</param>
+    <param name="Максимальный расход топлива, (г/кВт ч)/(л/ч)">395</param>
+    <param name="Материал кожуха шнека">чугун</param>
+    <param name="Обороты холостого хода, (об/мин)">1 400</param>
+    <param name="Объем картера, (л)">0,6</param>
+    <param name="Объем топливного бака, (л)">3,6</param>
+    <param name="Охлаждение">воздушное</param>
+    <param name="Расположение вала двигателя">горизонтальное</param>
+    <param name="Тип вала">шпонка</param>
+    <param name="Тип двигателя">4-тактный, одноцилиндровый</param>
+    <param name="Тип стартера">ручной</param>
+    <param name="Уровень звукового давления, (дБ)">72</param>
+   </offer>
+   <offer id="748" available="true">
+    <name>Двигатель с горизонтальным валом CHAMPION G200HK</name>
+    <model>G200HK</model>
+    <categoryId>663</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>16490.00000000</price>
+    <url>https://champion.ru/catalog/dvigateli/gorizontalnyy-val/champion-g200hk/</url>
+    <package_photos>https://disk.yandex.ru/d/vGm292n67c3hGw</package_photos>
+    <picture>https://champion.ru/upload/iblock/ba5/s2eba5b9078shl3t7ztpelrbd4agm8aa/G_200_HK_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/5bd/tbr2djwsga429l6db5eh7foj4w60qcbd/G_200_HK_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/aac/ceoqfvk5k700kyg5kot734377avprpzu/G_200_HK_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/644/07kwuglmtg5qxsyjo7swl3x3q7oo2ili/G_200_HK_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/3b3/5pkje0dlzrcxfc7lq17kuw01wc18qa4z/G_200_HK_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ab2/em0vn68m7e0ohexjjlsq8i0knl9jo1s8/G_200_HK_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/96f/ylpklpv6q0ad0guwgx9zmqb1u986beek/G_200_HK_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/743/qcar7m24ykxpr784bohdd1sej90o2vn7/G_200_HK_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ce6/px1oeuz9gt9mndor9sunqgijol4hk600/G_200_HK_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/c7e/rdyc4pggd2nbm72ooc6mt3i89tknt5df/G_200_HK_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ce2/ypv78dwhm724ebvzkxgs8qm132z0hgvt/G_200_HK_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/9f6/pqyr0pa7mb1g4abuadcl8t25nf1q4xzy/G_200_HK_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/798/mnq5dsr9x2asmqhuwkfk16bej6wwbon2/G_200_HK_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/005/j03lybmpu36ty2kywfa8wevg0wcqb28g/G_200_HK_KOMP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/160/93l001ik11kivjhk5fv20vu6kkeebgny/G_200_HK_fhd.mp4</video_360>
+    <param name="Мощность двигателя, (кВт/л.с.)">4,8/6,5</param>
+    <param name="Объем двигателя, (см3)">196</param>
+    <param name="Вес с пустым баком, (кг)">15,4</param>
+    <param name="Выход вала, (мм)">61</param>
+    <param name="Двигатель">да</param>
+    <param name="Диаметр вала, (мм)">19</param>
+    <param name="Максимальные обороты без нагрузки, (об/мин)">3 600</param>
+    <param name="Максимальный крутящий момент двигателя, Нм">12,4/2500 об/мин</param>
+    <param name="Максимальный расход топлива, (г/кВт ч)/(л/ч)">395</param>
+    <param name="Материал кожуха шнека">чугун</param>
+    <param name="Обороты холостого хода, (об/мин)">1 400</param>
+    <param name="Объем картера, (л)">0,6</param>
+    <param name="Объем топливного бака, (л)">3,6</param>
+    <param name="Охлаждение">воздушное</param>
+    <param name="Расположение вала двигателя">горизонтальное</param>
+    <param name="Тип вала">шпонка</param>
+    <param name="Тип двигателя">4-тактный, одноцилиндровый</param>
+    <param name="Тип стартера">ручной</param>
+    <param name="Уровень звукового давления, (дБ)">72</param>
+   </offer>
+   <offer id="845" available="false">
+    <name>Электрическая цепная пила CHAMPION 324N-18&quot;</name>
+    <model>324N-18</model>
+    <categoryId>21</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>11490.00000000</price>
+    <url>https://champion.ru/catalog/pily-tsepnye/elektricheskie-pily/champion-324n-18/</url>
+    <package_photos>https://disk.yandex.ru/d/DiOyH3xV1E-4Jg</package_photos>
+    <item_description><![CDATA[Электрическая цепная пила Champion 324N-18 оптимально подходит как для распилки дров диаметром до 30 см, так и для строительных работ.
+Это одна из самых мощных электропил в линейке Champion.
+<br>Производительность<br>Мощность 2,4 кВт. Такая пила подходит как для распилки дров, так и для малых строительных работ.
+<br>Защита от перегрева<br>Система защиты от перегрева автоматически отключает двигатель при критической температуре, предотвращая поломку и продлевая срок службы пилы.
+<br>Стабильность при любых нагрузках<br>Металлические шестерни надежно передают вращение от двигателя к пильной гарнитуре, обеспечивая стабильность работы при больших нагрузках.<br>Автоматическая система смазки цепи<br>Масло непрерывно подается на пильную цепь во время работы, что увеличивает срок службы расходных материалов.
+<br>Надежная фиксация<br>Металлический зубчатый упор фиксирует агрегат у основания шины относительно бревна и препятствует срыву полотна из пропила, тем самым улучшает контроль над процессом пиления.
+<br>Бесключевой механизм натяжения цепи<br>Пильную цепь можно натянуть без специальных инструментов.
+<br>Продольное расположение двигателя<br>Делает пилу более маневренной, упрощает работу на высоте и в труднодоступных местах.
+<br>Контроль уровня масла<br>Полупрозрачное окошко в корпусе пилы позволяет визуально контролировать уровень масла, что помогает своевременно пополнять его запас и поддерживать оптимальную смазку цепи.
+<br>Безопасность<br>Безопасный механический инерционный тормоз мгновенно останавливает цепь при отскоке или отдаче, защищая пользователя от возможных травм и повышая комфорт работы.
+<br>Экологичность<br>Электрические пилы не выделяют вредных выхлопов и отличаются низким уровнем шума, что делает их комфортными для работы в закрытых помещениях и жилых зонах.
+]]></item_description>
+    <picture>https://champion.ru/upload/iblock/f1e/lblbx0v7u6bql8wogr14g7xulc8az264/C_324_N_18_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/034/xhln7kurzwkq60t0vfvvgx7t0jhrdqgb/C_324_N_18_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/05f/u5lxejn4yf1y6qtcgrcd5oxmexn1eqip/C_324_N_18_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/4b2/obpiv0idsalidy6hftvhquk03ub5dm6e/C_324_N_18_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ebd/11lipe3tl1w5q40f0w4h5o0fo9tjzw4d/C_324_N_18_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/762/k8k2s8yd1hak32x00txqmegaa0agenct/C_324_N_18_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/25f/xrufk01d66m1k1wyy8odeyutbzfrfhwc/C_324_N_18_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/00c/mbhafiss6904dm5pdugg7mh2o0fiy9wg/C_324_N_18_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/2d9/wkg5bgr3hq7bwk2qh4wivqjrla5sgehq/C_324_N_18_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/f1a/fml4m0ttik1bffpih1g7enwv2bwa1n3l/C_324_N_18_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/db8/c6ozqyt3b6gh90lpgrag676pbc52n0e9/C_324_N_18_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/dc7/xsacew3och0efhhixq4zbnkt0wm7ozrq/C_324_N_18_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/aac/iix1legy08e343fi5mqsh2yji59t92iu/C_324_N_18_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ba0/85vievwk68xffccdxj7wdva3rfqbb9h1/C_324_N_18_KOMP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/b5a/g28oeuxom66mjt7k5et6le9bzs1y9ose/C_324_N_18_fhd-_video_converter.com_.mp4</video_360>
+    <description><![CDATA[Электрическая цепная пила Champion 324N-18 оптимально подходит как для распилки дров диаметром до 30 см, так и для строительных работ.
+Это одна из самых мощных электропил в линейке Champion.
+]]></description>
+    <param name="Безынструментальный механизм натяжения цепи">есть</param>
+    <param name="Вес, (кг)">4,66</param>
+    <param name="Длина шины, (дюйм/см)">18/45</param>
+    <param name="Инерционный тормоз">есть</param>
+    <param name="Количество звеньев цепи, (шт)">62</param>
+    <param name="Максимальные обороты двигателя, (об/мин)">7 600</param>
+    <param name="Напряжение сети, (В/Гц)">230/50</param>
+    <param name="Номинальная мощность двигателя, (кВт)">2,4</param>
+    <param name="Объем масляного бака, (л)">0,25</param>
+    <param name="Расположение двигателя">продольное</param>
+    <param name="Тепловой предохранитель">да</param>
+    <param name="Уровень вибрации, (м/с²)">3,195/2,92</param>
+    <param name="Уровень звукового давления, (дБ)">84</param>
+    <param name="Уровень мощности звука, (дБ)">105</param>
+    <param name="Шаг пильной цепи, (дюймы)">3/8</param>
+    <param name="Ширина паза пильной шины, (мм)">1,3</param>
+   </offer>
+   <offer id="847" available="false">
+    <name>Электрическая цепная пила CHAMPION 422-18&quot;</name>
+    <model>422-18</model>
+    <categoryId>21</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>7990.00000000</price>
+    <url>https://champion.ru/catalog/pily-tsepnye/elektricheskie-pily/champion-422-18/</url>
+    <picture>https://champion.ru/upload/iblock/c93/0rrslibrx1leo8hiue5tyc9addrjms08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/9b2/4iij15spd8vkwm0wwbnuv02velvtlwhg.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/2e6/3a9729na7e54bgk29sn55syfvr2bkfhf.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/5fa/9y000x1dvnjess1fcyfbn065ms7twgpd.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/988/lo8ol5l9zh1l2ochkhuka9m3m190bkp8.jpg</picture>
+    <param name="Номинальная мощность двигателя, (кВт)">2,2</param>
+    <param name="Вес, (кг)">4,4</param>
+    <param name="Безынструментальный механизм натяжения цепи">нет</param>
+    <param name="Длина шины, (дюйм/см)">18/45</param>
+    <param name="Инерционный тормоз">есть</param>
+    <param name="Напряжение сети, (В/Гц)">230/50</param>
+    <param name="Объем масляного бака, (л)">0,25</param>
+    <param name="Расположение двигателя">продольное</param>
+    <param name="Уровень вибрации, (м/с²)">2,4</param>
+    <param name="Уровень звукового давления, (дБ)">84,06</param>
+    <param name="Уровень мощности звука, (дБ)">105</param>
+    <param name="Шаг пильной цепи, (дюймы)">3/8</param>
+    <param name="Ширина паза пильной шины, (мм)">1,3</param>
+   </offer>
+   <offer id="2938" available="true">
+    <name>Ножницы электрические CHAMPION HTE410</name>
+    <model>HTE410</model>
+    <categoryId>1374</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>4990.00000000</price>
+    <url>https://champion.ru/catalog/sadovye-nozhnitsy/champion-hte410/</url>
+    <package_photos>https://disk.yandex.ru/d/6A_Earfygagh-g</package_photos>
+    <picture>https://champion.ru/upload/iblock/458/mcju1ixz38km5psfvgu02zww9y6guzjo.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/4b1/plh4k8oxlp01fm8npz93jr3fbfyfrowk.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/5c3/7iqkg91fv96j85650fuie6ljn7wet2nh.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/1aa/uqm0rlbnv2bdk1bwmti6xi0qm3rpjkrm.jpg</picture>
+    <param name="Мощность двигателя, (Вт)">520</param>
+    <param name="Вес, (кг)">2,1</param>
+    <param name="Длина ножей, (мм)">410</param>
+    <param name="Напряжение сети, (В/Гц)">230 / 50</param>
+    <param name="Уровень вибрации на рукоятке, (м/с2)">5,33/6,21</param>
+    <param name="Уровень звукового давления, (дБ)">81,6</param>
+    <param name="Уровень мощности звука, (дБ)">101,6</param>
+   </offer>
+   <offer id="3888" available="true">
+    <name>Бензиновая воздуходувка CHAMPION GBR333</name>
+    <model>GBR333</model>
+    <categoryId>4229</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>19490.00000000</price>
+    <url>https://champion.ru/catalog/vozdukhoduvnye-ustroystva/benzinovye/gbr333/</url>
+    <package_photos>https://disk.yandex.ru/d/qYtjDhKEywE8nQ</package_photos>
+    <item_description><![CDATA[Бензиновая воздуходувка Champion GBR333 работает в режиме нагнетания воздуха. Подойдет для личного использования на большом участке.<br>Производительность<br>Мощность 0,9 кВт оптимальна для ежедневной уборки свежеопавшей листвы и легкого мусора.<br>Транспортировочная рукоятка<br>Рукоятка делает переноску воздуходувки максимально комфортной. Она не скользит в руке и облегчает частые перемещения по территории.
+<br>Легкий запуск двигателя / Easy Engine Start<br>Система облегчённого запуска снижает усилие при запуске на 25%, значительно уменьшает вероятность обратного удара и делает запуск двигателя комфортным и безопасным.<br>Легкий холодный запуск / Easy Cold Start<br>Система Easy cold start обеспечивает легкий запуск холодного двигателя. Достаточно подкачать топливо праймером и зафиксировать курок газа стопором. После этого мотор заводится без усилий даже после длительного перерыва в работе.<br>Безынструментальное соединение труб<br>Позволяет быстро собрать и разобрать инструмент без дополнительных инструментов. Это экономит время при подготовке к работе, упрощает транспортировку и обслуживание.<br>Хромированный цилиндр двигателя<br>Стенки цилиндра имеют специальное хромированное покрытие. Оно снижает трение поршня, уменьшает износ и повышает срок службы двигателя. <br>Ранцевая подвесная система<br>Продуманная система ремней равномерно распределяет вес воздуходувки. Это обеспечивает стабильное и удобное положение устройства во время работы.<br>Эргономичная спинка<br>Спинка воздуходувки выполнена с учётом анатомии человека и оснащена ортопедическими подушечками. Они амортизируют вибрацию и поддерживают спину. В результате снижается нагрузка на позвоночник и повышается комфорт при многочасовой работе.]]></item_description>
+    <picture>https://champion.ru/upload/iblock/8ab/228unrdz3p8cir7i0apbser1q7lsxhz8/GBR_333_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/c79/7ja8vpboavj47529lo8lynofq5xjper3/GBR_333_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/c1f/k8r71p9gjfx5h4wneod7cf5xfvoynlsw/GBR_333_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/bcf/t71bksu6qzm6a3o5imrd7p7tyug21gcp/GBR_333_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/e7f/t94cds0go3vly8yxtat599uoca1fsza8/GBR_333_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/12c/a3hxbm7i14mjnx5h7vyuu8xtyxw79wls/GBR_333_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/2ae/rf3370pcsgprefutt6n6uz0j1n24v31d/GBR_333_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/158/il9rh7r2y3qb5gqfq7sgde44d7ppm13l/GBR_333_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/8f8/kt073yfqiktxc5ag3lbngicbl1t6c7ob/GBR_333_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/19e/l6klcm3fqphkx9vh8uq4s6287pb5ypp5/GBR_333_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/08d/xdub9piw36ugkvpnobx6faru1qdw3qop/GBR_333_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/a91/vn5fx0ozrg83xj3fxyc678ghd1439u5e/GBR_333_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/6ff/fbv5sp981kwxdlkx51qlcy80zc8ay8ql/GBR_333_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/bec/vfzbbb0njfhrhhunf8at61d51kpoh03a/GBR_333_KOMP.jpg</picture>
+    <video_360>https://champion.ru/upload/iblock/44b/lti2nsmc9214ta5h7ohsntb303mp607x/GBR333_fhd-_video_converter.com_.mp4</video_360>
+    <description><![CDATA[Бензиновая воздуходувка Champion GBR333 работает в режиме нагнетания воздуха. Подойдет для личного использования на большом участке.]]></description>
+    <param name="Мощность двигателя, (кВт/л.с.)">0,9/1,22</param>
+    <param name="Объем двигателя, (см3)">32,6</param>
+    <param name="Вес, (кг)">6,4</param>
+    <param name="Максимальные обороты без нагрузки, (об/мин)">9 300</param>
+    <param name="Максимальный расход топлива, (г/кВт ч)/(л/ч)">612</param>
+    <param name="Обороты холостого хода, (об/мин)">2 800</param>
+    <param name="Объем топливного бака, (л)">0,65</param>
+    <param name="Производительность воздуха, (м3/ч)">800</param>
+    <param name="Скорость воздуха, (м/с)">60</param>
+    <param name="Уровень вибрации, (м/с²)">3,87</param>
+    <param name="Уровень звукового давления, (дБ)">95,1</param>
+    <param name="Уровень мощности звука, (дБ)">107</param>
+    <param name="Функция всасывания">нет</param>
+   </offer>
+   <offer id="13563" available="true">
+    <name>Высоторез CHAMPION PP125</name>
+    <model>PP125</model>
+    <categoryId>1377</categoryId>
+    <currencyId>RUR</currencyId>
+    <price>34490.00000000</price>
+    <url>https://champion.ru/catalog/vysotorezy/pp125/</url>
+    <package_photos>https://disk.yandex.ru/d/768C1GSmzMIecQ</package_photos>
+    <picture>https://champion.ru/upload/iblock/4e8/y145obu3tf4cwsrcw99ofgeyqt2tpnra.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/4e9/otraypb1wjpdhsk129t10ltxmb2rs9sc.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/0f3/26xca5br5r3sbqlrtubf0gdh4wg2k3pl.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/988/uxlht1oz2lrequebnrud4qpyoj6ryyg6.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/edf/bmk525afhwj5inpzp37ektonkqu7tilc.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/dfe/h9dzzf6rbv09qwqzts54wmc8x6vpx7xd.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/2a9/8btbwe6pkaduzeiyiyd5k0f26z16bi5x.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/39a/gfg21habt8uvggrk1afrz2spa8m4o0pt.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/c18/1pn4x8lvijjf6ld2e35fu0adlz4usqtk.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ff9/eegdpamfc0xrvcpbl84d82ajsj35t191.jpg</picture>
+    <param name="Вес, (кг)">9,6</param>
+    <param name="Длина в сложенном/развернутом состоянии, (м)">2,94/4,24</param>
+    <param name="Длина шины, (дюйм/см)">12 / 30</param>
+    <param name="Количество звеньев цепи, (шт)">44</param>
+    <param name="Максимальные обороты без нагрузки, (об/мин)">8000</param>
+    <param name="Мощность двигателя, (кВт/л.с.)">0,75 / 1,02</param>
+    <param name="Обороты холостого хода, (об/мин)">3000±1000</param>
+    <param name="Объем двигателя, (см3)">25,4</param>
+    <param name="Объем масляного бака, (л)">0,2</param>
+    <param name="Объем топливного бака, (л)">0,65</param>
+    <param name="Тип стартера">Ручной стартер</param>
+    <param name="Уровень звукового давления, (дБ)">93,5</param>
+    <param name="Уровень мощности звука, (дБ)">102</param>
+    <param name="Шаг пильной цепи, (дюймы)">3/8</param>
+    <param name="Ширина паза пильной шины, (мм)">1,3</param>
+   </offer>
+   <offer id="217943" available="false">
+    <name>Бензиновый триммер CHAMPION T246S-2</name>
+    <model>T246S-2</model>
+    <categoryId>1324</categoryId>
+    <currencyId>RUR</currencyId>
+    <price></price>
+    <url>https://champion.ru/catalog/trimmery/benzinovye-trimmery/t246s-2/</url>
+    <item_description><![CDATA[Бензиновый триммер Champion T246S-2 — идеальное решение для регулярного покоса травы и ухода за газоном. Триммер удобен при обработке труднодоступных мест вдоль заборов, дорожек и вокруг деревьев. Отлично подходит для дачных участков и небольших территорий до 4 соток. Поставляется в двух упаковках: в одной — штанга, в другой — двигатель.
+
+
+
+
+
+
+
+
+]]></item_description>
+    <picture>https://champion.ru/upload/iblock/8e8/p8v7ww09dynf5gyryo1sxwn8nm2mr41j/T246S_2_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/605/fg9rz9glhmhd2vbya835idh05jtpwdsn/T246S_2_360_12.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/139/l8fkphot5seitd80secw307hhiy47bk8/T246S_2_360_01.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/d3f/zk91y689b57wi7eus2nmvwvxqvmdxn1d/T246S_2_360_02.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/3c0/u47h9xc2lz6wuzdtjz6wlmfs0by4ntkh/T246S_2_360_03.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/c42/q7a7c3mh7ahqr5yq5vv70vxiqznrw1lq/T246S_2_360_04.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/d53/1awcb7v3yqd7y0jf8vsek1phzcd6lcio/T246S_2_360_05.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/ba3/nwcy8i5gi64xihgqi14bv0kekfetcy7h/T246S_2_360_06.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/e54/sras5dt2k5tgnc3ycbvbl0odo40u4y7l/T246S_2_360_07.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/3fc/891nnjvb5qhqhok7z83ufpo85jpf04m1/T246S_2_360_08.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/a2d/iv1ed3fy4j85hb6d7wj68d4nxf0m4gf3/T246S_2_360_09.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/055/m2f5ld9ill60ie6nc8tzd01q46awpf95/T246S_2_360_10.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/d5b/8n038zvao85c0urey1ou21yvczx2yu6h/T246S_2_360_11.jpg</picture>
+    <picture>https://champion.ru/upload/iblock/71d/1ph2o6z6m3piio3rp5pi7a9k5f605pr8/T246S_2_01.JPG</picture>
+    <description><![CDATA[Бензиновый триммер Champion T246S-2 — идеальное решение для регулярного покоса травы и ухода за газоном. Триммер удобен при обработке труднодоступных мест вдоль заборов, дорожек и вокруг деревьев. Отлично подходит для дачных участков и небольших территорий до 4 соток. Поставляется в двух упаковках: в одной — штанга, в другой — двигатель.
+
+
+
+
+
+
+
+
+]]></description>
+    <param name="Вид штанги">Прямая</param>
+    <param name="Максимальные обороты без нагрузки, (об/мин)">11000</param>
+    <param name="Мощность двигателя, (кВт/л.с.)">0,7/1,0</param>
+    <param name="Обороты холостого хода, (об/мин)">3000-3400</param>
+    <param name="Объем двигателя, (см3)">25,4</param>
+    <param name="Объем топливного бака, (л)">0,7</param>
+    <param name="Нож, кол-во зубцов/диаметр/диаметр посадки, (мм)">3/255/25,4</param>
+    <param name="Тип двигателя">Двухтактный, одноцилиндровый, с воздушным охлаждением</param>
+    <param name="Тип рукоятки">U-образная</param>
+    <param name="Тип штанги">Неразъемная</param>
+    <param name="Упаковка">Две коробки: штанга+двигатель</param>
+   </offer>
+  </offers>
+ </shop>
+</yml_catalog>
