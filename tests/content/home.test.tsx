@@ -34,7 +34,8 @@ describe('главная без данных', () => {
     // блоки «О компании» и «Контакты» остаются: тексты — метки, карты нет
     expect(html).toContain('О компании');
     expect(html).toContain('впиши]');
-    expect(html).toContain('Адрес не указан');
+    expect(html).toContain('Талдом, Садовый переулок д10');
+    expect(html).toContain('Координаты на карте не заданы');
     expect(html).not.toContain('Построить маршрут');
   });
 });

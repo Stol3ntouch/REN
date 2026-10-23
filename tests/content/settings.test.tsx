@@ -10,7 +10,7 @@ describe('настройки магазина (shop_settings)', () => {
   it('телефон из брифа лежит в начальных настройках, остальные факты пусты', () => {
     const db = createTestDb();
     expect(getSetting('phone', { db })).toBe('+7 916-655-06-06');
-    expect(getSetting('address', { db })).toBeNull();
+    expect(getSetting('address', { db })).toBe('Талдом, Садовый переулок д10');
     expect(getSetting('work_hours', { db })).toBeNull();
     expect(getSettings({ db }).phone).toBe('+7 916-655-06-06');
   });
@@ -37,7 +37,7 @@ describe('шапка и подвал берут данные из настрое
     expect(header).not.toContain('[ЛОГОТИП — загрузи]');
     expect(header).toMatch(/<img[^>]*src="\/brand\/logo\.jpg"/);
     expect(header).toMatch(/<img[^>]*alt="РемТехСад"/);
-    expect(header).toContain('[АДРЕС — впиши]');
+    expect(header).toContain('Талдом, Садовый переулок д10');
     const footer = renderToStaticMarkup(<SiteFooter shell={shell} />);
     expect(footer).toContain('+7 916-655-06-06');
     expect(footer).toContain('[ЧАСЫ РАБОТЫ — впиши]');
