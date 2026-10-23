@@ -1,17 +1,26 @@
 /*
- * Тема на CSS-переменных. Нейтральная временная палитра: фирменные цвета появятся
- * вместе с логотипом заказчика — менять только переменные в :root.
- * Контраст текста к фону >= 4.5:1 (проверено для пар ниже).
+ * Тема на CSS-переменных. Палитра — от логотипа «REMTEX SAD»: чёрный → тёмно-зелёный → светло-зелёный.
+ * Менять только переменные в :root. Контраст текста к фону >= 4.5:1 (проверено для пар ниже).
  */
 :root {
+  /* фирменные цвета (из логотипа) */
+  --brand-black: #0d1512;
+  --brand-dark: #0b4a22;
+  --brand-green: #1b7a3b;
+  --brand-light: #46a85a; /* только декор и тёмный текст на нём (6.2:1); белый текст на нём нельзя */
+
   --color-bg: #ffffff;
-  --color-surface: #f4f6f4;
-  --color-text: #1b2620; /* на bg 15.9:1 */
-  --color-muted: #4a5750; /* на bg 7.6:1 */
-  --color-border: #c9d1cc;
-  --color-primary: #1d6a3b; /* белый текст на нём 6.4:1 */
-  --color-primary-hover: #15522d;
+  --color-surface: #eef5ef;
+  --color-text: #0f1a14; /* на bg 17.8:1 */
+  --color-muted: #4a5750; /* на bg 7.6:1, на surface 6.8:1 */
+  --color-border: #c4d3c8;
+  --color-primary: #1b7a3b; /* белый текст на нём 5.4:1 */
+  --color-primary-hover: #146b31; /* белый текст 6.6:1; ссылки на bg 6.6:1 */
   --color-on-primary: #ffffff;
+  --color-dark: #0d1512; /* подвал, слайдер без фото */
+  --color-on-dark: #e6efe8; /* на dark 15.8:1 */
+  --color-on-dark-muted: #a9b8ae; /* на dark 9.0:1 */
+  --color-accent-on-dark: #7fd08f; /* ссылки и акценты на dark (≥ 9:1) */
   --color-focus: #0b57d0;
   --color-error: #b3261e; /* на bg 6.5:1 */
   --color-success: #1d6a3b;
@@ -162,6 +171,12 @@ main:focus {
   color: var(--color-primary-hover);
 }
 
+.button--small {
+  min-height: 2.25rem;
+  padding: 0 var(--space-2);
+  font-size: 0.9375rem;
+}
+
 input,
 select,
 textarea {
@@ -176,138 +191,6 @@ textarea {
 
 textarea {
   padding-block: var(--space-2);
-}
-
-/* Шапка (mobile-first: всё в колонку) */
-.site-header {
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-bg);
-}
-
-.site-header__top {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding-block: var(--space-2);
-}
-
-.site-header__bar {
-  background: var(--color-surface);
-}
-
-.site-header__contact {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1) var(--space-3);
-  margin: 0;
-  font-size: 0.9375rem;
-}
-
-.site-header__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-3);
-}
-
-.site-header__actions a:not(.button) {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--tap-size);
-}
-
-.site-header__main {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding-block: var(--space-3);
-}
-
-.site-header__logo {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--tap-size);
-  align-self: flex-start;
-  text-decoration: none;
-}
-
-.site-search {
-  display: flex;
-  gap: var(--space-2);
-  min-width: 0;
-}
-
-.site-search input {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-/* Меню: на телефоне <details>, от 64rem — список в строку (на телефоне он скрыт display:none) */
-.site-nav .site-nav__desktop {
-  display: none;
-  flex-direction: row;
-  gap: var(--space-3);
-}
-
-.site-nav__toggle {
-  display: flex;
-  align-items: center;
-  min-height: var(--tap-size);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.site-nav__list {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.site-nav__list a {
-  display: flex;
-  align-items: center;
-  min-height: var(--tap-size);
-  text-decoration: none;
-}
-
-.site-main {
-  flex: 1 0 auto;
-  padding-block: var(--space-4);
-}
-
-/* Подвал */
-.site-footer {
-  margin-top: var(--space-5);
-  border-top: 1px solid var(--color-border);
-  background: var(--color-surface);
-}
-
-.site-footer__inner {
-  display: grid;
-  gap: var(--space-4);
-  padding-block: var(--space-4);
-}
-
-.site-footer__inner p {
-  margin: 0 0 var(--space-2);
-}
-
-.site-footer__name {
-  font-weight: 700;
-}
-
-.site-footer__list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.site-footer__list a {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--tap-size);
 }
 
 /* Состояния loading / empty / error / success */
@@ -351,40 +234,6 @@ textarea {
 @keyframes spin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-/* >= 48rem: планшет и шире */
-@media (min-width: 48rem) {
-  .site-header__top {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .site-header__main {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-
-  .site-search {
-    flex: 1 1 18rem;
-  }
-
-  .site-footer__inner {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* >= 64rem: меню в одну строку, без сворачивания */
-@media (min-width: 64rem) {
-  .site-nav__mobile {
-    display: none;
-  }
-
-  .site-nav .site-nav__desktop {
-    display: flex;
   }
 }
 

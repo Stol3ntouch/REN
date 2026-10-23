@@ -1,13 +1,20 @@
-import { EmptyState } from '@/ui/states';
+import type { Metadata } from 'next';
+import { connection } from 'next/server';
+import { getHomeData } from '@/domain/content/home';
+import { contentMetadata } from '@/domain/content/seo';
+import { getSettings } from '@/domain/content/settings';
+import { HomeView } from '@/ui/home/HomeView';
 
-/** Главная-заглушка: блоки витрины (слайдер, категории, товары) добавят следующие задачи. */
-export default function HomePage() {
-  return (
-    <>
-      <h1>РемТехСад</h1>
-      <EmptyState title="Магазин готовится к открытию">
-        <p>Каталог товаров появится здесь в ближайшее время.</p>
-      </EmptyState>
-    </>
-  );
+export async function generateMetadata(): Promise<Metadata> {
+  await connection();
+  const s = getSettings();
+  const base = contentMetadata({ title: 'РемТехСад — товары для сада и ремонт техники', seoTitle: s.home_title, seoDescription: s.home_description, path: '/' });
+  // у главной название уже полное: без шаблона «… — РемТехСад»
+  return { ...base, title: { absolute: s.home_title?.trim() || 'РемТехСад — товары для сада и ремонт техники' } };
+}
+
+/** Главная: слайдер, категории, товарные блоки, акции, услуги, отзывы, о компании, контакты и карта. Пустые блоки скрыты. */
+export default async function HomePage() {
+  await connection(); // читает БД: не пререндерить на сборке
+  return <HomeView data={await getHomeData()} />;
 }
