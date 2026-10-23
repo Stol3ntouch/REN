@@ -10,6 +10,14 @@ export class ConfigError extends Error {
 
 type Env = Record<string, string | undefined>;
 
+/**
+ * Production: NODE_ENV=production или APP_ENV=production. Та же логика, что в integrations/payment/select.ts
+ * (дубль намеренный: next.config.ts читает этот файл без алиаса `@/`; совпадение проверяет tests/seo/config-env.test.ts).
+ */
+export function isProductionEnv(env: Env = process.env): boolean {
+  return env.NODE_ENV === 'production' || env.APP_ENV === 'production';
+}
+
 // Пустая строка из .env.example/.env считается «не задано».
 const blankToUndefined = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? undefined : v);
 const optional = <T extends z.ZodType>(schema: T) => z.preprocess(blankToUndefined, schema.optional());
@@ -77,7 +85,7 @@ export function loadConfig(env: Env = process.env): Config {
     }
   }
 
-  const isProduction = (env.NODE_ENV ?? '') === 'production';
+  const isProduction = isProductionEnv(env);
   if (parsed.success && isProduction) {
     for (const [name, hint] of Object.entries(REQUIRED_IN_PRODUCTION)) {
       if (!parsed.data[name as keyof typeof parsed.data]) problems.push(`${name} (обязательна в production: ${hint})`);
@@ -93,10 +101,10 @@ export function loadConfig(env: Env = process.env): Config {
   const e = parsed.data;
   return {
     nodeEnv: e.NODE_ENV,
-    isProduction: e.NODE_ENV === 'production',
+    isProduction,
     siteUrl: e.SITE_URL ? e.SITE_URL.replace(/\/+$/, '') : undefined,
     sessionSecret: e.SESSION_SECRET,
-    cookieSecure: e.NODE_ENV === 'production',
+    cookieSecure: isProduction,
     databasePath: e.DATABASE_PATH,
     dataDir: e.DATA_DIR,
     trustProxy: e.TRUST_PROXY === 'true',

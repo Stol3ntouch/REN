@@ -2,6 +2,12 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getDeliveryPaymentText } from '@/domain/catalog/shop-text';
 import { getProductBySlug, getRelatedProducts } from '@/domain/catalog/product';
+import { breadcrumbJsonLd, productJsonLd } from '@/domain/seo/jsonld';
+import { productMetadata } from '@/domain/seo/metadata';
+import { resolveSiteUrl } from '@/domain/seo/site-url';
+import { getProductSeo } from '@/domain/seo/store';
+import { getProductRating } from '@/domain/requests/public';
+import { JsonLd } from '@/ui/seo/JsonLd';
 import { AddToCartButton } from '@/ui/catalog/AddToCartButton';
 import { Breadcrumbs } from '@/ui/catalog/Breadcrumbs';
 import { PriceBlock } from '@/ui/catalog/PriceBlock';
@@ -14,22 +20,11 @@ import '@/ui/catalog/catalog.css';
 
 type Props = { params: Promise<{ slug: string }> };
 
-function plainText(html: string | null, max: number): string | undefined {
-  if (!html) return undefined;
-  const text = html
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  if (text === '') return undefined;
-  return text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text;
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) return { title: 'Товар не найден', robots: { index: false } };
-  return { title: product.name, description: plainText(product.descriptionHtml, 160) };
+  return productMetadata(product, getProductSeo(product.id));
 }
 
 export default async function ProductPage({ params }: Props) {
@@ -39,9 +34,12 @@ export default async function ProductPage({ params }: Props) {
 
   const related = await getRelatedProducts(product.id);
   const deliveryText = getDeliveryPaymentText();
+  const siteUrl = resolveSiteUrl();
 
   return (
     <article className="product-page">
+      <JsonLd data={productJsonLd(product, getProductRating(product.id), siteUrl)} />
+      <JsonLd data={breadcrumbJsonLd([{ name: 'Каталог', href: '/catalog' }, ...product.breadcrumbs, { name: product.name, href: `/product/${product.slug}` }], siteUrl)} />
       <Breadcrumbs items={[{ name: 'Каталог', href: '/catalog' }, ...product.breadcrumbs]} current={product.name} />
 
       <div className="product-top">

@@ -1,15 +1,14 @@
 import type { NextConfig } from 'next';
 import { PHASE_PRODUCTION_SERVER } from 'next/constants';
+import { staticSecurityHeaders } from './src/domain/seo/headers';
 import { assertConfigAtStartup } from './src/server/config';
 
-const securityHeaders = [
-  { key: 'X-Content-Type-Options', value: 'nosniff' },
-  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-];
+// CSP, HSTS и редирект на HTTPS — в src/proxy.ts (нужен nonce на запрос); здесь заголовки без состояния.
+const securityHeaders = staticSecurityHeaders();
 
 const nextConfig: NextConfig = {
+  // NEXT_DIST_DIR: отдельная папка сборки, чтобы проверка не затирала .next работающего dev-сервера.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   poweredByHeader: false,
   reactStrictMode: true,
   async headers() {

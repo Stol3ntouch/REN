@@ -6,7 +6,7 @@ import { Breadcrumbs } from '@/ui/catalog/Breadcrumbs';
 import { EmptyState } from '@/ui/states';
 import '@/ui/catalog/catalog.css';
 
-export const metadata: Metadata = { title: 'Каталог товаров' };
+export const metadata: Metadata = { title: 'Каталог товаров', alternates: { canonical: '/catalog' } };
 
 export default async function CatalogIndexPage() {
   await connection(); // читает БД: не пререндерить на сборке

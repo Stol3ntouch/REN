@@ -3,9 +3,13 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { getCategoryBreadcrumbs, getCategoryBySlug, getCategoryTree, getSiblingCategories } from '@/domain/catalog/categories';
 import { getFacets } from '@/domain/catalog/facets';
-import { buildCatalogQueryString, parseCatalogParams, type RawParams } from '@/domain/catalog/params';
+import { buildCatalogQueryString, parseCatalogParams } from '@/domain/catalog/params';
 import { searchProducts } from '@/domain/catalog/search';
 import type { CategoryNode } from '@/domain/catalog/types';
+import { breadcrumbJsonLd } from '@/domain/seo/jsonld';
+import { categoryMetadata } from '@/domain/seo/metadata';
+import { resolveSiteUrl } from '@/domain/seo/site-url';
+import { JsonLd } from '@/ui/seo/JsonLd';
 import { Breadcrumbs } from '@/ui/catalog/Breadcrumbs';
 import { CatalogListing } from '@/ui/catalog/CatalogListing';
 import { CategoryTiles } from '@/ui/catalog/CategoryTiles';
@@ -19,29 +23,11 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-/** Страницы с фильтрами, сортировкой и поиском — дубли категории, в индекс не нужны. */
-function isFiltered(raw: RawParams): boolean {
-  const q = parseCatalogParams(raw);
-  return (
-    Object.keys(q.filters).length > 0 ||
-    q.text !== undefined ||
-    q.priceMin !== undefined ||
-    q.priceMax !== undefined ||
-    q.inStockOnly === true ||
-    q.sort !== 'name'
-  );
-}
-
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
   const category = await getCategoryBySlug(slug);
   if (!category) return { title: 'Категория не найдена', robots: { index: false } };
-  const sp = await searchParams;
-  return {
-    title: category.seoTitle ?? category.name,
-    description: category.seoDescription ?? undefined,
-    robots: isFiltered(sp) ? { index: false, follow: true } : undefined,
-  };
+  return categoryMetadata(category, await searchParams);
 }
 
 export default async function CategoryPage({ params, searchParams }: Props) {
@@ -74,6 +60,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
   return (
     <>
+      <JsonLd data={breadcrumbJsonLd([{ name: 'Каталог', href: '/catalog' }, ...crumbs], resolveSiteUrl())} />
       <Breadcrumbs items={[{ name: 'Каталог', href: '/catalog' }, ...crumbs.slice(0, -1)]} current={category.name} />
       <h1>{category.h1 ?? category.name}</h1>
 
