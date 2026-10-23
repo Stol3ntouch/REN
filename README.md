@@ -73,6 +73,7 @@ npm run dev
 - `docs/architecture.md` — модули, потоки данных, границы доверия
 - `docs/env.md` — все переменные окружения (имена и назначение)
 - `docs/deployment.md` — чек-лист выхода в production (без выполнения)
+- `docs/hosting.md` — где запускать: OpenServer, сервер, Vercel, Supabase (что работает, что нет)
 - `docs/backup-restore.md` — резервные копии и восстановление
 - `docs/1c.md` — обмен с 1С: вопросы партнёру, минимальный тест, заглушка
 - `docs/security.md` — что защищено и что нет
