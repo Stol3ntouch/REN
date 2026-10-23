@@ -16,6 +16,12 @@ export type AdminCreateIo = {
   now?: number;
 };
 
+/** Логин в выводе маскируется: email — как везде, короткое имя — первая и последняя буквы. */
+function maskLogin(login: string): string {
+  if (login.includes('@')) return maskEmail(login);
+  return login.length <= 2 ? '***' : `${login[0]}***${login.slice(-1)}`;
+}
+
 /**
  * Создаёт первого (или ещё одного) администратора. Использование:
  *   npm run admin:create -- admin@example.ru
@@ -25,7 +31,7 @@ export type AdminCreateIo = {
 export async function runAdminCreate(io: AdminCreateIo): Promise<number> {
   const email = io.argv.find((a) => !a.startsWith('-'));
   if (!email) {
-    io.err('Укажите email администратора: npm run admin:create -- admin@example.ru');
+    io.err('Укажите логин или email администратора: npm run admin:create -- Adm   (или admin@example.ru)');
     return 1;
   }
 
@@ -40,7 +46,7 @@ export async function runAdminCreate(io: AdminCreateIo): Promise<number> {
 
   try {
     const { staffId } = await createStaff({ email, password, role: 'admin' }, { db: io.db, now: io.now, actor: { id: 'cli', type: 'system' } });
-    io.out(`Администратор создан: ${maskEmail(email.trim().toLowerCase())} (id ${staffId}). Вход: /admin/login`);
+    io.out(`Администратор создан: ${maskLogin(email.trim().toLowerCase())} (id ${staffId}). Вход: /admin/login`);
     return 0;
   } catch (e) {
     io.err(e instanceof AppError ? `Не удалось создать администратора: ${e.message}` : 'Не удалось создать администратора: внутренняя ошибка.');

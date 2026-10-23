@@ -10,15 +10,21 @@ import { createStaffSession, destroyStaffSession, type Opts } from './staff-sess
 
 export type StaffCtx = Opts & { cookies: CookieStore; ip: string };
 
-const emailSchema = z
-  .string({ error: 'Введите email' })
+/** Логин сотрудника: короткое имя (латиница, цифры, . _ -), регистр не важен. */
+export const STAFF_LOGIN_RE = /^[A-Za-z0-9._-]{3,32}$/;
+
+/** Идентификатор сотрудника при создании: email или короткий логин; нормализуется к нижнему регистру. */
+const loginIdSchema = z
+  .string({ error: 'Введите логин или email' })
   .trim()
   .toLowerCase()
   .max(254)
-  .pipe(z.email({ error: 'Введите корректный email' }));
+  .refine((v) => STAFF_LOGIN_RE.test(v) || z.email().safeParse(v).success, {
+    error: 'Логин: 3–32 символа (латиница, цифры, . _ -) или корректный email',
+  });
 
 const createSchema = z.object({
-  email: emailSchema,
+  email: loginIdSchema,
   password: z
     .string({ error: 'Введите пароль' })
     .min(MIN_PASSWORD_LENGTH, `Пароль должен быть не короче ${MIN_PASSWORD_LENGTH} символов`)
@@ -46,7 +52,7 @@ export async function createStaff(
   const passwordHash = await hashPassword(data.password);
 
   const staffId = withTransaction(db, () => {
-    if (staffRepo.findByEmail(db, data.email)) throw new ConflictError('Сотрудник с таким email уже есть');
+    if (staffRepo.findByEmail(db, data.email)) throw new ConflictError('Сотрудник с таким логином уже есть');
     const id = staffRepo.insert(db, { email: data.email, name: data.name, role: data.role, passwordHash, now });
     audit.record(
       {
@@ -64,8 +70,12 @@ export async function createStaff(
   return { staffId, role: data.role };
 }
 
-const loginSchema = z.object({ email: emailSchema, password: z.string().min(1, 'Введите пароль').max(MAX_PASSWORD_LENGTH) });
-const INVALID = 'Неверный email или пароль';
+// Формат логина при входе не проверяем: любая неверная пара даёт одну ошибку (не раскрываем, есть ли такой логин).
+const loginSchema = z.object({
+  email: z.string({ error: 'Введите логин или email' }).trim().toLowerCase().min(1, 'Введите логин или email').max(254),
+  password: z.string().min(1, 'Введите пароль').max(MAX_PASSWORD_LENGTH),
+});
+const INVALID = 'Неверный логин или пароль';
 
 export async function loginStaff(input: unknown, ctx: StaffCtx): Promise<{ staffId: number }> {
   const parsed = loginSchema.safeParse(input);

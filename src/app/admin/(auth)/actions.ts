@@ -24,7 +24,7 @@ export async function adminLoginAction(_prev: AdminFormState, form: FormData): P
     const ip = clientIp(h);
     enforceRateLimit(`form:admin-login:${ip}`, 30, 600);
     const trap = form.get('website');
-    if (typeof trap === 'string' && trap.trim() !== '') return { status: 'error', message: 'Неверный email или пароль' };
+    if (typeof trap === 'string' && trap.trim() !== '') return { status: 'error', message: 'Неверный логин или пароль' };
     const email = form.get('email');
     const password = form.get('password');
     await loginStaff(

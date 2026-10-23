@@ -44,6 +44,18 @@ describe('npm run admin:create', () => {
     expect(audit.list({ action: 'staff.create' }, { db })).toHaveLength(1);
   });
 
+  it('короткий логин из аргумента: создаётся, вход по логину без учёта регистра, в выводе замаскирован', async () => {
+    const { db, lines, errs, done } = run({ argv: ['Adm'], env: { ADMIN_PASSWORD: SECRET } });
+    expect(await done).toBe(0);
+    expect(db.prepare('SELECT email FROM staff').get()).toEqual({ email: 'adm' });
+    const output = [...lines, ...errs].join('\n');
+    expect(output).not.toContain(SECRET);
+    expect(output).toContain('a***m');
+    expect(output).not.toMatch(/\badm\b/i);
+    expect((await loginStaff({ email: 'ADM', password: SECRET }, { db, cookies: fakeCookies(), ip: 'cli', now: T0 })).staffId).toBeGreaterThan(0);
+    expect(await run({ argv: ['a b'], env: { ADMIN_PASSWORD: SECRET } }).done).toBe(1);
+  });
+
   it('без ADMIN_PASSWORD берёт пароль из интерактивного ввода', async () => {
     const { db, lines, done } = run({ argv: ['boss@shop.test'], promptPassword: async () => 'typed-password-123' });
     expect(await done).toBe(0);

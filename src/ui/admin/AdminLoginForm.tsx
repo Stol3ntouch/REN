@@ -14,8 +14,8 @@ export function AdminLoginForm({ action }: { action: (prev: AdminFormState, form
         </ErrorState>
       ) : null}
       <div className="admin-field">
-        <label htmlFor="admin-email">Email</label>
-        <input id="admin-email" name="email" type="email" autoComplete="username" required />
+        <label htmlFor="admin-email">Логин или email</label>
+        <input id="admin-email" name="email" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} required />
       </div>
       <div className="admin-field">
         <label htmlFor="admin-password">Пароль</label>

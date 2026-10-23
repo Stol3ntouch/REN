@@ -81,6 +81,30 @@ describe('сотрудники', () => {
     expect(await tryLogin('boss@shop.test', 'admin-password-1', T0 + MINUTE)).toBeInstanceOf(RateLimitError);
   });
 
+  it('вход по короткому логину и по email, регистр не важен; дубль и невалидный логин отклоняются', async () => {
+    const { db } = await setup();
+    const { staffId } = await createStaff({ email: 'Adm', password: 'admin-password-1', role: 'admin' }, { db, now: T0 });
+    expect((db.prepare('SELECT email FROM staff WHERE id = ?').get(staffId) as { email: string }).email).toBe('adm');
+    const login = (id: string, password = 'admin-password-1') =>
+      loginStaff({ email: id, password }, { db, cookies: fakeCookies(), ip: '4.4.4.4', now: T0 });
+    expect((await login('ADM')).staffId).toBe(staffId);
+    expect((await login(' adm ')).staffId).toBe(staffId);
+    expect((await login('BOSS@shop.test')).staffId).toBeGreaterThan(0);
+
+    const bad = await login('adm', 'wrong-password-1').catch((e) => e);
+    const ghost = await login('nobody', 'wrong-password-1').catch((e) => e);
+    expect(bad).toBeInstanceOf(UnauthorizedError);
+    expect(ghost).toBeInstanceOf(UnauthorizedError);
+    expect(bad.message).toBe(ghost.message);
+    expect(bad.message).toBe('Неверный логин или пароль');
+
+    await expect(createStaff({ email: 'ADM', password: 'other-password-12', role: 'manager' }, { db })).rejects.toBeInstanceOf(ConflictError);
+    for (const id of ['ab', 'bad name', 'x'.repeat(33), 'ад-мин']) {
+      await expect(createStaff({ email: id, password: 'other-password-12', role: 'manager' }, { db })).rejects.toBeInstanceOf(ValidationError);
+    }
+    await expect(createStaff({ email: 'okname', password: 'short', role: 'manager' }, { db })).rejects.toBeInstanceOf(ValidationError);
+  });
+
   it('отключение сотрудника закрывает уже выданную сессию', async () => {
     const { db, loginAs } = await setup();
     const cookies = await loginAs('mgr@shop.test', 'manager-password-1');
