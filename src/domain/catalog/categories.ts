@@ -11,6 +11,19 @@ export function toCategoryInfo(c: CategoryRow): CategoryInfo {
   return { id: c.id, slug: c.slug, name: c.name, h1: c.h1, seoTitle: c.seoTitle, seoDescription: c.seoDescription, seoText: c.seoText, parentId: c.parentId };
 }
 
+/** SEO-текст категории → абзацы (разделитель — пустая строка). Пустой текст — пустой массив. */
+export function splitSeoText(text: string | null | undefined): string[] {
+  return (text ?? '')
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+}
+
+/** H1 страницы категории: заданный вручную, иначе название. */
+export function categoryHeading(c: { name: string; h1: string | null }): string {
+  return c.h1?.trim() || c.name;
+}
+
 /**
  * Дерево категорий (порядок sort, затем id). productCount — опубликованные товары
  * категории вместе со всеми подкатегориями.

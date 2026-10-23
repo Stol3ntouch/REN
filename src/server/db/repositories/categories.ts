@@ -79,6 +79,16 @@ export const categoriesRepo = {
     return Number(r.lastInsertRowid);
   },
 
+  findById(db: Db, id: number): CategoryRow | undefined {
+    const r = db.prepare(`SELECT ${COLUMNS} FROM categories WHERE id = ?`).get(id) as Raw | undefined;
+    return r && map(r);
+  },
+
+  /** SEO-поля категории (редактор в админке); импорт их не трогает. */
+  updateSeo(db: Db, id: number, seo: { seoTitle: string | null; seoDescription: string | null; h1: string | null; seoText: string | null }): void {
+    db.prepare('UPDATE categories SET seo_title = ?, seo_description = ?, h1 = ?, seo_text = ? WHERE id = ?').run(seo.seoTitle, seo.seoDescription, seo.h1, seo.seoText, id);
+  },
+
   /** Обновляет название и/или родителя; SEO-поля и slug импорт не трогает. */
   update(db: Db, id: number, patch: { name?: string; parentId?: number | null }): void {
     if (patch.name !== undefined) db.prepare('UPDATE categories SET name = ? WHERE id = ?').run(patch.name, id);

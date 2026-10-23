@@ -33,6 +33,7 @@ export const ACCESS_NAV = [
 
 export const CATALOG_NAV = [
   { href: '/admin/catalog', label: 'Товары' },
+  { href: '/admin/catalog/categories', label: 'Категории и SEO' },
   { href: '/admin/warehouse', label: 'Склад' },
 ];
 

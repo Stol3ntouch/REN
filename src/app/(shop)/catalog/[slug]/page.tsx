@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { getCategoryBreadcrumbs, getCategoryBySlug, getCategoryTree, getSiblingCategories } from '@/domain/catalog/categories';
+import { categoryHeading, getCategoryBreadcrumbs, getCategoryBySlug, getCategoryTree, getSiblingCategories } from '@/domain/catalog/categories';
 import { getFacets } from '@/domain/catalog/facets';
 import { buildCatalogQueryString, parseCatalogParams } from '@/domain/catalog/params';
 import { searchProducts } from '@/domain/catalog/search';
@@ -12,6 +12,7 @@ import { resolveSiteUrl } from '@/domain/seo/site-url';
 import { JsonLd } from '@/ui/seo/JsonLd';
 import { Breadcrumbs } from '@/ui/catalog/Breadcrumbs';
 import { CatalogListing } from '@/ui/catalog/CatalogListing';
+import { CategorySeoText } from '@/ui/catalog/CategorySeoText';
 import { CategoryTiles } from '@/ui/catalog/CategoryTiles';
 import { CategoryTree } from '@/ui/catalog/CategoryTree';
 import { ResponsiveDetails } from '@/ui/catalog/ResponsiveDetails';
@@ -53,16 +54,12 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     getSiblingCategories(slug),
   ]);
   const node = findNode(tree, slug);
-  const seoParagraphs = (category.seoText ?? '')
-    .split(/\n\s*\n/)
-    .map((p) => p.trim())
-    .filter(Boolean);
 
   return (
     <>
       <JsonLd data={breadcrumbJsonLd([{ name: 'Каталог', href: '/catalog' }, ...crumbs], resolveSiteUrl())} />
       <Breadcrumbs items={[{ name: 'Каталог', href: '/catalog' }, ...crumbs.slice(0, -1)]} current={category.name} />
-      <h1>{category.h1 ?? category.name}</h1>
+      <h1>{categoryHeading(category)}</h1>
 
       {node && node.children.length > 0 ? (
         <CategoryTiles nodes={node.children} label="Подкатегории" />
@@ -100,13 +97,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         }
       />
 
-      {seoParagraphs.length > 0 ? (
-        <section className="seo-text" aria-label={`О категории «${category.name}»`}>
-          {seoParagraphs.map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
-        </section>
-      ) : null}
+      <CategorySeoText name={category.name} text={category.seoText} />
     </>
   );
 }
