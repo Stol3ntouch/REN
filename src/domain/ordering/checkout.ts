@@ -2,7 +2,7 @@ import { audit } from '@/domain/admin/audit';
 import { enqueueMail } from '@/domain/admin/mail-enqueue';
 import { consent } from '@/domain/customers/consent';
 import type { PricedCart } from '@/domain/pricing';
-import { getConfig } from '@/server/config';
+import { getPaymentPort, isProductionEnv } from '@/integrations/payment/select';
 import { getDb, withTransaction, type Db } from '@/server/db/connection';
 import { cartsRepo, type CartRow } from '@/server/db/repositories/carts';
 import { methodsRepo, type DeliveryMethodRow, type PaymentMethodRow } from '@/server/db/repositories/methods';
@@ -29,13 +29,20 @@ export class CheckoutChangesError extends ConflictError {
 
 export type ValidatedCart = PricedCart & { discount: number; totalKopecks: number; view: CartView };
 
+/** Единое определение production для оформления и платежей: NODE_ENV или APP_ENV = production. */
 function isProduction(opts: CheckoutOpts): boolean {
-  if (opts.production !== undefined) return opts.production;
-  try {
-    return getConfig().isProduction;
-  } catch {
-    return false;
-  }
+  return opts.production !== undefined ? opts.production : isProductionEnv();
+}
+
+/**
+ * Способ оплаты доступен покупателю: включён; тестовый — не в production; онлайн — только если платёжный порт
+ * реально есть (при порте «none», то есть production без выбранного провайдера, онлайн-оплаты нет).
+ */
+function paymentUsable(m: PaymentMethodRow, prod: boolean): boolean {
+  if (!m.enabled) return false;
+  if (prod && m.testOnly) return false;
+  if (m.kind === 'online' && getPaymentPort({ production: prod }).name === 'none') return false;
+  return true;
 }
 
 function ownedCart(db: Db, cartId: number, owner: OwnerRef): CartRow {
@@ -57,7 +64,7 @@ export const checkout = {
     const prod = isProduction(opts);
     return {
       delivery: methodsRepo.listDelivery(db, { enabledOnly: true }),
-      payment: methodsRepo.listPayment(db, { enabledOnly: true }).filter((m) => !(prod && m.testOnly)),
+      payment: methodsRepo.listPayment(db, { enabledOnly: true }).filter((m) => paymentUsable(m, prod)),
     };
   },
 
@@ -112,7 +119,7 @@ export const checkout = {
         throw new ValidationError('Выбранный способ получения недоступен', { deliveryMethodId: ['Выберите доступный способ получения'] });
       }
       const payment = methodsRepo.findPayment(db, input.paymentMethodId);
-      if (!payment || !payment.enabled || (prod && payment.testOnly)) {
+      if (!payment || !paymentUsable(payment, prod)) {
         throw new ValidationError('Выбранный способ оплаты недоступен', { paymentMethodId: ['Выберите доступный способ оплаты'] });
       }
       const address = input.contact.address ?? null;
