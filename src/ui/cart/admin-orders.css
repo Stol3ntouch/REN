@@ -89,3 +89,14 @@
     align-items: start;
   }
 }
+
+/* Поле сетки не шире колонки: длинные названия в select не растягивают страницу на 360 px */
+.adm-field {
+  min-width: 0;
+}
+
+.adm-field select,
+.adm-field input {
+  max-width: 100%;
+  min-width: 0;
+}

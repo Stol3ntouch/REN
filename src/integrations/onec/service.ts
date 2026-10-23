@@ -1,4 +1,5 @@
 import { audit } from '@/domain/admin/audit';
+import { enqueueMail } from '@/domain/admin/mail-enqueue';
 import { orders } from '@/domain/ordering/orders';
 import { canTransition, isOrderStatus, STATUS_LABELS } from '@/domain/ordering/status';
 import { applyImport, parseYml, planImport } from '@/importing/yml';
@@ -51,7 +52,17 @@ async function logged(ctx: OnecCtx, kind: string, body: (db: Db, now: number) =>
     },
     { db, now },
   );
+  if (status !== 'ok') notifyFailure(kind, errors);
   return { runId, kind, status, counts, errors };
+}
+
+/** Письмо администратору о сбое обмена. Текст без ПДн: только вид запуска и первая ошибка; сбой очереди обмен не ломает. */
+function notifyFailure(kind: string, errors: string[]): void {
+  try {
+    enqueueMail('integration.failed', { integration: '1С', message: `${kind}: ${errors[0] ?? 'ошибка'}`.slice(0, 300) });
+  } catch {
+    console.error('[onec] не удалось поставить в очередь письмо о сбое обмена');
+  }
 }
 
 function buildExport(db: Db, number: string): OrderExport | null {

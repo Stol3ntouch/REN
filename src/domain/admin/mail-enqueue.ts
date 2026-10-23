@@ -11,16 +11,18 @@ export type MailEnqueue = (event: string, payload: Record<string, unknown>) => v
 
 type Opts = { db?: Db; now?: number };
 
-let override: MailEnqueue | null = null;
+// На globalThis: instrumentation подключает очередь, а вызывают её обработчики из других бандлов Next.js.
+const g = globalThis as unknown as { __rtsMailEnqueue?: { impl: MailEnqueue | null } };
+const holder = (g.__rtsMailEnqueue ??= { impl: null });
 
 /** T09: подключить настоящую очередь. null — вернуть заглушку. */
 export function setMailEnqueue(impl: MailEnqueue | null): void {
-  override = impl;
+  holder.impl = impl;
 }
 
 export function enqueueMail(event: string, payload: Record<string, unknown>, opts: Opts = {}): void {
-  if (override) {
-    override(event, payload);
+  if (holder.impl) {
+    holder.impl(event, payload);
     return;
   }
   (opts.db ?? getDb())

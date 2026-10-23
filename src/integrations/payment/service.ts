@@ -33,13 +33,19 @@ const SYSTEM_ZERO = { type: 'system', reason: 'zero_total' } as const;
  * payments (status='error') и webhook_events (outcome 'alert'/'error'). T10 может подключить запись в integration_run.
  */
 export type PaymentRunEntry = { kind: 'create_payment' | 'webhook' | 'refund'; ok: boolean; orderId?: number; code?: string; message?: string };
-let runLogger: ((e: PaymentRunEntry) => void) | null = null;
-export function setPaymentRunLogger(fn: ((e: PaymentRunEntry) => void) | null): void {
-  runLogger = fn;
+type RunLogger = (e: PaymentRunEntry) => void;
+// На globalThis: instrumentation подключает журнал, а платёж и webhook работают в других бандлах Next.js.
+const g = globalThis as unknown as { __rtsPaymentRunLog?: { fn: RunLogger | null } };
+const logHolder = (g.__rtsPaymentRunLog ??= { fn: null });
+export function setPaymentRunLogger(fn: RunLogger | null): void {
+  logHolder.fn = fn;
+}
+export function getPaymentRunLogger(): RunLogger | null {
+  return logHolder.fn;
 }
 const logRun = (e: PaymentRunEntry): void => {
   try {
-    runLogger?.(e);
+    logHolder.fn?.(e);
   } catch {
     /* журнал не должен ломать оплату */
   }

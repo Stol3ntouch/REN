@@ -9,12 +9,14 @@ import type { Db } from '@/server/db/connection';
  */
 export type PopularitySource = (db: Db) => string | null;
 
-let source: PopularitySource | null = null;
+// Состояние на globalThis: instrumentation и обработчики страниц Next.js — разные бандлы с разными экземплярами модуля.
+const g = globalThis as unknown as { __rtsPopularity?: { source: PopularitySource | null } };
+const state = (g.__rtsPopularity ??= { source: null });
 
 export function setPopularitySource(src: PopularitySource | null): void {
-  source = src;
+  state.source = src;
 }
 
 export function getPopularitySql(db: Db): string | null {
-  return source ? source(db) : null;
+  return state.source ? state.source(db) : null;
 }

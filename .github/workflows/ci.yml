@@ -1,0 +1,21 @@
+# Проверка на каждый push и pull request. Файл написан, но в GitHub Actions НЕ запускался (см. docs/handoff.md).
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # типы + линтер + тесты (Vitest, БД во временной памяти, без сети)
+      - run: npm run check
+      # production-сборка; секретов не нужно: NODE_ENV=production при сборке не открывает рабочую БД
+      - run: npm run build

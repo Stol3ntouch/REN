@@ -17,7 +17,12 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
     "import:yml": "tsx scripts/import-yml.ts",
-    "admin:create": "tsx scripts/admin-create.ts"
+    "admin:create": "tsx scripts/admin-create.ts",
+    "seed:demo": "tsx scripts/seed-demo.ts",
+    "backup": "tsx scripts/backup.ts",
+    "restore": "tsx scripts/restore.ts",
+    "e2e:live": "tsx tests/e2e/live-check.ts",
+    "a11y:live": "tsx tests/a11y/js-budget.ts"
   },
   "dependencies": {
     "fast-xml-parser": "^5.11.2",

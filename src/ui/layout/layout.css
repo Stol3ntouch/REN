@@ -204,6 +204,11 @@
   color: var(--color-on-dark);
 }
 
+/* синее кольцо фокуса на тёмном фоне < 3:1 — в подвале светлое */
+.site-footer :focus-visible {
+  outline-color: var(--color-accent-on-dark);
+}
+
 .site-footer a {
   color: var(--color-accent-on-dark);
 }
