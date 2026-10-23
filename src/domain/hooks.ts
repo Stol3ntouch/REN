@@ -1,4 +1,6 @@
 import { registerOnLoginHook } from '@/domain/customers/auth';
+import { compare } from '@/domain/customers/compare';
+import { favorites } from '@/domain/customers/favorites';
 import { mergeGuestCartOnLogin } from '@/domain/ordering/merge-hook';
 
 /**
@@ -11,4 +13,7 @@ const flag = globalThis as unknown as { __rtsHooksRegistered?: boolean };
 if (!flag.__rtsHooksRegistered) {
   flag.__rtsHooksRegistered = true;
   registerOnLoginHook((guestId, userId) => mergeGuestCartOnLogin(guestId, userId));
+  // T07: избранное и сравнение гостя — отдельными хуками, чтобы сбой одного не мешал остальным
+  registerOnLoginHook((guestId, userId) => favorites.merge(guestId, userId));
+  registerOnLoginHook((guestId, userId) => compare.merge(guestId, userId));
 }

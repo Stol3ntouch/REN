@@ -1,16 +1,28 @@
+'use client';
+
+import { CompareButton } from '@/ui/compare/CompareButton';
+import { FavoriteButton } from '@/ui/favorite/FavoriteButton';
+
 /*
- * Слоты для T07 (избранное, сравнение). Заглушки ничего не рисуют; T07 заменяет тело
- * этих двух компонентов кнопками (они станут 'use client': ProductCard используется и на клиенте).
+ * Слоты T07: кнопки избранного и сравнения. Файл клиентский: ProductCard используется и в клиентских сетках.
  */
 
 /** Кнопки поверх фото карточки в сетке (правый верхний угол). */
 export function CardActionsSlot({ product }: { product: { id: number; name: string } }) {
-  void product;
-  return null;
+  return (
+    <>
+      <FavoriteButton productId={product.id} name={product.name} variant="icon" />
+      <CompareButton productId={product.id} name={product.name} variant="icon" />
+    </>
+  );
 }
 
 /** Кнопки рядом с «В корзину» на странице товара. */
 export function ProductActionsSlot({ product }: { product: { id: number; name: string } }) {
-  void product;
-  return null;
+  return (
+    <>
+      <FavoriteButton productId={product.id} name={product.name} variant="text" />
+      <CompareButton productId={product.id} name={product.name} variant="text" />
+    </>
+  );
 }
