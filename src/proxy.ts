@@ -6,6 +6,18 @@ import { isProductionEnv } from '@/server/config';
 /** Адрес проверки живости: балансировщик ходит на него по http внутри сети, редирект ему не нужен. */
 const HEALTH_PATH = '/api/health';
 
+/**
+ * Переключатель HTTPS_REDIRECT: значения off / false / 0 (регистр не важен) отключают ТОЛЬКО 301-редирект HTTP→HTTPS.
+ * HSTS, CSP и прочие заголовки остаются как есть. Без переменной (или с любым другим значением) редирект
+ * в production включён. Использовать лишь за прокси, который терминирует TLS и не умеет передавать верный
+ * `x-forwarded-proto` (тестовый туннель localhost.run шлёт `http` и для https-клиентов → бесконечный редирект).
+ * В обычном production НЕ отключать. Читается при каждом запросе (runtime), а не на этапе сборки.
+ */
+function httpsRedirectDisabled(): boolean {
+  const value = process.env.HTTPS_REDIRECT?.trim().toLowerCase();
+  return value === 'off' || value === 'false' || value === '0';
+}
+
 function httpsTarget(request: NextRequest): URL {
   const target = new URL(request.nextUrl.pathname + request.nextUrl.search, 'https://placeholder.invalid');
   // Хост берём из SITE_URL, а не из заголовка Host: иначе подменой Host можно увести пользователя на чужой сайт.
@@ -21,14 +33,16 @@ function httpsTarget(request: NextRequest): URL {
 }
 
 /**
- * Вход каждого запроса: HTTP→HTTPS и HSTS (только production), CSP с nonce на запрос,
+ * Вход каждого запроса: HTTP→HTTPS (только production и только по явному `x-forwarded-proto: http`:
+ * прокси без заголовка, например localhost.run, иначе зациклил бы редирект) и HSTS (production + https),
+ * CSP с nonce на запрос,
  * X-Robots-Tag для закрытых разделов. Остальные защитные заголовки — в next.config.ts.
  */
 export function proxy(request: NextRequest): NextResponse {
   const production = isProductionEnv();
   const { pathname } = request.nextUrl;
 
-  if (production && request.headers.get('x-forwarded-proto') === 'http' && pathname !== HEALTH_PATH) {
+  if (production && !httpsRedirectDisabled() && request.headers.get('x-forwarded-proto') === 'http' && pathname !== HEALTH_PATH) {
     const redirect = NextResponse.redirect(httpsTarget(request), 301);
     redirect.headers.set('Strict-Transport-Security', HSTS_VALUE);
     return redirect;
@@ -44,7 +58,8 @@ export function proxy(request: NextRequest): NextResponse {
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set('Content-Security-Policy', csp);
-  if (production) response.headers.set('Strict-Transport-Security', HSTS_VALUE);
+  // HSTS только на https: на чистом http (или за прокси без x-forwarded-proto) браузер его игнорирует, а мы не врём о схеме.
+  if (production && secure) response.headers.set('Strict-Transport-Security', HSTS_VALUE);
   if (isNoindexPath(pathname)) response.headers.set('X-Robots-Tag', 'noindex, nofollow');
   return response;
 }

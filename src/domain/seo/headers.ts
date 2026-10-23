@@ -20,7 +20,7 @@ export const IMAGE_SOURCES = [
   'https://*.tile.openstreetmap.org',
 ] as const;
 
-/** 365 дней. preload не включаем: это необратимо для домена и решается владельцем сайта. */
+/** Отдаётся только на https-запросах (proxy.ts). 365 дней. preload не включаем: это необратимо для домена и решается владельцем сайта. */
 export const HSTS_VALUE = 'max-age=31536000; includeSubDomains';
 
 export type Header = { key: string; value: string };

@@ -32,6 +32,51 @@ describe('proxy в production', () => {
     expect(csp).toMatch(/script-src [^;]*'nonce-[A-Za-z0-9+/=]+'/);
   });
 
+  it('заголовка x-forwarded-proto нет → без редиректа, без HSTS и upgrade-insecure-requests (туннель без заголовка)', () => {
+    vi.stubEnv('APP_ENV', 'production');
+    vi.stubEnv('SITE_URL', 'https://shop.example.ru');
+    const res = proxy(req('http://shop.example.ru/catalog'));
+    expect(res.status).toBe(200);
+    expect(res.headers.get('location')).toBeNull();
+    expect(res.headers.get('strict-transport-security')).toBeNull();
+    const csp = res.headers.get('content-security-policy') ?? '';
+    expect(csp).toContain("frame-ancestors 'none'");
+    expect(csp).not.toContain('upgrade-insecure-requests');
+  });
+
+  it('https без заголовка (nextUrl.protocol) → HSTS и upgrade-insecure-requests', () => {
+    vi.stubEnv('APP_ENV', 'production');
+    const res = proxy(req('https://shop.example.ru/'));
+    expect(res.status).toBe(200);
+    expect(res.headers.get('strict-transport-security')).toMatch(/max-age=/);
+    expect(res.headers.get('content-security-policy')).toContain('upgrade-insecure-requests');
+  });
+
+  it.each(['off', 'OFF', 'false', 'False', '0'])('HTTPS_REDIRECT=%s и x-forwarded-proto: http → 200 без Location, CSP на месте', (value) => {
+    vi.stubEnv('APP_ENV', 'production');
+    vi.stubEnv('SITE_URL', 'https://shop.example.ru');
+    vi.stubEnv('HTTPS_REDIRECT', value);
+    const res = proxy(req('http://shop.example.ru/catalog', { 'x-forwarded-proto': 'http' }));
+    expect(res.status).toBe(200);
+    expect(res.headers.get('location')).toBeNull();
+    expect(res.headers.get('content-security-policy')).toContain("frame-ancestors 'none'");
+  });
+
+  it('HTTPS_REDIRECT не задан или пуст → редирект как раньше (301)', () => {
+    vi.stubEnv('APP_ENV', 'production');
+    vi.stubEnv('SITE_URL', '');
+    vi.stubEnv('HTTPS_REDIRECT', '');
+    const res = proxy(req('http://shop.example.ru/', { 'x-forwarded-proto': 'http' }));
+    expect(res.status).toBe(301);
+  });
+
+  it('HTTPS_REDIRECT=off не отключает HSTS на https', () => {
+    vi.stubEnv('APP_ENV', 'production');
+    vi.stubEnv('HTTPS_REDIRECT', 'off');
+    const res = proxy(req('https://shop.example.ru/', { 'x-forwarded-proto': 'https' }));
+    expect(res.headers.get('strict-transport-security')).toMatch(/max-age=/);
+  });
+
   it('health-проверка по http не редиректится', () => {
     vi.stubEnv('APP_ENV', 'production');
     const res = proxy(req('http://localhost/api/health', { 'x-forwarded-proto': 'http' }));
