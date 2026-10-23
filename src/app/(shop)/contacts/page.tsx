@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { connection } from 'next/server';
 import { getShopInfo } from '@/domain/content/settings';
 import { contentMetadata } from '@/domain/content/seo';
+import { CallbackForm, ContactForm } from '@/ui/forms/forms';
 import { ShopMap } from '@/ui/map/ShopMapBlock';
 import { Placeholder } from '@/ui/placeholder';
 import '@/ui/home/home.css';
@@ -61,22 +62,14 @@ export default async function ContactsPage() {
         <ShopMap latitude={shop.latitude} longitude={shop.longitude} address={shop.address} />
       </div>
 
-      {/* Якоря форм (T09 вставляет формы): «Заказать звонок» — ссылка из шапки ведёт на #callback. */}
-      <section id="callback" className="anchor-slot" aria-labelledby="callback-title">
+      <section id="callback" className="form-section" aria-labelledby="callback-title">
         <h2 id="callback-title">Заказать звонок</h2>
-        <p>
-          Форма заказа звонка скоро появится на этой странице.
-          {shop.phone ? (
-            <>
-              {' '}
-              А пока позвоните: <a href={shop.phoneHref ?? undefined}>{shop.phone}</a>.
-            </>
-          ) : null}
-        </p>
+        <p>Оставьте имя и телефон — перезвоним в рабочее время.</p>
+        <CallbackForm />
       </section>
-      <section id="contact-form" className="anchor-slot" aria-labelledby="contact-form-title">
+      <section id="contact-form" className="form-section" aria-labelledby="contact-form-title">
         <h2 id="contact-form-title">Написать нам</h2>
-        <p>Форма обратной связи скоро появится на этой странице.</p>
+        <ContactForm />
       </section>
     </>
   );

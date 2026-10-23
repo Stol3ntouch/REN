@@ -30,8 +30,9 @@ describe('Обзор', () => {
     expect(JSON.stringify(v)).not.toContain('400000');
   });
 
-  it('пустой период: empty=true; заявки недоступны (таблиц нет) → available=false; ошибки интеграций считаются', () => {
+  it('пустой период: empty=true; заявки недоступны (таблиц нет, T09 их создаёт — здесь убраны) → available=false; ошибки интеграций считаются', () => {
     const db = createTestDb();
+    db.exec('DROP TABLE requests; DROP TABLE reviews;');
     const id = integrationRunsRepo.start(db, { kind: 'onec.pull_catalog', actor: 'system', now: NOW - 1000 });
     integrationRunsRepo.finish(db, id, { status: 'error', counts: {}, errors: ['x'], now: NOW });
     const v = overviewOps.get(admin, RANGE, 'day', { db, now: NOW });

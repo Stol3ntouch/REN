@@ -9,8 +9,11 @@ const SECTIONS = [
   'Склад',
   'Цены и акции',
   'Покупатели',
+  'Заявки',
+  'Отзывы и вопросы',
   'Контент и услуги',
   'Импорт и интеграции',
+  'Почта',
   'Аналитика',
   'Доступ и настройки',
 ];
@@ -28,12 +31,13 @@ describe('навигация админки', () => {
 
   it('менеджер видит только разделы, на которые у него есть право; остальное скрыто', () => {
     const labels = visibleNav('manager').map((i) => i.label);
-    expect(labels).toEqual(['Обзор', 'Каталог', 'Заказы', 'Склад', 'Цены и акции', 'Покупатели', 'Импорт и интеграции']);
+    expect(labels).toEqual(['Обзор', 'Каталог', 'Заказы', 'Склад', 'Цены и акции', 'Покупатели', 'Заявки', 'Отзывы и вопросы', 'Импорт и интеграции']);
     for (const item of visibleNav('manager')) {
       expect(item.permission === null || hasPermission('manager', item.permission)).toBe(true);
     }
     expect(labels).not.toContain('Аналитика');
     expect(labels).not.toContain('Доступ и настройки');
     expect(labels).not.toContain('Контент и услуги');
+    expect(labels).not.toContain('Почта');
   });
 });

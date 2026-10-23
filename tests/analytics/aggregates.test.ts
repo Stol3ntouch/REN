@@ -65,9 +65,15 @@ describe('аналитика: агрегаты на заданном набор�
     expect(o.series).toEqual([]);
   });
 
-  it('новые заявки: таблиц заявок ещё нет → available=false и нули', () => {
+  it('новые заявки: таблиц заявок нет → available=false и нули', () => {
     const db = createTestDb();
+    db.exec('DROP TABLE requests; DROP TABLE reviews;'); // T09 уже создал их; проверяем осторожную ветку T10
     expect(newRequests(db)).toEqual({ available: false, repair: 0, callback: 0, question: 0, reviewsPending: 0 });
+  });
+
+  it('новые заявки: таблицы T09 есть, заявок нет → available=true и честные нули', () => {
+    const db = createTestDb();
+    expect(newRequests(db)).toEqual({ available: true, repair: 0, callback: 0, question: 0, reviewsPending: 0 });
   });
 
   it('parseRange: даты по Москве, «по» включительно; мусор → последние 30 дней', () => {

@@ -8,6 +8,7 @@ import { PriceBlock } from '@/ui/catalog/PriceBlock';
 import { ProductCard } from '@/ui/catalog/ProductCard';
 import { ProductGallery } from '@/ui/catalog/ProductGallery';
 import { ProductActionsSlot } from '@/ui/catalog/slots';
+import { ProductFeedback, RatingBadge } from '@/ui/forms/ProductFeedback';
 import { Placeholder } from '@/ui/placeholder';
 import '@/ui/catalog/catalog.css';
 
@@ -49,12 +50,13 @@ export default async function ProductPage({ params }: Props) {
         <div className="product-info">
           <h1 className="product-info__title">{product.name}</h1>
           {product.sku ? <p className="product-info__sku">Артикул: {product.sku}</p> : null}
+          <RatingBadge productId={product.id} />
           <p className={`stock stock--${product.inStock ? 'yes' : 'no'}`}>{product.inStock ? 'В наличии' : 'Нет в наличии'}</p>
           <PriceBlock unitKopecks={product.unitKopecks} originalKopecks={product.originalKopecks} size="lg" />
           <div className="product-info__buy">
             <AddToCartButton productId={product.id} inStock={product.inStock} name={product.name} withQuantity />
             <div className="product-info__actions">
-              <ProductActionsSlot product={product} />
+              <ProductActionsSlot product={{ id: product.id, name: product.name }} />
             </div>
           </div>
         </div>
@@ -98,6 +100,8 @@ export default async function ProductPage({ params }: Props) {
           </p>
         )}
       </section>
+
+      <ProductFeedback productId={product.id} />
 
       {related.length > 0 ? (
         <section className="product-section" aria-labelledby="product-related">
