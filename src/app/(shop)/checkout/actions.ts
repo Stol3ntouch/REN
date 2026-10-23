@@ -2,9 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { cart, checkout, CheckoutChangesError, orderAccessPath, startOnlinePayment } from '@/domain/ordering';
+import { cart, checkout, CheckoutChangesError } from '@/domain/ordering';
 import { cartErrorState, formInt, formStr, isHoneypotTripped, prepareCartAction } from '@/ui/cart/server-context';
 import type { CartFormState } from '@/ui/cart/state';
+import { resolveOrderTarget } from './payment-target';
 
 /**
  * Оформление заказа. Владелец — из cookies; корзина — его собственная; цены, наличие, суммы, способы
@@ -32,13 +33,8 @@ export async function placeOrderAction(_prev: CartFormState, form: FormData): Pr
     });
     revalidatePath('/cart');
 
-    // Онлайн-оплату подключает T06 через setPaymentStarter; без неё остаёмся на странице заказа.
-    const payment = await startOnlinePayment(order);
-    if (payment) target = payment.redirectUrl;
-    else {
-      const base = order.owner.kind === 'guest' ? orderAccessPath(order.number) : `/order/${encodeURIComponent(order.number)}`;
-      target = `${base}${base.includes('?') ? '&' : '?'}placed=1`;
-    }
+    // Заказ создан. Старт онлайн-оплаты (T06) отделён: его сбой не отменяет редирект на страницу заказа.
+    target = await resolveOrderTarget(order);
   } catch (e) {
     if (e instanceof CheckoutChangesError) return { status: 'error', message: e.message, changes: e.changes };
     return cartErrorState(e);

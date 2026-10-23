@@ -12,10 +12,11 @@ function setup() {
       kind,
       new Request(`https://shop.test/api/forms/${kind}`, {
         method: 'POST',
-        headers: { origin: 'https://shop.test', host: 'shop.test', 'content-type': 'application/json', ...headers },
+        headers: { origin: 'https://shop.test', host: 'shop.test', 'content-type': 'application/json', 'x-forwarded-for': '203.0.113.5', ...headers },
         body: typeof body === 'string' ? body : JSON.stringify(body),
       }),
-      { db, now: T0 },
+      // IP известен (за доверенным прокси): лимит по IP действует; при неизвестном IP он не применяется (tests/hardening/unknown-ip)
+      { db, now: T0, trustProxy: true },
     );
   const count = (t: string) => (db.prepare(`SELECT COUNT(*) AS n FROM ${t}`).get() as { n: number }).n;
   return { db, productId, post, count };

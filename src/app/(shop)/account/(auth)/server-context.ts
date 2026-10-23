@@ -2,7 +2,7 @@ import { cookies, headers } from 'next/headers';
 import { AppError, RateLimitError, ValidationError } from '@/server/http/errors';
 import { assertOrigin } from '@/server/http/origin';
 import type { CookieStore } from '@/server/http/owner';
-import { clientIp, enforceRateLimit } from '@/server/http/rate-limit';
+import { clientIp, enforceRateLimitByIp } from '@/server/http/rate-limit';
 import type { FormState } from './form-state';
 
 /**
@@ -13,7 +13,7 @@ export async function prepareAction(scope: string): Promise<{ cookies: CookieSto
   const h = await headers();
   assertOrigin({ method: 'POST', headers: h });
   const ip = clientIp(h);
-  enforceRateLimit(`form:${scope}:${ip}`, 30, 600);
+  enforceRateLimitByIp(`form:${scope}`, ip, 30, 600);
   return { cookies: (await cookies()) as unknown as CookieStore, ip };
 }
 

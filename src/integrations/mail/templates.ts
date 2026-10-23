@@ -42,6 +42,24 @@ const KNOWN = new Set([
 ]);
 export const isKnownMailEvent = (event: string): boolean => KNOWN.has(event);
 
+/** Без этих полей письмо бессмысленно (пустая ссылка сброса, без номера заказа): такое не отправляем. */
+const REQUIRED_FIELDS: Record<string, string[]> = {
+  'order.created': ['orderNumber'],
+  'order.status_changed': ['orderNumber', 'toStatus'],
+  'auth.password_reset': ['resetUrl'],
+  'repair.created': ['number'],
+  'callback.created': ['number'],
+  'contact.created': ['number'],
+  'question.created': ['number'],
+  'review.created': ['reviewId'],
+  'integration.failed': ['integration'],
+};
+
+/** Имена обязательных полей события, которых нет в payload (пусто/не задано). Пустой payload — все поля. */
+export function missingPayloadFields(event: string, p: Payload): string[] {
+  return (REQUIRED_FIELDS[event] ?? []).filter((k) => p[k] === undefined || p[k] === null || p[k] === '');
+}
+
 const REQUEST_TITLES: Record<string, string> = {
   'repair.created': 'Заявка на ремонт',
   'callback.created': 'Заказ звонка',

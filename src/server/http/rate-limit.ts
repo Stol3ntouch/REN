@@ -37,22 +37,52 @@ export function rateLimit(key: string, limit: number, windowSec: number, opts: O
   };
 }
 
+/**
+ * Только проверка, без учёта запроса: true — лимит по ключу уже исчерпан в текущем окне.
+ * Нужна там, где считаются лишь неудачные запросы (webhook): успешные лимит не расходуют.
+ */
+export function isRateLimited(key: string, limit: number, windowSec: number, opts: Opts = {}): { limited: boolean; retryAfterSec: number } {
+  const db = opts.db ?? getDb();
+  const nowSec = Math.floor((opts.now ?? Date.now()) / 1000);
+  const row = db.prepare('SELECT window_start, count FROM rate_limit WHERE key = ?').get(key) as { window_start: number; count: number } | undefined;
+  if (!row || row.window_start + windowSec <= nowSec || row.count < limit) return { limited: false, retryAfterSec: 0 };
+  return { limited: true, retryAfterSec: Math.max(1, row.window_start + windowSec - nowSec) };
+}
+
 /** То же, но при превышении бросает RateLimitError (→ 429 с Retry-After). */
 export function enforceRateLimit(key: string, limit: number, windowSec: number, opts: Opts = {}): void {
   const res = rateLimit(key, limit, windowSec, opts);
   if (!res.allowed) throw new RateLimitError(res.retryAfterSec);
 }
 
+/** IP не определён (нет доверенного прокси): общий бакет на весь сайт заблокировал бы всех разом. */
+export const UNKNOWN_IP = 'unknown';
+
+/**
+ * Лимит «префикс + IP». При неопределённом IP не применяется вовсе: ключ вида `form:x:unknown`
+ * был бы одним на всех посетителей, и несколько запросов любого человека закрыли бы форму для остальных.
+ */
+export function rateLimitByIp(prefix: string, ip: string, limit: number, windowSec: number, opts: Opts = {}): RateLimitResult {
+  if (ip === UNKNOWN_IP) return { allowed: true, remaining: limit, retryAfterSec: 0 };
+  return rateLimit(`${prefix}:${ip}`, limit, windowSec, opts);
+}
+
+/** То же, но при превышении бросает RateLimitError. */
+export function enforceRateLimitByIp(prefix: string, ip: string, limit: number, windowSec: number, opts: Opts = {}): void {
+  const res = rateLimitByIp(prefix, ip, limit, windowSec, opts);
+  if (!res.allowed) throw new RateLimitError(res.retryAfterSec);
+}
+
 /**
  * IP клиента для ключей лимитера. Заголовку X-Forwarded-For верим только за своим
  * обратным прокси (TRUST_PROXY=true) и берём последний адрес — его дописал наш прокси,
- * а левые части клиент может подделать. Иначе — 'unknown' (общий бакет).
+ * а левые части клиент может подделать. Иначе — 'unknown': лимиты по IP тогда пропускаются (rateLimitByIp), вход считается по логину.
  */
 export function clientIp(headers: Headers, trustProxy: boolean = getConfig().trustProxy): string {
-  if (!trustProxy) return 'unknown';
+  if (!trustProxy) return UNKNOWN_IP;
   const parts = (headers.get('x-forwarded-for') ?? '')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
-  return parts[parts.length - 1] ?? 'unknown';
+  return parts[parts.length - 1] ?? UNKNOWN_IP;
 }

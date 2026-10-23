@@ -99,9 +99,14 @@ export const emailOutboxRepo = {
   markDropped(db: Db, id: number, reason: string): void {
     db.prepare("UPDATE email_outbox SET status = 'failed', last_error = ?, payload_json = '{}', locked_at = NULL WHERE id = ?").run(reason, id);
   },
-  /** Ручной повтор из админки: failed → pending, счётчик попыток с нуля. */
+  /** Ручной повтор из админки: failed → pending, счётчик попыток с нуля. Письмо с очищенным payload вернуть нельзя. */
   requeue(db: Db, id: number, now: number): boolean {
-    return Number(db.prepare("UPDATE email_outbox SET status = 'pending', attempts = 0, next_attempt_at = ?, last_error = NULL WHERE id = ? AND status = 'failed'").run(now, id).changes) === 1;
+    return Number(db.prepare("UPDATE email_outbox SET status = 'pending', attempts = 0, next_attempt_at = ?, last_error = NULL WHERE id = ? AND status = 'failed' AND payload_json NOT IN ('', '{}', 'null')").run(now, id).changes) === 1;
+  },
+  /** true, если у письма очищен payload (отправлено или закрыто без отправки): повторить его нельзя. */
+  isPayloadCleared(db: Db, id: number): boolean {
+    const r = db.prepare('SELECT payload_json FROM email_outbox WHERE id = ?').get(id) as { payload_json: string } | undefined;
+    return !!r && ['', '{}', 'null'].includes(r.payload_json);
   },
   list(db: Db, f: { status?: OutboxStatus; limit?: number; offset?: number } = {}): OutboxView[] {
     const sql = `SELECT ${VIEW_COLUMNS} FROM email_outbox ${f.status ? 'WHERE status = ?' : ''} ORDER BY id DESC LIMIT ? OFFSET ?`;

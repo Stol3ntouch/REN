@@ -6,7 +6,7 @@ import { sessionsRepo } from '@/server/db/repositories/sessions';
 import { usersRepo } from '@/server/db/repositories/users';
 import { ConflictError, UnauthorizedError, ValidationError, type FieldErrors } from '@/server/http/errors';
 import { getOwnerRef, type CookieStore } from '@/server/http/owner';
-import { enforceRateLimit } from '@/server/http/rate-limit';
+import { enforceRateLimit, enforceRateLimitByIp } from '@/server/http/rate-limit';
 import { assertNotLocked, clearFailures, recordFailure } from './auth-throttle';
 import { consent } from './consent';
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH, dummyHash, hashPassword, verifyPassword } from './password';
@@ -135,7 +135,7 @@ export async function requestPasswordReset(input: unknown, ctx: Opts & { ip: str
   const db = ctx.db ?? getDb();
   const now = ctx.now ?? Date.now();
 
-  enforceRateLimit(`reset:ip:${ctx.ip}`, 10, 900, { db, now });
+  enforceRateLimitByIp('reset:ip', ctx.ip, 10, 900, { db, now });
   enforceRateLimit(`reset:email:${email}`, 3, 3600, { db, now });
 
   const user = usersRepo.findByEmail(db, email);

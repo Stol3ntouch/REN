@@ -5,7 +5,7 @@ import type { CartView } from '@/domain/ordering';
 import { ValidationError, toErrorResponse } from '@/server/http/errors';
 import { assertOrigin } from '@/server/http/origin';
 import type { CookieStore, OwnerRef } from '@/server/http/owner';
-import { clientIp, enforceRateLimit } from '@/server/http/rate-limit';
+import { clientIp, enforceRateLimitByIp } from '@/server/http/rate-limit';
 
 const NO_STORE = { 'cache-control': 'no-store' };
 
@@ -42,7 +42,7 @@ export async function handleCart<S extends z.ZodType>(
   try {
     const unsafe = !['GET', 'HEAD'].includes(req.method.toUpperCase());
     if (unsafe) assertOrigin(req);
-    enforceRateLimit(`cart:${clientIp(req.headers)}`, 300, 600);
+    enforceRateLimitByIp('cart', clientIp(req.headers), 300, 600);
     const jar = await cookies();
     const owner = opts.create ? resolveOrCreateOwner(jar as unknown as CookieStore) : resolveOwner(jar);
     const body = (opts.schema ? await readJson(req, opts.schema) : undefined) as S extends z.ZodType ? z.infer<S> : undefined;

@@ -41,7 +41,9 @@
     "scripts/**/*.ts",
     "*.ts",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    ".next-f1/types/**/*.ts",
+    ".next-f1/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

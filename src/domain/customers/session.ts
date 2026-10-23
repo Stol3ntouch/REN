@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
+import { isProductionEnv } from '@/server/config';
 import { getDb, type Db } from '@/server/db/connection';
 import { sessionsRepo } from '@/server/db/repositories/sessions';
 import { usersRepo } from '@/server/db/repositories/users';
@@ -20,12 +21,12 @@ export function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
 }
 
-/** Параметры cookie сессии. Secure — в production. */
-export function sessionCookieOptions(maxAgeSec: number, sameSite: 'lax' | 'strict' = 'lax') {
+/** Параметры cookie сессии. Secure — в production (NODE_ENV или APP_ENV, как в config). */
+export function sessionCookieOptions(maxAgeSec: number, sameSite: 'lax' | 'strict' = 'lax', env: Record<string, string | undefined> = process.env) {
   return {
     httpOnly: true,
     sameSite,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProductionEnv(env),
     path: '/',
     maxAge: maxAgeSec,
   } as const;

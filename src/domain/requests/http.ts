@@ -21,7 +21,7 @@ const MAX_BODY_CHARS = 20_000;
  * Origin → размер и JSON → форма → submit* (honeypot, zod, лимит по IP, запись, согласие, письмо).
  * 201 {ok:true, number}; ошибки — JSON {error:{code,message,fields?}} (400/403/404/413/429).
  */
-export async function handleFormRequest(kind: string, req: Request, deps: { db?: Db; now?: number } = {}): Promise<Response> {
+export async function handleFormRequest(kind: string, req: Request, deps: { db?: Db; now?: number; /** Доверять X-Forwarded-For (по умолчанию — TRUST_PROXY из конфигурации). */ trustProxy?: boolean } = {}): Promise<Response> {
   try {
     assertOrigin(req);
     const submit = Object.hasOwn(HANDLERS, kind) ? HANDLERS[kind] : undefined;
@@ -38,7 +38,7 @@ export async function handleFormRequest(kind: string, req: Request, deps: { db?:
     if (!body || typeof body !== 'object' || Array.isArray(body)) throw new ValidationError('Не удалось прочитать данные формы');
 
     const owner = resolveOwner(parseCookieHeader(req.headers.get('cookie')), { db: deps.db, now: deps.now });
-    const res = await submit(body, { db: deps.db, now: deps.now, ip: clientIp(req.headers), owner });
+    const res = await submit(body, { db: deps.db, now: deps.now, ip: clientIp(req.headers, deps.trustProxy), owner });
     return Response.json({ ok: true, number: res.number }, { status: 201, headers: { 'cache-control': 'no-store' } });
   } catch (e) {
     return toErrorResponse(e);

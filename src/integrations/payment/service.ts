@@ -25,7 +25,7 @@ export type ServiceOpts = {
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 const DEFAULT_ATTEMPTS = 3;
-const MAX_WEBHOOK_BYTES = 64 * 1024;
+export const MAX_WEBHOOK_BYTES = 64 * 1024;
 const SYSTEM_ZERO = { type: 'system', reason: 'zero_total' } as const;
 
 /**
@@ -43,7 +43,8 @@ export function setPaymentRunLogger(fn: RunLogger | null): void {
 export function getPaymentRunLogger(): RunLogger | null {
   return logHolder.fn;
 }
-const logRun = (e: PaymentRunEntry): void => {
+/** Запись в журнал запусков (если подключён); сбой журнала оплату не ломает. */
+export const logRun = (e: PaymentRunEntry): void => {
   try {
     logHolder.fn?.(e);
   } catch {
@@ -232,26 +233,59 @@ export async function processPaymentWebhook(rawBody: string, headers: Headers, o
  * поэтому два параллельных клика дают один внешний возврат (второй — 409). Ключ идемпотентности уходит провайдеру.
  * Сбой провайдера возвращает платёж в succeeded (можно повторить).
  */
+/** Возврат в refund_pending дольше этого срока считается зависшим: два таймаута провайдера. */
+const refundStaleMs = (opts: ServiceOpts): number => 2 * (opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+
 export async function refundOrderPayment(order: Order, ctx: { idempotencyKey: string }, opts: ServiceOpts = {}): Promise<void> {
   const db = opts.db ?? getDb();
   const now = opts.now ?? Date.now();
   const port = opts.port ?? getPaymentPort({ production: opts.production });
   const payment = paymentsRepo.findPaidForOrder(db, order.id);
   if (!payment) throw new ConflictError('Для заказа нет подтверждённого платежа: вернуть деньги через платёжную систему нельзя');
+  // Деньги уже возвращены (прошлая попытка дошла до провайдера, но не довела заказ): провайдера не трогаем.
+  if (payment.status === 'refunded') return;
   if (payment.provider !== port.name) throw new ConflictError('Платёж проведён другим провайдером: возврат через текущий невозможен');
-  if (!paymentsRepo.transition(db, payment.id, ['succeeded'], 'refund_pending', now)) {
-    throw new ConflictError('Возврат по этому платежу уже выполняется или выполнен');
-  }
+  // Зависший refund_pending (процесс упал после резервирования): забираем платёж и повторяем возврат с тем же ключом —
+  // провайдер по ключу идемпотентности не вернёт деньги второй раз. Свежий refund_pending — возврат идёт прямо сейчас.
+  const staleBefore = now - refundStaleMs(opts);
+  const wasStale = payment.status === 'refund_pending';
+  const claimed = wasStale
+    ? paymentsRepo.claimStaleRefund(db, payment.id, staleBefore, now)
+    : paymentsRepo.transition(db, payment.id, ['succeeded'], 'refund_pending', now);
+  if (!claimed) throw new ConflictError('Возврат по этому платежу уже выполняется или выполнен');
   const amount = payment.amountKopecks - payment.refundedKopecks;
   try {
     await withTimeout(port.refund(payment.externalId, amount, { idempotencyKey: ctx.idempotencyKey }), opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
   } catch (e) {
-    paymentsRepo.transition(db, payment.id, ['refund_pending'], 'succeeded', now);
+    // Результат подобранного зависшего возврата неизвестен — остаётся refund_pending (следующая попытка после паузы).
+    if (!wasStale) paymentsRepo.transition(db, payment.id, ['refund_pending'], 'succeeded', now);
     logRun({ kind: 'refund', ok: false, orderId: order.id, message: safeMessage(e) });
     throw e instanceof ConflictError ? e : new ConflictError('Платёжная система не выполнила возврат. Деньги не возвращены, попробуйте позже.');
   }
   paymentsRepo.transition(db, payment.id, ['refund_pending'], 'refunded', now, { refundedKopecks: payment.amountKopecks });
   logRun({ kind: 'refund', ok: true, orderId: order.id });
+}
+
+/**
+ * Подбирает зависшие возвраты (refund_pending старше таймаута): повторяет возврат с тем же ключом идемпотентности
+ * и доводит заказ до «возвращён». Безопасно вызывать повторно и параллельно (платёж забирается атомарно).
+ * Вызывается при старте приложения; сбой одного платежа остальные не останавливает.
+ */
+export async function reconcileStaleRefunds(opts: ServiceOpts = {}): Promise<{ checked: number; completed: number; failed: number }> {
+  const db = opts.db ?? getDb();
+  const now = opts.now ?? Date.now();
+  const stale = paymentsRepo.listStaleRefundPending(db, now - refundStaleMs(opts));
+  const res = { checked: stale.length, completed: 0, failed: 0 };
+  for (const payment of stale) {
+    try {
+      await orders.refund(payment.orderId, { type: 'system', reason: 'refund_reconcile' }, undefined, { db, now, secret: opts.secret, refunder: (o, ctx) => refundOrderPayment(o, ctx, opts) });
+      res.completed += 1;
+    } catch (e) {
+      res.failed += 1;
+      logRun({ kind: 'refund', ok: false, orderId: payment.orderId, message: safeMessage(e) });
+    }
+  }
+  return res;
 }
 
 /** Включает «онлайн (ТЕСТ)» — только вне production и только при активном тестовом провайдере. */

@@ -15,7 +15,7 @@ export type ImageRow = {
 
 type Raw = { id: number; product_id: number; url_source: string; path: string | null; variants: string | null; alt: string | null; sort: number };
 
-function parseVariants(json: string | null): ImageVariantRow[] {
+export function parseVariants(json: string | null): ImageVariantRow[] {
   if (!json) return [];
   try {
     const v: unknown = JSON.parse(json);

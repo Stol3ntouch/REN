@@ -3,6 +3,7 @@ import { audit } from '@/domain/admin/audit';
 import { hasPermission } from '@/domain/admin/permissions';
 import { getConfig } from '@/server/config';
 import { getDb, withTransaction, type Db } from '@/server/db/connection';
+import { promosRepo } from '@/server/db/repositories/promos';
 import { ordersRepo, type OrderRow } from '@/server/db/repositories/orders';
 import { staffRepo } from '@/server/db/repositories/staff';
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/server/http/errors';
@@ -108,6 +109,22 @@ function assertActorMayMove(actor: Actor, to: OrderStatus, viaRefund = false): v
   if (actor.type === 'customer') throw new ForbiddenError('Покупатель не может менять статус заказа');
 }
 
+/**
+ * Отмена, а также возврат денег до исполнения (заказ ещё не отгружен) освобождают использование промокода.
+ * Остальные переходы промокод не трогают.
+ */
+function releasesPromo(from: OrderStatus, to: OrderStatus): boolean {
+  return to === 'cancelled' || (to === 'refunded' && from !== 'shipped' && from !== 'delivered');
+}
+
+/** Возвращает использование промокода заказа один раз (признак promo_released). true — вернули сейчас. */
+function releasePromo(db: Db, orderId: number): boolean {
+  const promoId = ordersRepo.markPromoReleased(db, orderId);
+  if (promoId === null) return false;
+  promosRepo.release(db, promoId);
+  return true;
+}
+
 export const orders = {
   /**
    * Единственная точка смены статуса. Проверяет актора, таблицу переходов и правила оплаты,
@@ -134,6 +151,7 @@ export const orders = {
       }
       const paidFlag = to === 'paid' ? true : to === 'refunded' ? false : undefined;
       ordersRepo.setStatus(db, row.id, to, now, paidFlag);
+      const promoReleased = releasesPromo(row.status, to) ? releasePromo(db, row.id) : false;
       ordersRepo.insertEvent(db, {
         orderId: row.id,
         at: now,
@@ -151,7 +169,7 @@ export const orders = {
           entity: 'order',
           entityId: row.id,
           before: { status: row.status },
-          after: { status: to, note: text ?? undefined },
+          after: { status: to, note: text ?? undefined, promoReleased: promoReleased || undefined },
         },
         { db, now },
       );
@@ -181,7 +199,7 @@ export const orders = {
     if (!row) throw new NotFoundError('Заказ не найден');
     assertActorMayMove(actor, 'refunded', true);
     if (!row.isPaid) throw new ConflictError('Возврат возможен только для оплаченного заказа');
-    const refunder = getPaymentRefunder();
+    const refunder = opts.refunder ?? getPaymentRefunder();
     if (!refunder) throw new ConflictError('Возврат через платёжную систему пока недоступен: оплата не подключена');
     // Ключ идемпотентности: возвратчик резервирует платёж до внешнего вызова, второй параллельный клик получает 409.
     await refunder(toOrder(db, row), { idempotencyKey: `refund:${row.id}` });

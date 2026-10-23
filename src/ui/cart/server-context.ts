@@ -3,7 +3,7 @@ import { resolveOrCreateOwner } from '@/domain/customers/session';
 import { AppError, RateLimitError, ValidationError } from '@/server/http/errors';
 import { assertOrigin } from '@/server/http/origin';
 import type { CookieStore, OwnerRef } from '@/server/http/owner';
-import { clientIp, enforceRateLimit } from '@/server/http/rate-limit';
+import { clientIp, enforceRateLimitByIp } from '@/server/http/rate-limit';
 import type { CartFormState } from './state';
 
 /**
@@ -14,7 +14,7 @@ export async function prepareCartAction(scope: string, limit = 120): Promise<{ o
   const h = await headers();
   assertOrigin({ method: 'POST', headers: h });
   const ip = clientIp(h);
-  enforceRateLimit(`form:${scope}:${ip}`, limit, 600);
+  enforceRateLimitByIp(`form:${scope}`, ip, limit, 600);
   const owner = resolveOrCreateOwner((await cookies()) as unknown as CookieStore);
   return { owner, ip };
 }

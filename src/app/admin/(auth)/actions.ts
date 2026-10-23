@@ -6,7 +6,7 @@ import { loginStaff, logoutStaff } from '@/domain/admin/staff';
 import { AppError, RateLimitError } from '@/server/http/errors';
 import { assertOrigin } from '@/server/http/origin';
 import type { CookieStore } from '@/server/http/owner';
-import { clientIp, enforceRateLimit } from '@/server/http/rate-limit';
+import { clientIp, enforceRateLimitByIp } from '@/server/http/rate-limit';
 import type { AdminFormState } from '@/ui/admin/form-state';
 
 function toState(e: unknown): AdminFormState {
@@ -22,7 +22,7 @@ export async function adminLoginAction(_prev: AdminFormState, form: FormData): P
     const h = await headers();
     assertOrigin({ method: 'POST', headers: h });
     const ip = clientIp(h);
-    enforceRateLimit(`form:admin-login:${ip}`, 30, 600);
+    enforceRateLimitByIp('form:admin-login', ip, 30, 600);
     const trap = form.get('website');
     if (typeof trap === 'string' && trap.trim() !== '') return { status: 'error', message: 'Неверный логин или пароль' };
     const email = form.get('email');

@@ -128,6 +128,17 @@ export function loadConfig(env: Env = process.env): Config {
   };
 }
 
+/**
+ * Предупреждение для лога при старте: в production TRUST_PROXY не задан явно, поэтому IP клиента неизвестен
+ * (лимиты по IP отключены, вход считается только по логину). Текст без значений переменных. Нет проблемы — null.
+ */
+export function trustProxyWarning(env: Env = process.env): string | null {
+  if (!isProductionEnv(env)) return null;
+  const v = env.TRUST_PROXY?.trim();
+  if (v === 'true' || v === 'false') return null;
+  return 'TRUST_PROXY не задан явно: IP клиентов не определяется, лимиты запросов по IP не действуют (вход ограничивается только по логину). За обратным прокси установите TRUST_PROXY=true, без прокси — TRUST_PROXY=false.';
+}
+
 const globalRef = globalThis as unknown as { __rtsConfig?: Config };
 
 /** Конфигурация процесса (читается один раз). */

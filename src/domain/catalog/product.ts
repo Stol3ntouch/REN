@@ -1,8 +1,9 @@
 import { getDb, type Db } from '@/server/db/connection';
 import { attributesRepo } from '@/server/db/repositories/attributes';
-import { categoriesRepo } from '@/server/db/repositories/categories';
+import { sanitizeDescription } from '@/importing/yml/sanitize';
 import { imagesRepo } from '@/server/db/repositories/images';
 import { productsRepo } from '@/server/db/repositories/products';
+import { listCategoryRows } from './category-rows';
 import { getCategoryBreadcrumbs, toCategoryInfo } from './categories';
 import { toCatalogImage } from './images';
 import { CARD_COLUMNS, CARD_JOIN, ensureFold, mapCard, unitPrice, type CardRow } from './store';
@@ -17,7 +18,7 @@ export async function getProductBySlug(slug: string, opts: { db?: Db } = {}): Pr
   const db = opts.db ?? getDb();
   const p = productsRepo.findBySlug(db, slug);
   if (!p || !p.published) return null;
-  const category = categoriesRepo.listAll(db).find((c) => c.id === p.categoryId);
+  const category = listCategoryRows(db).find((c) => c.id === p.categoryId);
   if (!category) return null;
 
   const rows = imagesRepo.listByProduct(db, p.id);
@@ -26,7 +27,8 @@ export async function getProductBySlug(slug: string, opts: { db?: Db } = {}): Pr
     slug: p.slug,
     name: p.name,
     sku: p.sku,
-    descriptionHtml: p.description && p.description.trim() !== '' ? p.description : null,
+    // Описание в БД может прийти не только из импорта: очищаем на выводе (белый список тегов без атрибутов).
+    descriptionHtml: p.description && p.description.trim() !== '' ? sanitizeDescription(p.description) : null,
     ...unitPrice(p.priceKopecks, p.discountPriceKopecks),
     inStock: p.inStock,
     category: toCategoryInfo(category),

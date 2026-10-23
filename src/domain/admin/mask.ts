@@ -2,6 +2,9 @@
 
 const EMAIL_RE = /[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+/g;
 const PHONE_RE = /\+?\d[\d\s().-]{7,}\d/g;
+/** Ключи, под которыми лежат секреты: значение скрывается целиком на любой глубине. */
+const SECRET_KEY_RE = /pass(word)?|token|hash|secret|authorization|cookie/i;
+export const HIDDEN = '[скрыто]';
 const PII_KEY_RE = /e-?mail|phone|tel(?:ephone)?$|^tel|mobile/i;
 
 export function maskEmail(email: string): string {
@@ -30,9 +33,10 @@ function maskKeyed(key: string, value: string): string {
   return value.includes('@') ? maskEmail(value) : maskPhone(value);
 }
 
-/** Копия значения, где email/телефон замаскированы: по имени ключа и по содержимому строк. Числа и прочее не меняются. */
+/** Копия значения, где значения под секретными ключами (пароль, токен, хеш, cookie…) заменены на «[скрыто]», а email/телефон замаскированы: по имени ключа и по содержимому строк. Числа и прочее не меняются. */
 export function maskPii<T>(value: T): T {
   const walk = (v: unknown, key: string): unknown => {
+    if (key && SECRET_KEY_RE.test(key) && v !== null && v !== undefined && v !== '') return HIDDEN;
     if (typeof v === 'string') return key ? maskKeyed(key, v) : maskText(v);
     if (Array.isArray(v)) return v.map((x) => walk(x, key));
     if (v && typeof v === 'object') {

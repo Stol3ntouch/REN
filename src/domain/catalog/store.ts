@@ -4,6 +4,8 @@
  */
 import type { Db } from '@/server/db/connection';
 import { categoriesRepo, type CategoryRow } from '@/server/db/repositories/categories';
+import { parseVariants } from '@/server/db/repositories/images';
+import { listCategoryRows } from './category-rows';
 import { toCatalogImage } from './images';
 import { getPopularitySql } from './popularity';
 import type { CatalogImage, FacetContext, ProductCard, SortKey } from './types';
@@ -48,7 +50,7 @@ export function descendantIds(rows: CategoryRow[], rootId: number): number[] {
 export function categoryScope(db: Db, slug: string): { category: CategoryRow; ids: number[] } | null {
   const category = categoriesRepo.findBySlug(db, slug);
   if (!category) return null;
-  return { category, ids: descendantIds(categoriesRepo.listAll(db), category.id) };
+  return { category, ids: descendantIds(listCategoryRows(db), category.id) };
 }
 
 export type Scope = FacetContext & {
@@ -118,15 +120,8 @@ export const CARD_COLUMNS = `p.id, p.slug, p.name, p.sku, p.price_kopecks, p.dis
   pi.path AS img_path, pi.variants AS img_variants, pi.url_source AS img_url, pi.alt AS img_alt`;
 export const CARD_JOIN = `LEFT JOIN product_images pi ON pi.id = (SELECT i.id FROM product_images i WHERE i.product_id = p.id ORDER BY i.sort, i.id LIMIT 1)`;
 
-export function parseVariants(json: string | null): { key: string; width: number; height: number; path: string }[] {
-  if (!json) return [];
-  try {
-    const v: unknown = JSON.parse(json);
-    return Array.isArray(v) ? (v as { key: string; width: number; height: number; path: string }[]) : [];
-  } catch {
-    return [];
-  }
-}
+/** Разбор JSON вариантов фото — одна реализация в репозитории images; реэкспорт для прежних импортов. */
+export { parseVariants };
 
 export function unitPrice(price: number, discount: number | null): { unitKopecks: number; originalKopecks?: number } {
   return discount !== null && discount < price ? { unitKopecks: discount, originalKopecks: price } : { unitKopecks: price };

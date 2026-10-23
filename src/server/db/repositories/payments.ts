@@ -91,10 +91,20 @@ export const paymentsRepo = {
   findPendingForOrder(db: Db, orderId: number): PaymentRow | null {
     return map(db.prepare("SELECT * FROM payments WHERE order_id = ? AND status = 'pending'").get(orderId) as Raw | undefined);
   },
+  /** Последний платёж заказа, по которому деньги получены: подтверждён, возврат идёт или уже выполнен. */
   findPaidForOrder(db: Db, orderId: number): PaymentRow | null {
     return map(
-      db.prepare("SELECT * FROM payments WHERE order_id = ? AND status IN ('succeeded','refund_pending') ORDER BY id DESC LIMIT 1").get(orderId) as Raw | undefined,
+      db.prepare("SELECT * FROM payments WHERE order_id = ? AND status IN ('succeeded','refund_pending','refunded') ORDER BY id DESC LIMIT 1").get(orderId) as Raw | undefined,
     );
+  },
+  /** Возвраты, зависшие в refund_pending с updated_at не позже границы (процесс упал после резервирования). */
+  listStaleRefundPending(db: Db, olderThan: number): PaymentRow[] {
+    return (db.prepare("SELECT * FROM payments WHERE status = 'refund_pending' AND updated_at <= ? ORDER BY id").all(olderThan) as Raw[]).map((r) => map(r)!);
+  },
+  /** Атомарно «забирает» зависший возврат (обновляет updated_at); false — его уже забрал другой или он не зависший. */
+  claimStaleRefund(db: Db, id: number, olderThan: number, now: number): boolean {
+    const r = db.prepare("UPDATE payments SET updated_at = ? WHERE id = ? AND status = 'refund_pending' AND updated_at <= ?").run(now, id, olderThan);
+    return Number(r.changes) > 0;
   },
   listForOrder(db: Db, orderId: number): PaymentRow[] {
     return (db.prepare('SELECT * FROM payments WHERE order_id = ? ORDER BY id').all(orderId) as Raw[]).map((r) => map(r)!);

@@ -5,7 +5,7 @@ import { requestsRepo, type RequestKind } from '@/server/db/repositories/request
 import { reviewsRepo } from '@/server/db/repositories/reviews';
 import { NotFoundError } from '@/server/http/errors';
 import type { OwnerRef } from '@/server/http/owner';
-import { enforceRateLimit } from '@/server/http/rate-limit';
+import { enforceRateLimitByIp } from '@/server/http/rate-limit';
 import { callbackSchema, contactSchema, parseForm, questionSchema, repairSchema, reviewSchema } from './schemas';
 
 /** Контекст отправки формы. ip — для лимита; owner — гость или вошедший покупатель (для согласия). */
@@ -39,7 +39,7 @@ type RequestFields = {
 function createRequest(kind: RequestKind, source: string, f: RequestFields, ctx: SubmitCtx, mail: { event: string; extra: Record<string, unknown> }): SubmitResult {
   const db = ctx.db ?? getDb();
   const now = ctx.now ?? Date.now();
-  enforceRateLimit(`form:${source}:${ctx.ip}`, LIMIT_FORM, HOUR_SEC, { db, now });
+  enforceRateLimitByIp(`form:${source}`, ctx.ip, LIMIT_FORM, HOUR_SEC, { db, now });
 
   const owner = ownerIds(ctx.owner);
   const created = withTransaction(db, () => {
@@ -109,7 +109,7 @@ export async function submitReview(input: unknown, ctx: SubmitCtx): Promise<Subm
   const now = ctx.now ?? Date.now();
   const product = reviewsRepo.findProduct(db, v.productId);
   if (!product || !product.published) throw new NotFoundError('Товар не найден');
-  enforceRateLimit(`form:review:${ctx.ip}`, LIMIT_REVIEW, HOUR_SEC, { db, now });
+  enforceRateLimitByIp('form:review', ctx.ip, LIMIT_REVIEW, HOUR_SEC, { db, now });
 
   const owner = ownerIds(ctx.owner);
   const id = withTransaction(db, () => {

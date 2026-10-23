@@ -1,3 +1,4 @@
+import { clearCategoryImageCache } from '@/domain/catalog/category-images';
 import { safeFetchImage } from '@/media/safe-fetch';
 import { storeImage, type StoredImage } from '@/media/store-image';
 import { withTransaction, type Db } from '@/server/db/connection';
@@ -156,6 +157,8 @@ export async function applyImport(plan: ImportPlan, db: Db, opts: ApplyOptions =
   const productIds = [...touchedProducts.keys()];
   if (opts.images) await ingestImages(db, productIds, touchedProducts, opts.images, report);
   report.images.pending = imagesRepo.listPending(db, productIds).length;
+  // Плитки категорий берут первое фото товара из кэша процесса: после импорта (новые ссылки, скачанные копии) он устарел.
+  clearCategoryImageCache();
 
   report.finishedAt = (opts.now ?? new Date()).toISOString();
   report.runId = importRunsRepo.insert(db, {

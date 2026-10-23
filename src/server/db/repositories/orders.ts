@@ -295,6 +295,16 @@ export const ordersRepo = {
     if (paid === undefined) db.prepare('UPDATE orders SET status = ?, updated_at = ? WHERE id = ?').run(status, now, id);
     else db.prepare('UPDATE orders SET status = ?, is_paid = ?, updated_at = ? WHERE id = ?').run(status, paid ? 1 : 0, now, id);
   },
+  /**
+   * Помечает использование промокода заказа возвращённым. true — пометка поставлена сейчас (возвращать счётчик),
+   * false — заказ без промокода или уже возвращён. Вызывать внутри транзакции вместе с promosRepo.release.
+   */
+  markPromoReleased(db: Db, id: number): number | null {
+    const row = db
+      .prepare('UPDATE orders SET promo_released = 1 WHERE id = ? AND promo_id IS NOT NULL AND promo_released = 0 RETURNING promo_id')
+      .get(id) as { promo_id: number } | undefined;
+    return row ? row.promo_id : null;
+  },
   setAssigned(db: Db, id: number, staffId: number | null, now: number): void {
     db.prepare('UPDATE orders SET assigned_staff_id = ?, updated_at = ? WHERE id = ?').run(staffId, now, id);
   },

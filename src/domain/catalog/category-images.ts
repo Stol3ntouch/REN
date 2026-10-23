@@ -1,5 +1,5 @@
 import { getDb, type Db } from '@/server/db/connection';
-import type { ImageVariantRow } from '@/server/db/repositories/images';
+import { parseVariants, type ImageVariantRow } from '@/server/db/repositories/images';
 import { toCatalogImage, type ImageSize } from './images';
 import type { CatalogImage } from './types';
 
@@ -12,21 +12,14 @@ type Snapshot = { at: number; names: Map<number, string>; picks: Map<number, Pic
 const cache = new WeakMap<Db, Snapshot>();
 
 const generations = new WeakMap<Db, number>();
-let generation = 0;
+// Счётчик на globalThis: страницы и админка Next собираются в разные бандлы, модульная переменная у них своя,
+// и сброс из импорта не дошёл бы до витрины.
+const genRef = globalThis as unknown as { __rtsCategoryImageGen?: number };
+const currentGeneration = () => genRef.__rtsCategoryImageGen ?? 0;
 
 /** Сбросить кэш всех баз (тесты, ручной сброс после импорта). */
 export function clearCategoryImageCache(): void {
-  generation += 1;
-}
-
-function parseVariants(json: string | null): ImageVariantRow[] {
-  if (!json) return [];
-  try {
-    const v: unknown = JSON.parse(json);
-    return Array.isArray(v) ? (v as ImageVariantRow[]) : [];
-  } catch {
-    return [];
-  }
+  genRef.__rtsCategoryImageGen = currentGeneration() + 1;
 }
 
 /**
@@ -61,10 +54,10 @@ function build(db: Db, now: number): Snapshot {
 
 function snapshot(db: Db, now: number): Snapshot {
   const hit = cache.get(db);
-  if (hit && generations.get(db) === generation && now - hit.at <= CATEGORY_IMAGES_TTL_MS && now >= hit.at) return hit;
+  if (hit && generations.get(db) === currentGeneration() && now - hit.at <= CATEGORY_IMAGES_TTL_MS && now >= hit.at) return hit;
   const fresh = build(db, now);
   cache.set(db, fresh);
-  generations.set(db, generation);
+  generations.set(db, currentGeneration());
   return fresh;
 }
 

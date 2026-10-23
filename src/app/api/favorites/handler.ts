@@ -4,7 +4,7 @@ import { resolveOrCreateOwner, resolveOwner } from '@/domain/customers/session';
 import { ValidationError, toErrorResponse } from '@/server/http/errors';
 import { assertOrigin } from '@/server/http/origin';
 import type { CookieStore, OwnerRef } from '@/server/http/owner';
-import { clientIp, enforceRateLimit } from '@/server/http/rate-limit';
+import { clientIp, enforceRateLimitByIp } from '@/server/http/rate-limit';
 
 const NO_STORE = { 'cache-control': 'no-store' };
 
@@ -21,7 +21,7 @@ export async function handleOwnerRequest(
 ): Promise<Response> {
   try {
     if (opts.write) assertOrigin(req);
-    enforceRateLimit(`${opts.scope}:${clientIp(req.headers)}`, 300, 600);
+    enforceRateLimitByIp(opts.scope, clientIp(req.headers), 300, 600);
     const jar = await cookies();
     const owner = opts.write ? resolveOrCreateOwner(jar as unknown as CookieStore) : resolveOwner(jar);
     let body: { productId: number } | undefined;

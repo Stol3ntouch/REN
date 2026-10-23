@@ -2,7 +2,7 @@ import { getDb, type Db } from '@/server/db/connection';
 import { companyReviewsRepo } from '@/server/db/repositories/company-reviews';
 import { newsRepo } from '@/server/db/repositories/news';
 import { promotionsRepo } from '@/server/db/repositories/promotions';
-import { categoriesRepo } from '@/server/db/repositories/categories';
+import { listCategoryRows } from '@/domain/catalog/category-rows';
 import { MAIN_NAV } from '@/ui/nav';
 import type { ShellContext, ShellLink } from '@/ui/shell-context';
 import { getPageByKey, isPromotionActive, pagePath, type PageKey } from './queries';
@@ -42,8 +42,7 @@ export function loadShellContext(opts: Opts = {}): ShellContext {
     requisites: shop.requisites ?? undefined,
     socials: shop.socials.map((s) => ({ href: s.href, label: s.label })),
     nav,
-    catalogLinks: categoriesRepo
-      .listAll(db)
+    catalogLinks: listCategoryRows(db)
       .filter((c) => c.parentId === null)
       .slice(0, 6)
       .map((c) => ({ href: `/catalog/${c.slug}`, label: c.name })),

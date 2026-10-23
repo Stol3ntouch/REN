@@ -1,5 +1,5 @@
 import { getDb, type Db } from '@/server/db/connection';
-import { categoriesRepo } from '@/server/db/repositories/categories';
+import { listCategoryRows } from './category-rows';
 import { buildMatchQuery } from './fts';
 import { buildScope, descendantIds, type Scope } from './store';
 import { FACET_MAX_VALUES, FACET_MIN_PRODUCTS, type Facet, type FacetContext } from './types';
@@ -14,7 +14,7 @@ import { FACET_MAX_VALUES, FACET_MIN_PRODUCTS, type Facet, type FacetContext } f
  */
 export async function getFacets(categoryId: number, ctx: FacetContext = { filters: {} }, opts: { db?: Db } = {}): Promise<Facet[]> {
   const db = opts.db ?? getDb();
-  const categoryIds = descendantIds(categoriesRepo.listAll(db), categoryId);
+  const categoryIds = descendantIds(listCategoryRows(db), categoryId);
   const idsJson = JSON.stringify(categoryIds);
 
   const eligible = db

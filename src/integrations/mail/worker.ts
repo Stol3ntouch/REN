@@ -2,7 +2,7 @@ import { maskPii } from '@/domain/admin/mask';
 import type { Db } from '@/server/db/connection';
 import { emailOutboxRepo } from '@/server/db/repositories/email-outbox';
 import { resolveRecipients } from './outbox';
-import { renderBody, type Payload } from './templates';
+import { missingPayloadFields, renderBody, type Payload } from './templates';
 import { MailNotConfiguredError, type MailPort } from './types';
 
 /** Всего попыток отправки одного письма (первая + повторы). После третьей неудачи письмо получает статус failed. */
@@ -49,9 +49,17 @@ export async function processOutbox(o: { db: Db; port: MailPort; now?: number; s
 
     let payload: Payload = {};
     try {
-      payload = JSON.parse(job.payloadJson) as Payload;
+      const parsed: unknown = JSON.parse(job.payloadJson);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) payload = parsed as Payload;
     } catch {
-      /* пустой payload — письмо без деталей не отправляем */
+      /* битый payload: ниже письмо закроется как неотправляемое */
+    }
+    // Очищенный (после отправки/закрытия) или неполный payload дал бы пустое письмо: терминальный failed с причиной.
+    const missing = missingPayloadFields(job.event, payload);
+    if (missing.length > 0) {
+      emailOutboxRepo.markDropped(db, id, 'Данные письма пусты или неполны — письмо не отправлено');
+      res.failed += 1;
+      continue;
     }
     if (job.event === 'auth.password_reset' && typeof payload.expiresAt === 'number' && payload.expiresAt < now) {
       emailOutboxRepo.markDropped(db, id, 'Ссылка для сброса пароля просрочена — письмо не отправлено');

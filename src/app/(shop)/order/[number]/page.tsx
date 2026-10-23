@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
 const fmtTime = (ms: number) =>
   new Intl.DateTimeFormat('ru-RU', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Moscow' }).format(new Date(ms));
 
-type Props = { params: Promise<{ number: string }>; searchParams: Promise<{ t?: string; placed?: string }> };
+type Props = { params: Promise<{ number: string }>; searchParams: Promise<{ t?: string; placed?: string; payment?: string }> };
 
 export default async function OrderPage({ params, searchParams }: Props) {
   const [{ number }, sp] = await Promise.all([params, searchParams]);
@@ -36,6 +36,9 @@ export default async function OrderPage({ params, searchParams }: Props) {
         <SuccessState title="Спасибо, заказ принят">
           <p>Мы свяжемся с вами для подтверждения. Статус заказа можно смотреть на этой странице. Сохраните ссылку на неё.</p>
         </SuccessState>
+      ) : null}
+      {sp.placed && sp.payment === 'later' && order.status === 'awaiting_payment' ? (
+        <p role="status">Заказ сохранён, но перейти к оплате сейчас не получилось. Оплатить его можно позже — мы свяжемся с вами.</p>
       ) : null}
 
       <p>

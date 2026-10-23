@@ -69,7 +69,10 @@ export const mailAdmin = {
     requirePermission(session, 'integrations.run');
     const db = opts.db ?? getDb();
     const now = opts.now ?? Date.now();
-    if (!emailOutboxRepo.requeue(db, id, now)) throw new ConflictError('Повторить можно только письмо со статусом «не отправлено»');
+    if (!emailOutboxRepo.requeue(db, id, now)) {
+      if (emailOutboxRepo.isPayloadCleared(db, id)) throw new ConflictError('Данные письма очищены, повторить отправку нельзя: создайте событие заново (например, новый запрос сброса пароля)');
+      throw new ConflictError('Повторить можно только письмо со статусом «не отправлено»');
+    }
     audit.record({ actorId: session.staffId, actorType: 'staff', action: 'mail.retry', entity: 'email_outbox', entityId: id }, { db, now });
   },
 };

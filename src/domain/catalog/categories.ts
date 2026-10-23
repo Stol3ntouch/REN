@@ -1,5 +1,6 @@
 import { getDb, type Db } from '@/server/db/connection';
 import { categoriesRepo, type CategoryRow } from '@/server/db/repositories/categories';
+import { listCategoryRows } from './category-rows';
 import type { Breadcrumb, CategoryInfo, CategoryNode } from './types';
 
 export function categoryHref(slug: string): string {
@@ -16,7 +17,7 @@ export function toCategoryInfo(c: CategoryRow): CategoryInfo {
  */
 export async function getCategoryTree(opts: { db?: Db } = {}): Promise<CategoryNode[]> {
   const db = opts.db ?? getDb();
-  const rows = categoriesRepo.listAll(db);
+  const rows = listCategoryRows(db);
   const direct = new Map<number, number>(
     (db.prepare('SELECT category_id AS id, COUNT(*) AS n FROM products WHERE published = 1 GROUP BY category_id').all() as { id: number; n: number }[]).map((r) => [r.id, r.n]),
   );
@@ -42,7 +43,7 @@ export async function getCategoryTree(opts: { db?: Db } = {}): Promise<CategoryN
 /** Путь от корня до категории включительно (без «Главной» и «Каталога»). Неизвестный slug — пусто. */
 export async function getCategoryBreadcrumbs(slug: string, opts: { db?: Db } = {}): Promise<Breadcrumb[]> {
   const db = opts.db ?? getDb();
-  const rows = categoriesRepo.listAll(db);
+  const rows = listCategoryRows(db);
   const byId = new Map(rows.map((r) => [r.id, r]));
   const start = rows.find((r) => r.slug === slug);
   if (!start) return [];

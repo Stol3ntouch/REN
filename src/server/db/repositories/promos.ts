@@ -91,6 +91,10 @@ export const promosRepo = {
   delete(db: Db, id: number): boolean {
     return Number(db.prepare('DELETE FROM promos WHERE id = ?').run(id).changes) > 0;
   },
+  /** Возвращает одно использование (не ниже 0): заказ с этим промокодом отменён. */
+  release(db: Db, id: number): void {
+    db.prepare('UPDATE promos SET used_count = MAX(used_count - 1, 0) WHERE id = ?').run(id);
+  },
   /** Атомарно занимает одно использование; false — лимит исчерпан (или промокода нет). */
   tryConsume(db: Db, id: number): boolean {
     const r = db
