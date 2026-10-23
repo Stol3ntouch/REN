@@ -248,3 +248,22 @@ textarea {
     scroll-behavior: auto !important;
   }
 }
+
+/* Светлая кнопка на тёмном/цветном фоне (герой, баннеры): текст тёмно-зелёный на белом, 9:1 */
+.button--light {
+  gap: var(--space-2);
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--brand-dark);
+}
+
+.button--light:hover {
+  background: var(--color-surface);
+  border-color: var(--color-surface);
+  color: var(--brand-dark);
+}
+
+/* Полноширинные блоки главной не создают горизонтальную прокрутку */
+body {
+  overflow-x: clip;
+}

@@ -71,6 +71,9 @@ export function ReviewCard({ item }: { item: CompanyReviewRow }) {
   return (
     <figure className="review-card">
       <figcaption className="review-card__head">
+        <span className="review-card__avatar" aria-hidden="true">
+          {item.authorName.trim().charAt(0).toUpperCase()}
+        </span>
         <span className="review-card__author">{item.authorName}</span>
         {item.reviewedAt ? <span className="info-card__meta">{formatDate(item.reviewedAt)}</span> : null}
         {item.rating ? (

@@ -24,19 +24,76 @@ describe('главная без данных', () => {
     expect(data.services).toEqual([]);
     expect(data.reviews).toEqual([]);
     expect(data.news).toEqual([]);
+    expect(data.catalogProducts).toEqual([]);
 
     const html = renderToStaticMarkup(<HomeView data={data} />);
     expect(html).toMatch(/<h1/);
     expect(html).not.toContain('home-slider');
-    for (const title of ['Популярные категории', 'Новинки', 'Популярные товары', 'Акционные товары', 'Акции', 'Услуги', 'Отзывы о компании', 'Новости']) {
+    for (const title of ['Популярные категории', 'Новинки', 'Хиты', 'Популярные товары', 'Товары каталога', 'Акции', 'Услуги', 'Отзывы о компании', 'Новости']) {
       expect(html).not.toContain(`>${title}<`);
     }
-    // блоки «О компании» и «Контакты» остаются: тексты — метки, карты нет
+    // герой с слоганом пользователя и полоса преимуществ есть всегда; рейтингов и звёзд без отзывов нет
+    expect(html).toContain('профессиональный подход к садовой технике:');
+    expect(html).toContain('подберём новую, починим старую');
+    expect(html).toContain('Перейти в каталог');
+    expect(html).toContain('Заявка на ремонт на сайте');
+    expect(html).not.toContain('★');
+    expect(html).not.toContain('review-card');
+    expect(html).not.toContain('home-badge');
+    // блоки «О компании» и «Контакты» остаются: тексты — метки; карты нет, но есть маршрут по адресу
     expect(html).toContain('О компании');
     expect(html).toContain('впиши]');
     expect(html).toContain('Талдом, Садовый переулок д10');
-    expect(html).toContain('Координаты на карте не заданы');
-    expect(html).not.toContain('Построить маршрут');
+    expect(html).not.toContain('shop-map__canvas');
+    expect(html).toContain(`https://www.openstreetmap.org/search?query=${encodeURIComponent('Талдом, Садовый переулок д10')}`);
+    expect(html).toContain('Построить маршрут');
+  });
+});
+
+describe('главная: бейджи и плитки категорий', () => {
+  it('«Акция» только у товара с реальной скидкой, «Новинка» — только по firstSeenAt', async () => {
+    const db = createTestDb();
+    insertProduct(db, { n: 1, firstSeenAt: recent, featured: true });
+    insertProduct(db, { n: 2, discount: 70_000, featured: true });
+    insertProduct(db, { n: 3 });
+    const html = renderToStaticMarkup(<HomeView data={await getHomeData({ db, now: NOW })} />);
+    const items = html.split('<li class="home-products__item">').slice(1).map((c) => c.split('</li>')[0] as string);
+    const of = (name: string) => items.filter((c) => c.includes(`>${name}</a>`));
+    expect(of('Товар 1').length).toBeGreaterThan(0);
+    for (const c of of('Товар 1')) expect(c).not.toContain('home-badge--sale');
+    expect(of('Товар 2').length).toBeGreaterThan(0);
+    for (const c of of('Товар 2')) expect(c).toContain('home-badge--sale');
+    expect(of('Товар 1').some((c) => c.includes('home-badge--new'))).toBe(true);
+    expect(of('Товар 2').some((c) => c.includes('home-badge--new'))).toBe(false);
+    expect(html).not.toContain('>Товар 3<'); // без featured, скидки и новизны на главную не попадает
+  });
+
+  it('плитка категории берёт реальное фото первого товара; без фото — нейтральная иконка', async () => {
+    const db = createTestDb();
+    const id = insertProduct(db, { n: 1 });
+    db.prepare("INSERT INTO product_images (product_id, url_source, path, sort) VALUES (?, 'https://champion.ru/a.jpg', NULL, 0)").run(id);
+    const withPhoto = renderToStaticMarkup(<HomeView data={await getHomeData({ db, now: NOW })} />);
+    const tile = withPhoto.slice(withPhoto.indexOf('category-tile')).split('</ul>')[0] as string;
+    expect(tile).toContain('https://champion.ru/a.jpg');
+    expect(tile).toContain('1 товар');
+
+    const db2 = createTestDb();
+    insertProduct(db2, { n: 1 });
+    const noPhoto = renderToStaticMarkup(<HomeView data={await getHomeData({ db: db2, now: NOW })} />);
+    const tile2 = noPhoto.slice(noPhoto.indexOf('category-tile')).split('</ul>')[0] as string;
+    expect(tile2).toContain('product-image--empty');
+    expect(tile2).not.toContain('<img');
+  });
+
+  it('нет хитов, акций и новинок — вместо вкладок запасной блок «Товары каталога»', async () => {
+    const db = createTestDb();
+    insertProduct(db, { n: 1 });
+    insertProduct(db, { n: 2 });
+    const data = await getHomeData({ db, now: NOW });
+    expect(data.catalogProducts.map((p) => p.name)).toEqual(['Товар 1', 'Товар 2']);
+    const html = renderToStaticMarkup(<HomeView data={data} />);
+    expect(html).toContain('>Товары каталога<');
+    expect(html).not.toContain('role="tablist"');
   });
 });
 
@@ -69,9 +126,11 @@ describe('главная с данными', () => {
 
     const html = renderToStaticMarkup(<HomeView data={data} />);
     expect(html).toContain('home-slider');
-    for (const title of ['Популярные категории', 'Новинки', 'Популярные товары', 'Акционные товары', 'Акции', 'Услуги', 'Отзывы о компании', 'Новости']) {
+    for (const title of ['Популярные категории', 'Хиты', 'Акции', 'Новинки', 'Популярные товары', 'Услуги', 'Отзывы о компании', 'Новости']) {
       expect(html).toContain(`>${title}<`);
     }
+    expect(html).toContain('home-banner'); // баннер из реальной акции
+    expect(html).not.toContain('★'); // оценку отзыву админ не ставил
     expect(html).toContain('Построить маршрут');
     expect(html).not.toContain('Адрес не указан');
   });

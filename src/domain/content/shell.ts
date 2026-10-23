@@ -2,6 +2,7 @@ import { getDb, type Db } from '@/server/db/connection';
 import { companyReviewsRepo } from '@/server/db/repositories/company-reviews';
 import { newsRepo } from '@/server/db/repositories/news';
 import { promotionsRepo } from '@/server/db/repositories/promotions';
+import { categoriesRepo } from '@/server/db/repositories/categories';
 import { MAIN_NAV } from '@/ui/nav';
 import type { ShellContext, ShellLink } from '@/ui/shell-context';
 import { getPageByKey, isPromotionActive, pagePath, type PageKey } from './queries';
@@ -41,13 +42,23 @@ export function loadShellContext(opts: Opts = {}): ShellContext {
     requisites: shop.requisites ?? undefined,
     socials: shop.socials.map((s) => ({ href: s.href, label: s.label })),
     nav,
-    buyerLinks: [...pageLink('delivery'), ...pageLink('warranty'), ...pageLink('faq'), ...pageLink('terms')],
+    catalogLinks: categoriesRepo
+      .listAll(db)
+      .filter((c) => c.parentId === null)
+      .slice(0, 6)
+      .map((c) => ({ href: `/catalog/${c.slug}`, label: c.name })),
+    buyerLinks: [
+      ...pageLink('delivery'),
+      ...pageLink('warranty'),
+      { href: '/services', label: 'Услуги' },
+      ...(hasPromotions ? [{ href: '/promotions', label: 'Акции' }] : []),
+      { href: '/contacts', label: 'Контакты' },
+    ],
     companyLinks: [
       ...pageLink('about'),
       ...(hasNews ? [{ href: '/news', label: 'Новости' }] : []),
       ...(hasReviews ? [{ href: COMPANY_REVIEWS_PATH, label: 'Отзывы о компании' }] : []),
       ...pageLink('privacy'),
-      { href: '/contacts', label: 'Контакты' },
     ],
   };
 }

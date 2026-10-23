@@ -6,3 +6,8 @@ export function routeUrl(latitude: number, longitude: number): string {
 export function viewUrl(latitude: number, longitude: number): string {
   return `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=16/${latitude}/${longitude}`;
 }
+
+/** Поиск адреса на OpenStreetMap — когда координаты магазина не заданы. */
+export function searchUrl(address: string): string {
+  return `https://www.openstreetmap.org/search?query=${encodeURIComponent(address)}`;
+}

@@ -1,5 +1,5 @@
 import { ShopMapCanvas } from './ShopMapCanvas';
-import { routeUrl, viewUrl } from './route';
+import { routeUrl, searchUrl, viewUrl } from './route';
 
 /**
  * Карта магазина. Рисуется только при заданных координатах (настройки latitude/longitude);
@@ -11,7 +11,15 @@ export function ShopMap({ latitude, longitude, address }: { latitude: number | n
     return (
       <div className="shop-map shop-map--empty" role="note">
         {address ? (
-          <p>Координаты на карте не заданы. Адрес: {address}</p>
+          <>
+            <p>
+              <strong>{address}</strong>
+            </p>
+            <p className="shop-map__hint">Точка на карте не задана.</p>
+            <a className="button shop-map__route" href={searchUrl(address)} rel="noopener noreferrer" target="_blank">
+              Построить маршрут
+            </a>
+          </>
         ) : (
           <p>
             <strong>Адрес не указан</strong>

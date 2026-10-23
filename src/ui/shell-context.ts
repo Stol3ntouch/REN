@@ -24,6 +24,8 @@ export type ShellContext = {
   socials?: ShellLink[];
   /** Основное меню без пустых разделов; нет — стандартное MAIN_NAV. */
   nav?: ShellLink[];
+  /** Корневые категории каталога для подвала. */
+  catalogLinks?: ShellLink[];
   buyerLinks?: ShellLink[];
   companyLinks?: ShellLink[];
 };

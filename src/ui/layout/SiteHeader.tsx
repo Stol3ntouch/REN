@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { CALLBACK_HREF, LOGIN_HREF, SEARCH_ACTION } from '../nav';
 import { Placeholder } from '../placeholder';
 import { DEFAULT_SHELL, type ShellContext } from '../shell-context';
+import { ArrowRightIcon, ClockIcon, MenuLinesIcon, PhoneIcon, PinIcon, SearchIcon } from '../home/home-icons';
 import { HeaderCounters } from './HeaderCounters';
 import { UserIcon } from './icons';
 import { SiteNav } from './SiteNav';
@@ -14,13 +15,19 @@ const telOf = (phone: string): string => `tel:${phone.replace(/[^\d+]/g, '')}`;
  */
 export function SiteHeader({ shell = DEFAULT_SHELL }: { shell?: ShellContext }) {
   return (
-    <header className="site-header">
+    <header className="site-header" id="top">
       <div className="site-header__bar">
         <div className="site-header__top container">
           <p className="site-header__contact">
-            <span className="site-header__address">{shell.address ?? <Placeholder label="АДРЕС" />}</span>
-            <span className="site-header__hours">{shell.hours ?? <Placeholder label="ЧАСЫ РАБОТЫ" />}</span>
+            <span className="site-header__address">
+              <PinIcon size={16} />
+              {shell.address ?? <Placeholder label="АДРЕС" />}</span>
+            <span className="site-header__hours">
+              <ClockIcon size={16} />
+              {shell.hours ?? <Placeholder label="ЧАСЫ РАБОТЫ" />}
+            </span>
             <span className="site-header__phone">
+              <PhoneIcon size={16} />
               {shell.phone ? <a href={shell.phoneHref ?? telOf(shell.phone)}>{shell.phone}</a> : <Placeholder label="ТЕЛЕФОН" />}
             </span>
           </p>
@@ -45,15 +52,18 @@ export function SiteHeader({ shell = DEFAULT_SHELL }: { shell?: ShellContext }) 
           )}
         </Link>
         <Link className="button site-header__catalog" href="/catalog">
+          <MenuLinesIcon size={20} />
           Каталог
+          <ArrowRightIcon size={18} />
         </Link>
         <form className="site-search" role="search" action={SEARCH_ACTION} method="get">
           <label className="visually-hidden" htmlFor="site-search">
             Поиск по каталогу
           </label>
-          <input id="site-search" name="q" type="search" placeholder="Название, модель или артикул" autoComplete="off" />
-          <button className="button" type="submit">
-            Найти
+          <input id="site-search" name="q" type="search" placeholder="Поиск товаров…" autoComplete="off" />
+          <button className="button site-search__submit" type="submit">
+            <SearchIcon size={20} />
+            <span className="visually-hidden">Найти</span>
           </button>
         </form>
         <HeaderCounters />
