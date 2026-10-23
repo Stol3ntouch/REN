@@ -821,3 +821,70 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/* ---------- плитки категорий с фото ---------- */
+.category-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: var(--space-3) 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.category-tile {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  color: var(--color-text);
+  text-decoration: none;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.category-tile:hover {
+  border-color: var(--color-muted);
+}
+
+.category-tile__media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 3;
+  color: var(--color-muted);
+  background: var(--color-surface);
+}
+
+.category-tile__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #fff;
+}
+
+.category-tile__name {
+  padding: var(--space-2) var(--space-2) 0;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.category-tile__count {
+  padding: 0 var(--space-2) var(--space-2);
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+@media (min-width: 48rem) {
+  .category-tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .category-tiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

@@ -8,6 +8,7 @@ import { searchProducts } from '@/domain/catalog/search';
 import type { CategoryNode } from '@/domain/catalog/types';
 import { Breadcrumbs } from '@/ui/catalog/Breadcrumbs';
 import { CatalogListing } from '@/ui/catalog/CatalogListing';
+import { CategoryTiles } from '@/ui/catalog/CategoryTiles';
 import { CategoryTree } from '@/ui/catalog/CategoryTree';
 import { ResponsiveDetails } from '@/ui/catalog/ResponsiveDetails';
 import { EmptyState } from '@/ui/states';
@@ -77,17 +78,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
       <h1>{category.h1 ?? category.name}</h1>
 
       {node && node.children.length > 0 ? (
-        <nav className="subcategories" aria-label="Подкатегории">
-          <ul>
-            {node.children.map((c) => (
-              <li key={c.id}>
-                <Link href={`/catalog/${c.slug}`}>
-                  {c.name} <span className="subcategories__count">{c.productCount}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <CategoryTiles nodes={node.children} label="Подкатегории" />
       ) : null}
 
       <CatalogListing

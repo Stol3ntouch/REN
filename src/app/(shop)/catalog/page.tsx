@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { connection } from 'next/server';
 import { getCategoryTree } from '@/domain/catalog/categories';
+import { CategoryTiles } from '@/ui/catalog/CategoryTiles';
 import { Breadcrumbs } from '@/ui/catalog/Breadcrumbs';
 import { EmptyState } from '@/ui/states';
 import '@/ui/catalog/catalog.css';
@@ -20,25 +20,7 @@ export default async function CatalogIndexPage() {
           <p>Товары появятся здесь после загрузки каталога.</p>
         </EmptyState>
       ) : (
-        <ul className="category-cards">
-          {tree.map((root) => (
-            <li key={root.id} className="category-card">
-              <h2 className="category-card__title">
-                <Link href={`/catalog/${root.slug}`}>{root.name}</Link>
-              </h2>
-              <p className="category-card__count">{root.productCount} шт.</p>
-              {root.children.length > 0 ? (
-                <ul className="category-card__children">
-                  {root.children.map((c) => (
-                    <li key={c.id}>
-                      <Link href={`/catalog/${c.slug}`}>{c.name}</Link>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </li>
-          ))}
-        </ul>
+        <CategoryTiles nodes={tree} label="Категории каталога" />
       )}
     </>
   );
