@@ -1,5 +1,6 @@
 /** Пункты основного меню. Страницы появятся вместе с соответствующими задачами. */
 export const MAIN_NAV: ReadonlyArray<{ href: string; label: string }> = [
+  { href: '/', label: 'Главная' },
   { href: '/catalog', label: 'Каталог' },
   { href: '/services', label: 'Ремонт и услуги' },
   { href: '/promotions', label: 'Акции' },

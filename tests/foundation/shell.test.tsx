@@ -55,6 +55,20 @@ describe('каркас страницы', () => {
     expect(html).toContain('<footer');
     expect(html).toContain('РемТехСад');
   });
+
+  it('«Главная» — первая ссылка и в мобильном, и в десктопном меню; aria-current на /', () => {
+    const nav = html.match(/<nav[^>]*aria-label="Основное меню"[\s\S]*?<\/nav>/)![0];
+    const mobile = nav.match(/<details[^>]*site-nav__mobile[\s\S]*?<\/details>/)![0];
+    const desktop = nav.match(/<ul[^>]*site-nav__desktop[\s\S]*?<\/ul>/)![0];
+    for (const part of [mobile, desktop]) {
+      const first = part.match(/<a [^>]*>[^<]*<\/a>/)![0];
+      expect(first).toContain('href="/"');
+      expect(first).toContain('aria-current="page"');
+      expect(first).toContain('Главная');
+      expect(part.match(/aria-current="page"/g)).toHaveLength(1);
+    }
+    expect(mobile.slice(0, mobile.indexOf('>'))).not.toContain('open');
+  });
 });
 
 describe('состояния интерфейса', () => {
