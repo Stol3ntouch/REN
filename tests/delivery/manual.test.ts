@@ -34,9 +34,9 @@ describe('DeliveryPort: ручная реализация', () => {
 });
 
 describe('integrationsStatus', () => {
-  it('оплата и доставка показаны как «не подключено — заглушка»', () => {
+  it('оплата, доставка и 1С показаны как «не подключено — заглушка»', () => {
     const list = integrationsStatus({ production: false, env: {} });
-    expect(list.map((e) => e.key)).toEqual(['payment', 'delivery']);
+    expect(list.map((e) => e.key)).toEqual(['payment', 'delivery', 'onec']);
     for (const e of list) expect(e.status).toMatchObject({ connected: false, mode: 'stub' });
   });
 });
