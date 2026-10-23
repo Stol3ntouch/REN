@@ -1,3 +1,4 @@
+import { visibleProductSql } from '@/server/db/repositories/products';
 import { getDb, type Db } from '@/server/db/connection';
 import { listCategoryRows } from './category-rows';
 import { buildMatchQuery } from './fts';
@@ -23,7 +24,7 @@ export async function getFacets(categoryId: number, ctx: FacetContext = { filter
        FROM product_attributes pa
        JOIN products p ON p.id = pa.product_id
        JOIN attribute_definitions d ON d.id = pa.attribute_id
-       WHERE p.published = 1 AND p.category_id IN (SELECT value FROM json_each(?))
+       WHERE ${visibleProductSql('p')} AND p.category_id IN (SELECT value FROM json_each(?))
        GROUP BY d.id
        HAVING COUNT(DISTINCT p.id) >= ? AND COUNT(DISTINCT pa.value) <= ?
        ORDER BY products DESC, d.name, d.id`,
@@ -41,7 +42,7 @@ export async function getFacets(categoryId: number, ctx: FacetContext = { filter
     const all = db
       .prepare(
         `SELECT DISTINCT pa.value AS value FROM product_attributes pa JOIN products p ON p.id = pa.product_id
-         WHERE pa.attribute_id = ? AND p.published = 1 AND p.category_id IN (SELECT value FROM json_each(?))`,
+         WHERE pa.attribute_id = ? AND ${visibleProductSql('p')} AND p.category_id IN (SELECT value FROM json_each(?))`,
       )
       .all(attr.id, idsJson) as { value: string }[];
 

@@ -12,6 +12,8 @@ export type AdminProductRow = {
   discountPriceKopecks: number | null;
   inStock: boolean;
   published: boolean;
+  /** Скрыт администратором (F3): на сайте не виден, в админском списке остаётся с пометкой. */
+  hidden: boolean;
   featured: boolean;
   source: string;
   updatedAt: string;
@@ -32,6 +34,7 @@ type Raw = {
   discount_price_kopecks: number | null;
   in_stock: number;
   published: number;
+  hidden_by_admin: number;
   featured: number;
   source: string;
   updated_at: string;
@@ -41,7 +44,7 @@ type Raw = {
 };
 
 const SELECT = `SELECT p.id, p.name, p.sku, p.slug, p.description, p.category_id, c.name AS category_name, p.price_kopecks,
-  p.discount_price_kopecks, p.in_stock, p.published, p.featured, p.source, p.updated_at, p.locked_fields,
+  p.discount_price_kopecks, p.in_stock, p.published, p.hidden_by_admin, p.featured, p.source, p.updated_at, p.locked_fields,
   s.seo_title, s.seo_description
   FROM products p JOIN categories c ON c.id = p.category_id LEFT JOIN product_seo s ON s.product_id = p.id`;
 
@@ -66,6 +69,7 @@ const map = (r: Raw): AdminProductRow => ({
   discountPriceKopecks: r.discount_price_kopecks,
   inStock: r.in_stock === 1,
   published: r.published === 1,
+  hidden: r.hidden_by_admin === 1,
   featured: r.featured === 1,
   source: r.source,
   updatedAt: r.updated_at,
@@ -74,7 +78,7 @@ const map = (r: Raw): AdminProductRow => ({
   seoDescription: r.seo_description,
 });
 
-export type ProductListFilter = { q?: string; categoryId?: number; published?: boolean; inStock?: boolean; page?: number; pageSize?: number };
+export type ProductListFilter = { q?: string; categoryId?: number; published?: boolean; hiddenOnly?: boolean; inStock?: boolean; page?: number; pageSize?: number };
 
 const folded = new WeakSet<Db>();
 /** SQLite lower() знает только ASCII: для кириллицы регистрируем свою функцию на соединении. */
@@ -92,7 +96,7 @@ export const catalogAdminRepo = {
     return r ? map(r) : null;
   },
 
-  list(db: Db, f: ProductListFilter = {}): { rows: AdminProductRow[]; total: number; page: number; pageSize: number } {
+  list(db: Db, f: ProductListFilter = {}): { rows: AdminProductRow[]; total: number; page: number; pageSize: number; counts: { all: number; hidden: number } } {
     ensureLc(db);
     const where: string[] = [];
     const args: (string | number)[] = [];
@@ -109,6 +113,7 @@ export const catalogAdminRepo = {
       where.push('p.published = ?');
       args.push(f.published ? 1 : 0);
     }
+    if (f.hiddenOnly) where.push('p.hidden_by_admin = 1');
     if (f.inStock !== undefined) {
       where.push('p.in_stock = ?');
       args.push(f.inStock ? 1 : 0);
@@ -118,7 +123,22 @@ export const catalogAdminRepo = {
     const page = Math.max(f.page ?? 1, 1);
     const total = Number((db.prepare(`SELECT COUNT(*) AS n FROM products p ${w}`).get(...args) as { n: number }).n);
     const rows = db.prepare(`${SELECT} ${w} ORDER BY p.id LIMIT ? OFFSET ?`).all(...args, pageSize, (page - 1) * pageSize) as Raw[];
-    return { rows: rows.map(map), total, page, pageSize };
+    const counts = db.prepare('SELECT COUNT(*) AS n, COALESCE(SUM(hidden_by_admin), 0) AS h FROM products').get() as { n: number; h: number };
+    return { rows: rows.map(map), total, page, pageSize, counts: { all: Number(counts.n), hidden: Number(counts.h) } };
+  },
+
+  /** Признак «скрыт» по id; нет товара — нет ключа в результате. */
+  hiddenByIds(db: Db, ids: number[]): Map<number, boolean> {
+    const out = new Map<number, boolean>();
+    if (ids.length === 0) return out;
+    const rows = db.prepare(`SELECT id, hidden_by_admin AS h FROM products WHERE id IN (SELECT value FROM json_each(?))`).all(JSON.stringify(ids)) as { id: number; h: number }[];
+    for (const r of rows) out.set(r.id, r.h === 1);
+    return out;
+  },
+
+  /** Только признак скрытия: published, locked_fields и данные импорта не трогаются. */
+  setHidden(db: Db, ids: number[], hidden: boolean): void {
+    db.prepare('UPDATE products SET hidden_by_admin = ? WHERE id IN (SELECT value FROM json_each(?))').run(hidden ? 1 : 0, JSON.stringify(ids));
   },
 
   categories(db: Db): { id: number; name: string }[] {

@@ -1,4 +1,5 @@
 import type { Db } from '../connection';
+import { visibleProductSql } from './products';
 
 export type ReviewStatus = 'pending' | 'published' | 'rejected';
 
@@ -46,7 +47,7 @@ const map = (r: Raw): ReviewRow => ({
 export const reviewsRepo = {
   /** Товар, на который можно оставить отзыв/вопрос: должен существовать и быть опубликован. */
   findProduct(db: Db, productId: number): { id: number; name: string; slug: string; published: boolean } | null {
-    const r = db.prepare('SELECT id, name, slug, published FROM products WHERE id = ?').get(productId) as { id: number; name: string; slug: string; published: number } | undefined;
+    const r = db.prepare(`SELECT p.id, p.name, p.slug, ${visibleProductSql('p')} AS published FROM products p WHERE p.id = ?`).get(productId) as { id: number; name: string; slug: string; published: number } | undefined;
     return r ? { id: r.id, name: r.name, slug: r.slug, published: r.published === 1 } : null;
   },
   insert(db: Db, v: { productId: number; rating: number; authorName: string; body: string; userId?: number | null; guestId?: string | null; now: number }): number {

@@ -1,3 +1,4 @@
+import { visibleProductSql } from '@/server/db/repositories/products';
 import { getDb, type Db } from '@/server/db/connection';
 
 // SQL чтения для SEO лежит здесь по тому же исключению из правила 4, что и в domain/catalog/store.ts.
@@ -14,7 +15,7 @@ export function getProductSeo(productId: number, opts: { db?: Db } = {}): Produc
 
 /** Опубликованные товары для sitemap: slug и время изменения (ISO-строка из products.updated_at). */
 export function listPublishedProductStamps(db: Db): { slug: string; updatedAt: string }[] {
-  return (db.prepare('SELECT slug, updated_at FROM products WHERE published = 1 ORDER BY id').all() as { slug: string; updated_at: string }[]).map((r) => ({
+  return (db.prepare(`SELECT slug, updated_at FROM products p WHERE ${visibleProductSql('p')} ORDER BY p.id`).all() as { slug: string; updated_at: string }[]).map((r) => ({
     slug: r.slug,
     updatedAt: r.updated_at,
   }));

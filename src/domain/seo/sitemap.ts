@@ -1,3 +1,4 @@
+import { visibleProductSql } from '@/server/db/repositories/products';
 import { listPublicUrls } from '@/domain/content/urls';
 import { getDb, type Db } from '@/server/db/connection';
 import { categoriesRepo } from '@/server/db/repositories/categories';
@@ -19,7 +20,7 @@ export function listSitemapEntries(opts: { db?: Db; siteUrl: string; now?: numbe
   paths.push({ path: '/catalog' });
 
   const direct = new Map(
-    (db.prepare('SELECT category_id AS id, COUNT(*) AS n FROM products WHERE published = 1 GROUP BY category_id').all() as { id: number; n: number }[]).map((r) => [r.id, r.n]),
+    (db.prepare(`SELECT p.category_id AS id, COUNT(*) AS n FROM products p WHERE ${visibleProductSql('p')} GROUP BY p.category_id`).all() as { id: number; n: number }[]).map((r) => [r.id, r.n]),
   );
   const rows = categoriesRepo.listAll(db);
   const children = new Map<number, number[]>();

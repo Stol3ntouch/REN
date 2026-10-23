@@ -1,3 +1,4 @@
+import { visibleProductSql } from '@/server/db/repositories/products';
 import type { ProductCard } from '@/domain/catalog/types';
 import { getDb, withTransaction, type Db } from '@/server/db/connection';
 import { favoritesRepo } from '@/server/db/repositories/favorites';
@@ -11,7 +12,7 @@ export type CollectionOpts = { db?: Db; now?: number };
 
 /** Товар должен существовать и быть опубликованным — иначе 404 (не раскрываем скрытое). */
 export function assertPublishedProduct(db: Db, productId: number): void {
-  const row = db.prepare('SELECT 1 AS x FROM products WHERE id = ? AND published = 1').get(productId);
+  const row = db.prepare(`SELECT 1 AS x FROM products p WHERE p.id = ? AND ${visibleProductSql('p')}`).get(productId);
   if (!row) throw new NotFoundError('Товар не найден');
 }
 

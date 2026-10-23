@@ -1,3 +1,4 @@
+import { visibleProductSql } from './products';
 import type { Db } from '../connection';
 import type { OwnerRef } from '@/server/http/owner';
 
@@ -17,14 +18,14 @@ export function createCollectionRepo(table: CollectionTable) {
       const w = where(owner);
       const dir = order === 'asc' ? 'ASC' : 'DESC';
       const rows = db
-        .prepare(`SELECT t.product_id AS id FROM ${table} t JOIN products p ON p.id = t.product_id WHERE ${w.sql} AND p.published = 1 ORDER BY t.id ${dir}`)
+        .prepare(`SELECT t.product_id AS id FROM ${table} t JOIN products p ON p.id = t.product_id WHERE ${w.sql} AND ${visibleProductSql('p')} ORDER BY t.id ${dir}`)
         .all(w.arg) as Array<{ id: number }>;
       return rows.map((r) => r.id);
     },
     count(db: Db, owner: OwnerRef): number {
       const w = where(owner);
       const row = db
-        .prepare(`SELECT COUNT(*) AS n FROM ${table} t JOIN products p ON p.id = t.product_id WHERE ${w.sql} AND p.published = 1`)
+        .prepare(`SELECT COUNT(*) AS n FROM ${table} t JOIN products p ON p.id = t.product_id WHERE ${w.sql} AND ${visibleProductSql('p')}`)
         .get(w.arg) as { n: number };
       return row.n;
     },

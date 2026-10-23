@@ -1,10 +1,11 @@
+import { visibleProductSql } from './products';
 import type { Db } from '../connection';
 
 /**
  * Выборки id товаров для блоков главной (T08). Карточки по этим id строит витрина (cardsByIds).
- * Только опубликованные товары. SQL популярности приходит снаружи (источник подключает T05).
+ * Только видимые товары (опубликованные и не скрытые админом). SQL популярности приходит снаружи (источник подключает T05).
  */
-const PUBLISHED = 'p.published = 1';
+const PUBLISHED = visibleProductSql('p');
 const ISO_DATE = "p.first_seen_at GLOB '[0-9][0-9][0-9][0-9]-*'";
 const ids = (rows: unknown[]): number[] => (rows as { id: number }[]).map((r) => r.id);
 

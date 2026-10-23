@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { audit } from '@/domain/admin/audit';
 import { requirePermission, type StaffSession } from '@/domain/admin/permissions';
+import { clearCategoryImageCache } from '@/domain/catalog/category-images';
 import { sanitizeDescription } from '@/importing/yml';
 import { getDb, withTransaction, type Db } from '@/server/db/connection';
 import { catalogAdminRepo, type AdminProductRow, type ProductListFilter } from '@/server/db/repositories/catalog-admin';
@@ -23,6 +24,13 @@ const updateSchema = z
   })
   .partial()
   .strict();
+
+/** Массовое скрытие/показ: от 1 до 200 id товаров за раз (F3). */
+export const MAX_VISIBILITY_BATCH = 200;
+const visibilitySchema = z
+  .array(z.number({ error: 'Товар указан неверно' }).int('Товар указан неверно').positive('Товар указан неверно'), { error: 'Выберите товары' })
+  .min(1, 'Выберите хотя бы один товар')
+  .max(MAX_VISIBILITY_BATCH, `За один раз можно выбрать не больше ${MAX_VISIBILITY_BATCH} товаров`);
 
 export type ProductUpdateInput = z.input<typeof updateSchema>;
 
@@ -156,6 +164,37 @@ export const catalogOps = {
       );
       return { changed };
     });
+  },
+
+  /**
+   * Скрыть (hidden=true) или показать товары на сайте. Право catalog.write (только admin); флаг catalog.manualEdit НЕ нужен:
+   * видимость — решение о контенте сайта, а не правка данных, которые присылает 1С. Меняется только hidden_by_admin —
+   * published, locked_fields и всё, что пишет импорт, остаётся; повторный импорт скрытое не возвращает.
+   * Атомарно: неизвестный id — NotFoundError, ничего не меняется. Аудит product.visibility на каждый изменившийся товар (id, без ПДн).
+   */
+  setHidden(session: StaffSession | null, ids: unknown, hidden: boolean, opts: Opts = {}): { changed: number[] } {
+    requirePermission(session, 'catalog.write');
+    const parsed = visibilitySchema.safeParse(ids);
+    if (!parsed.success) throw toValidation(parsed.error);
+    const unique = [...new Set(parsed.data)];
+    const db = opts.db ?? getDb();
+    const now = opts.now ?? Date.now();
+    const changed = withTransaction(db, () => {
+      const current = catalogAdminRepo.hiddenByIds(db, unique);
+      if (unique.some((id) => !current.has(id))) throw new NotFoundError('Товар не найден');
+      const toChange = unique.filter((id) => current.get(id) !== hidden);
+      if (toChange.length === 0) return [];
+      catalogAdminRepo.setHidden(db, toChange, hidden);
+      for (const id of toChange) {
+        audit.record(
+          { actorId: session.staffId, actorType: 'staff', action: 'product.visibility', entity: 'product', entityId: id, before: { hidden: !hidden }, after: { hidden } },
+          { db, now },
+        );
+      }
+      return toChange;
+    });
+    if (changed.length > 0) clearCategoryImageCache(); // плитки категорий кэшируют первое фото — сбросить сразу
+    return { changed };
   },
 
   /** Вернуть поля под управление импорта (снять закрепление). Тоже только при включённом ручном режиме и catalog.write. */

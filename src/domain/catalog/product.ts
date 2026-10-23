@@ -2,7 +2,7 @@ import { getDb, type Db } from '@/server/db/connection';
 import { attributesRepo } from '@/server/db/repositories/attributes';
 import { sanitizeDescription } from '@/importing/yml/sanitize';
 import { imagesRepo } from '@/server/db/repositories/images';
-import { productsRepo } from '@/server/db/repositories/products';
+import { productsRepo, visibleProductSql } from '@/server/db/repositories/products';
 import { listCategoryRows } from './category-rows';
 import { getCategoryBreadcrumbs, toCategoryInfo } from './categories';
 import { toCatalogImage } from './images';
@@ -17,7 +17,7 @@ export const RELATED_MIN = 2;
 export async function getProductBySlug(slug: string, opts: { db?: Db } = {}): Promise<ProductPage | null> {
   const db = opts.db ?? getDb();
   const p = productsRepo.findBySlug(db, slug);
-  if (!p || !p.published) return null;
+  if (!p || !p.published || p.hiddenByAdmin) return null;
   const category = listCategoryRows(db).find((c) => c.id === p.categoryId);
   if (!category) return null;
 
@@ -49,7 +49,7 @@ export async function getRelatedProducts(productId: number, opts: { db?: Db } = 
   const rows = db
     .prepare(
       `SELECT ${CARD_COLUMNS} FROM products p ${CARD_JOIN}
-       WHERE p.published = 1 AND p.id <> ? AND p.category_id = (SELECT category_id FROM products WHERE id = ?)
+       WHERE ${visibleProductSql('p')} AND p.id <> ? AND p.category_id = (SELECT category_id FROM products WHERE id = ?)
        ORDER BY p.in_stock DESC, rts_fold(p.name), p.id LIMIT ?`,
     )
     .all(productId, productId, RELATED_LIMIT) as CardRow[];

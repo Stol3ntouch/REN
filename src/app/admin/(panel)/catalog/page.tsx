@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { formatRub } from '@/domain/pricing/format';
+import { hasPermission } from '@/domain/admin/permissions';
 import { requireStaffPage } from '@/ui/admin/guard';
 import { EmptyState } from '@/ui/states';
 import { catalogOps } from '../_lib/catalog-ops';
-import { CATALOG_NAV, int, str, SubNav } from '../_lib/ui';
+import { CATALOG_NAV, Flash, int, str, SubNav } from '../_lib/ui';
+import { ProductTable } from './ProductTable';
 
 export const metadata: Metadata = { title: 'Каталог' };
 export const dynamic = 'force-dynamic';
@@ -19,23 +20,30 @@ export default async function AdminCatalogPage({ searchParams }: { searchParams:
     q: str(sp.q).trim().slice(0, 100) || undefined,
     categoryId: categoryId || undefined,
     published: triState(str(sp.published)),
+    hiddenOnly: str(sp.hidden) === '1' || undefined,
     page: int(sp.page, 1),
   };
   const result = catalogOps.list(session, filter, {});
   const categories = catalogOps.categories(session);
   const manualEdit = catalogOps.isManualEditEnabled();
+  const canWrite = hasPermission(session.role, 'catalog.write');
   const pages = Math.max(1, Math.ceil(result.total / result.pageSize));
   const link = (page: number) => {
     const p = new URLSearchParams();
-    for (const k of ['q', 'category', 'published']) if (str(sp[k])) p.set(k, str(sp[k]));
+    for (const k of ['q', 'category', 'published', 'hidden']) if (str(sp[k])) p.set(k, str(sp[k]));
     p.set('page', String(page));
     return `/admin/catalog?${p.toString()}`;
   };
+  const backPath = link(result.page);
 
   return (
     <>
       <h1>Каталог</h1>
       <SubNav items={CATALOG_NAV} current="/admin/catalog" />
+      <Flash ok={str(sp.ok)} error={str(sp.error)} okText="Готово: видимость на сайте обновлена." />
+      <p>
+        Всего товаров: {result.counts.all}, скрыто с сайта: {result.counts.hidden}.
+      </p>
       <p className="ops-muted">
         {manualEdit ? 'Ручное редактирование включено: цены, публикацию и описания можно править в карточке товара.' : 'Источник данных — импорт YML / 1С: поля только для чтения. Ручное редактирование включается в настройках.'}
       </p>
@@ -63,6 +71,11 @@ export default async function AdminCatalogPage({ searchParams }: { searchParams:
             <option value="0">Скрыт</option>
           </select>
         </div>
+        <div className="adm-field">
+          <label htmlFor="c-hid">
+            <input id="c-hid" name="hidden" type="checkbox" value="1" defaultChecked={str(sp.hidden) === '1'} /> Только скрытые
+          </label>
+        </div>
         <div className="adm-inline">
           <button type="submit" className="button">
             Найти
@@ -80,45 +93,7 @@ export default async function AdminCatalogPage({ searchParams }: { searchParams:
       ) : (
         <>
           <p>Найдено: {result.total}</p>
-          <div className="adm-table-wrap">
-            <table className="adm-table">
-              <caption className="visually-hidden">Товары</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Название</th>
-                  <th scope="col">Артикул</th>
-                  <th scope="col">Категория</th>
-                  <th scope="col" className="num">
-                    Цена
-                  </th>
-                  <th scope="col">Наличие</th>
-                  <th scope="col">Публикация</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.rows.map((p) => (
-                  <tr key={p.id}>
-                    <td>
-                      <Link href={`/admin/catalog/${p.id}`}>{p.name}</Link>
-                    </td>
-                    <td>{p.sku ?? '—'}</td>
-                    <td>{p.categoryName}</td>
-                    <td className="num">
-                      {p.discountPriceKopecks !== null && p.discountPriceKopecks < p.priceKopecks ? (
-                        <>
-                          {formatRub(p.discountPriceKopecks)} <s className="ops-muted">{formatRub(p.priceKopecks)}</s>
-                        </>
-                      ) : (
-                        formatRub(p.priceKopecks)
-                      )}
-                    </td>
-                    <td>{p.inStock ? 'в наличии' : 'нет в наличии'}</td>
-                    <td>{p.published ? 'опубликован' : 'скрыт'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ProductTable rows={result.rows} canWrite={canWrite} back={backPath} />
           <nav className="adm-pager" aria-label="Страницы">
             {result.page > 1 ? <Link href={link(result.page - 1)}>← Назад</Link> : null}
             <span>

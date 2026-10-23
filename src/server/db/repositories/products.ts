@@ -1,5 +1,14 @@
 import type { Db } from '../connection';
 
+/**
+ * ЕДИНОЕ условие видимости товара на сайте: опубликован и не скрыт администратором (F3).
+ * Любой SQL, отдающий товары покупателю, подставляет его (alias — псевдоним таблицы products), а не пишет published = 1 сам.
+ * Строку собираем из константы, не из ввода.
+ */
+export function visibleProductSql(alias = 'p'): string {
+  return `${alias}.published = 1 AND ${alias}.hidden_by_admin = 0`;
+}
+
 export type ProductRow = {
   id: number;
   source: string;
@@ -15,6 +24,8 @@ export type ProductRow = {
   discountPriceKopecks: number | null;
   inStock: boolean;
   published: boolean;
+  /** Скрыт администратором (F3); импорт не трогает. */
+  hiddenByAdmin: boolean;
   featured: boolean;
   firstSeenAt: string;
   updatedAt: string;
@@ -35,6 +46,7 @@ type Raw = {
   discount_price_kopecks: number | null;
   in_stock: number;
   published: number;
+  hidden_by_admin: number;
   featured: number;
   first_seen_at: string;
   updated_at: string;
@@ -42,7 +54,7 @@ type Raw = {
 };
 
 const SELECT = `SELECT p.id, p.source, p.external_id, p.sku, p.name, p.slug, p.description, p.category_id,
-  c.external_id AS category_external_id, p.price_kopecks, p.discount_price_kopecks, p.in_stock, p.published,
+  c.external_id AS category_external_id, p.price_kopecks, p.discount_price_kopecks, p.in_stock, p.published, p.hidden_by_admin,
   p.featured, p.first_seen_at, p.updated_at, p.locked_fields
   FROM products p JOIN categories c ON c.id = p.category_id`;
 
@@ -70,6 +82,7 @@ function map(r: Raw): ProductRow {
     discountPriceKopecks: r.discount_price_kopecks,
     inStock: r.in_stock === 1,
     published: r.published === 1,
+    hiddenByAdmin: r.hidden_by_admin === 1,
     featured: r.featured === 1,
     firstSeenAt: r.first_seen_at,
     updatedAt: r.updated_at,

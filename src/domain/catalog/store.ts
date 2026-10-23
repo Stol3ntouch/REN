@@ -5,6 +5,7 @@
 import type { Db } from '@/server/db/connection';
 import { categoriesRepo, type CategoryRow } from '@/server/db/repositories/categories';
 import { parseVariants } from '@/server/db/repositories/images';
+import { visibleProductSql } from '@/server/db/repositories/products';
 import { listCategoryRows } from './category-rows';
 import { toCatalogImage } from './images';
 import { getPopularitySql } from './popularity';
@@ -67,7 +68,7 @@ const SCORE_JOIN = `JOIN (SELECT rowid AS id, bm25(product_search, 10.0, 6.0, 8.
 export function buildScope(s: Scope, omitAttr?: string): Built {
   const joins: string[] = [];
   const params: SqlValue[] = [];
-  const where: string[] = ['p.published = 1'];
+  const where: string[] = [visibleProductSql('p')];
 
   if (s.match !== null) {
     joins.push(SCORE_JOIN);

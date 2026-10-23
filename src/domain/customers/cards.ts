@@ -1,3 +1,4 @@
+import { visibleProductSql } from '@/server/db/repositories/products';
 import { CARD_COLUMNS, CARD_JOIN, mapCard, type CardRow } from '@/domain/catalog/store';
 import type { ProductCard } from '@/domain/catalog/types';
 import type { Db } from '@/server/db/connection';
@@ -10,7 +11,7 @@ export function cardsByIds(db: Db, ids: number[]): ProductCard[] {
   if (ids.length === 0) return [];
   const marks = ids.map(() => '?').join(', ');
   const rows = db
-    .prepare(`SELECT ${CARD_COLUMNS} FROM products p ${CARD_JOIN} WHERE p.published = 1 AND p.id IN (${marks})`)
+    .prepare(`SELECT ${CARD_COLUMNS} FROM products p ${CARD_JOIN} WHERE ${visibleProductSql('p')} AND p.id IN (${marks})`)
     .all(...ids) as CardRow[];
   const byId = new Map(rows.map((r) => [r.id, mapCard(r)]));
   return ids.flatMap((id) => {

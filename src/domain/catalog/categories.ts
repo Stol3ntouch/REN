@@ -1,3 +1,4 @@
+import { visibleProductSql } from '@/server/db/repositories/products';
 import { getDb, type Db } from '@/server/db/connection';
 import { categoriesRepo, type CategoryRow } from '@/server/db/repositories/categories';
 import { listCategoryRows } from './category-rows';
@@ -32,7 +33,7 @@ export async function getCategoryTree(opts: { db?: Db } = {}): Promise<CategoryN
   const db = opts.db ?? getDb();
   const rows = listCategoryRows(db);
   const direct = new Map<number, number>(
-    (db.prepare('SELECT category_id AS id, COUNT(*) AS n FROM products WHERE published = 1 GROUP BY category_id').all() as { id: number; n: number }[]).map((r) => [r.id, r.n]),
+    (db.prepare(`SELECT p.category_id AS id, COUNT(*) AS n FROM products p WHERE ${visibleProductSql('p')} GROUP BY p.category_id`).all() as { id: number; n: number }[]).map((r) => [r.id, r.n]),
   );
 
   const nodes = new Map<number, CategoryNode>(

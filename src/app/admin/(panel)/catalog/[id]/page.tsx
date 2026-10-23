@@ -6,7 +6,7 @@ import { formatRub } from '@/domain/pricing/format';
 import { requireStaffPage } from '@/ui/admin/guard';
 import { catalogOps } from '../../_lib/catalog-ops';
 import { Flash, CATALOG_NAV, str, SubNav } from '../../_lib/ui';
-import { saveProductAction, unlockFieldsAction } from '../actions';
+import { hideProductsAction, saveProductAction, showProductsAction, unlockFieldsAction } from '../actions';
 
 export const metadata: Metadata = { title: 'Карточка товара' };
 export const dynamic = 'force-dynamic';
@@ -37,7 +37,8 @@ export default async function AdminProductPage({ params, searchParams }: { param
   const found = Number.isInteger(id) ? catalogOps.get(session, id) : null;
   if (!found) notFound();
   const { product: p, manualEdit } = found;
-  const canEdit = manualEdit && hasPermission(session.role, 'catalog.write');
+  const canWrite = hasPermission(session.role, 'catalog.write');
+  const canEdit = manualEdit && canWrite;
 
   return (
     <>
@@ -47,6 +48,21 @@ export default async function AdminProductPage({ params, searchParams }: { param
         <Link href="/admin/catalog">← К списку товаров</Link>
       </p>
       <Flash ok={str(sp.ok)} error={str(sp.error)} okText="Сохранено." />
+      <section className="adm-card" aria-labelledby="vis-h">
+        <h2 id="vis-h">Видимость на сайте</h2>
+        <p>
+          {p.hidden ? <strong>Скрыт администратором: не виден на сайте, в поиске и в карте сайта.</strong> : p.published ? 'Виден на сайте.' : 'Не опубликован (снят с публикации).'}
+        </p>
+        {canWrite ? (
+          <form action={p.hidden ? showProductsAction : hideProductsAction}>
+            <input type="hidden" name="one" value={p.id} />
+            <input type="hidden" name="back" value={`/admin/catalog/${p.id}`} />
+            <button type="submit" className={p.hidden ? 'button' : 'button button--outline'}>
+              {p.hidden ? 'Показать' : 'Скрыть'}
+            </button>
+          </form>
+        ) : null}
+      </section>
       <dl className="adm-card">
         <div>
           <dt>Артикул</dt>

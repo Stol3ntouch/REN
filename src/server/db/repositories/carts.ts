@@ -1,5 +1,6 @@
 import type { OwnerRef } from '../../http/owner';
 import type { Db } from '../connection';
+import { visibleProductSql } from './products';
 
 export type CartRow = { id: number; userId: number | null; guestId: string | null; promoCode: string | null; createdAt: number; updatedAt: number };
 
@@ -44,8 +45,9 @@ type RawItem = {
 const mapCart = (r: RawCart | undefined): CartRow | null =>
   r ? { id: r.id, userId: r.user_id, guestId: r.guest_id, promoCode: r.promo_code, createdAt: r.created_at, updatedAt: r.updated_at } : null;
 
+/** published в строке корзины = товар виден на сайте (опубликован и не скрыт админом): скрытый помечается недоступным. */
 const ITEMS_SQL = `SELECT ci.id, ci.cart_id, ci.product_id, ci.qty, ci.seen_unit_kopecks, ci.seen_in_stock,
-  p.slug, p.name, p.sku, p.price_kopecks, p.discount_price_kopecks, p.in_stock, p.published,
+  p.slug, p.name, p.sku, p.price_kopecks, p.discount_price_kopecks, p.in_stock, ${visibleProductSql('p')} AS published,
   (SELECT url_source FROM product_images pi WHERE pi.product_id = p.id ORDER BY pi.sort, pi.id LIMIT 1) AS image_url
   FROM cart_items ci JOIN products p ON p.id = ci.product_id`;
 
@@ -136,7 +138,7 @@ export const cartsRepo = {
     productId: number,
   ): { id: number; priceKopecks: number; discountPriceKopecks: number | null; inStock: boolean; published: boolean } | null {
     const r = db
-      .prepare('SELECT id, price_kopecks, discount_price_kopecks, in_stock, published FROM products WHERE id = ?')
+      .prepare(`SELECT p.id, p.price_kopecks, p.discount_price_kopecks, p.in_stock, ${visibleProductSql('p')} AS published FROM products p WHERE p.id = ?`)
       .get(productId) as
       | { id: number; price_kopecks: number; discount_price_kopecks: number | null; in_stock: number; published: number }
       | undefined;

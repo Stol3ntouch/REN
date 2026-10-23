@@ -1,3 +1,4 @@
+import { visibleProductSql } from '@/server/db/repositories/products';
 import { getDb, type Db } from '@/server/db/connection';
 import { parseVariants, type ImageVariantRow } from '@/server/db/repositories/images';
 import { toCatalogImage, type ImageSize } from './images';
@@ -33,7 +34,7 @@ function build(db: Db, now: number): Snapshot {
       `SELECT p.category_id AS cid, p.in_stock AS in_stock, p.id AS pid, i.path AS path, i.variants AS variants, i.url_source AS url
          FROM products p
          JOIN product_images i ON i.id = (SELECT id FROM product_images WHERE product_id = p.id ORDER BY sort, id LIMIT 1)
-        WHERE p.published = 1
+        WHERE ${visibleProductSql('p')}
         ORDER BY p.in_stock DESC, p.id`,
     )
     .all() as { cid: number; in_stock: number; pid: number; path: string | null; variants: string | null; url: string }[];
