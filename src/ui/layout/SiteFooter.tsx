@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowUpIcon, ClockIcon, MailIcon, PhoneIcon, PinIcon } from '../home/home-icons';
+import { ArrowUpIcon, MailIcon, PhoneIcon, PinIcon } from '../home/home-icons';
 import { Placeholder } from '../placeholder';
 import { DEFAULT_SHELL, type ShellContext, type ShellLink } from '../shell-context';
 
@@ -35,7 +35,7 @@ export function SiteFooter({ shell = DEFAULT_SHELL }: { shell?: ShellContext }) 
           {shell.logoUrl ? (
             <Link className="site-footer__logo" href="/" aria-label={`${shell.siteName} — на главную`}>
               {/* eslint-disable-next-line @next/next/no-img-element -- логотип загружается в админке */}
-              <img src={shell.logoUrl} alt={shell.siteName} height={40} loading="lazy" />
+              <img src={shell.logoDarkUrl ?? shell.logoUrl} alt={shell.siteName} height={40} loading="lazy" />
             </Link>
           ) : (
             <p className="site-footer__name">{shell.siteName}</p>
@@ -54,10 +54,6 @@ export function SiteFooter({ shell = DEFAULT_SHELL }: { shell?: ShellContext }) 
             <li>
               <PhoneIcon size={18} />
               {shell.phone ? <a href={shell.phoneHref ?? `tel:${shell.phone.replace(/[^\d+]/g, '')}`}>{shell.phone}</a> : <Placeholder label="ТЕЛЕФОН" />}
-            </li>
-            <li>
-              <ClockIcon size={18} />
-              {shell.hours ?? <Placeholder label="ЧАСЫ РАБОТЫ" />}
             </li>
             <li>
               <PinIcon size={18} />

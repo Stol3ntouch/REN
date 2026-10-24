@@ -6,7 +6,7 @@ import { listCategoryRows } from '@/domain/catalog/category-rows';
 import { MAIN_NAV } from '@/ui/nav';
 import type { ShellContext, ShellLink } from '@/ui/shell-context';
 import { getPageByKey, isPromotionActive, pagePath, type PageKey } from './queries';
-import { getShopInfo } from './settings';
+import { DEFAULT_LOGO_DARK_URL, DEFAULT_LOGO_URL, getShopInfo } from './settings';
 
 /** Адрес страницы отзывов о компании. */
 export const COMPANY_REVIEWS_PATH = '/about/reviews';
@@ -37,7 +37,7 @@ export function loadShellContext(opts: Opts = {}): ShellContext {
     phone: shop.phone ?? undefined,
     phoneHref: shop.phoneHref ?? undefined,
     logoUrl: shop.logoUrl,
-    hours: shop.hours ?? undefined,
+    logoDarkUrl: shop.logoUrl === DEFAULT_LOGO_URL ? DEFAULT_LOGO_DARK_URL : undefined,
     email: shop.email ?? undefined,
     requisites: shop.requisites ?? undefined,
     socials: shop.socials.map((s) => ({ href: s.href, label: s.label })),

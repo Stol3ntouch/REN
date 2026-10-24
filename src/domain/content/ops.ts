@@ -382,7 +382,7 @@ const SETTING_RULES: Partial<Record<EditableSettingKey, (v: string) => string | 
   social_youtube: (v) => (urlOk(v) ? null : 'Ссылка должна начинаться с https://'),
 };
 const SETTING_MAX: Partial<Record<EditableSettingKey, number>> = {
-  phone: 40, address: 300, work_hours: 200, email: 200, latitude: 20, longitude: 20, requisites: 2000, delivery_payment_text: 3000,
+  phone: 40, address: 300, email: 200, latitude: 20, longitude: 20, requisites: 2000, delivery_payment_text: 3000,
   home_h1: 200, home_title: 200, home_description: 400, social_vk: 300, social_telegram: 300, social_whatsapp: 300, social_youtube: 300,
 };
 

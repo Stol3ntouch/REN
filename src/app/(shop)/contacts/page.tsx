@@ -7,7 +7,7 @@ import { ShopMap } from '@/ui/map/ShopMapBlock';
 import { Placeholder } from '@/ui/placeholder';
 import '@/ui/home/home.css';
 
-export const metadata: Metadata = contentMetadata({ title: 'Контакты', fallbackDescription: 'Адрес, телефон и часы работы магазина «РемТехСад».', path: '/contacts' });
+export const metadata: Metadata = contentMetadata({ title: 'Контакты', fallbackDescription: 'Адрес и телефон магазина «РемТехСад».', path: '/contacts' });
 
 export default async function ContactsPage() {
   await connection();
@@ -20,10 +20,6 @@ export default async function ContactsPage() {
           <div>
             <dt>Телефон</dt>
             <dd>{shop.phone ? <a href={shop.phoneHref ?? undefined}>{shop.phone}</a> : <Placeholder label="ТЕЛЕФОН" />}</dd>
-          </div>
-          <div>
-            <dt>Часы работы</dt>
-            <dd>{shop.hours ?? <Placeholder label="ЧАСЫ РАБОТЫ" />}</dd>
           </div>
           <div>
             <dt>Адрес</dt>

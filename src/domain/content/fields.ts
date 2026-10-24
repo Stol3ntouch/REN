@@ -10,7 +10,7 @@ export function isEntityKey(v: string): v is EntityKey {
 }
 
 export const ENTITY_LABELS: Record<EntityKey, { title: string; singular: string; hint: string }> = {
-  settings: { title: 'Настройки магазина', singular: 'настройки', hint: 'Адрес, телефон, часы, координаты, соцсети, логотип, SEO главной' },
+  settings: { title: 'Настройки магазина', singular: 'настройки', hint: 'Адрес, телефон, координаты, соцсети, логотип, SEO главной' },
   pages: { title: 'Страницы', singular: 'страница', hint: 'О компании, доставка и оплата, гарантия, FAQ, условия, политика данных' },
   slides: { title: 'Слайды главной', singular: 'слайд', hint: 'Не больше трёх' },
   news: { title: 'Новости', singular: 'новость', hint: 'Раздел скрыт, пока нет опубликованных новостей' },
@@ -46,7 +46,6 @@ export const ENTITY_FIELDS: Record<EntityKey, FieldSpec[]> = {
   settings: [
     { name: 'phone', label: 'Телефон', kind: 'text', maxLength: 40 },
     { name: 'address', label: 'Адрес', kind: 'text', maxLength: 300 },
-    { name: 'work_hours', label: 'Часы работы', kind: 'text', maxLength: 200 },
     { name: 'email', label: 'Публичная электронная почта', kind: 'text', maxLength: 200, hint: 'Для показа на сайте. Получатели писем — в разделе «Доступ и настройки»' },
     { name: 'latitude', label: 'Широта', kind: 'text', maxLength: 20, hint: 'Например 55.751244. Без координат карта не показывается' },
     { name: 'longitude', label: 'Долгота', kind: 'text', maxLength: 20, hint: 'Например 37.618423' },

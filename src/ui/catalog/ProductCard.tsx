@@ -23,9 +23,13 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
         </div>
       </div>
       <h3 className="product-card__title">
-        <Link href={href}>{product.name}</Link>
+        <Link href={href} title={product.name}>
+          {product.name}
+        </Link>
       </h3>
-      {product.sku ? <p className="product-card__sku">Артикул: {product.sku}</p> : null}
+      <p className="product-card__sku" aria-hidden={product.sku ? undefined : true}>
+        {product.sku ? `Артикул: ${product.sku}` : ''}
+      </p>
       <div className="product-card__buy">
         <PriceBlock unitKopecks={product.unitKopecks} originalKopecks={product.originalKopecks} />
         <AddToCartButton productId={product.id} inStock={product.inStock} name={product.name} compact />

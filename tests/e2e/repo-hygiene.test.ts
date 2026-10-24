@@ -58,7 +58,9 @@ describe('в коде и сидах нет секретов и выдуманн�
   it('миграции и сиды ничего не вставляют в отзывы, новости, акции, услуги, слайды', () => {
     const seeds = [...files(join(root, 'scripts'), ['.ts']), ...files(join(root, 'migrations'), ['.sql'])];
     for (const f of seeds) {
-      expect(read(f), rel(f)).not.toMatch(/INSERT\s+(OR\s+\w+\s+)?INTO\s+(reviews|company_reviews|news|promotions|services|slides)\b/i);
+      // F5 (G06): единственное исключение — услуга по ремонту техники по просьбе владельца (0950_repair_service.sql)
+      const targets = rel(f).endsWith('0950_repair_service.sql') ? 'reviews|company_reviews|news|promotions|slides' : 'reviews|company_reviews|news|promotions|services|slides';
+      expect(read(f), rel(f)).not.toMatch(new RegExp(`INSERT\\s+(OR\\s+\\w+\\s+)?INTO\\s+(${targets})\\b`, 'i'));
     }
   });
 

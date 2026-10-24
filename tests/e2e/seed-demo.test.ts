@@ -12,7 +12,9 @@ describe('seed:demo', () => {
     expect(r.catalogProducts).toBe(0);
     expect(count(db, 'delivery_methods')).toBeGreaterThan(0);
     expect(count(db, 'pages')).toBeGreaterThan(0);
-    for (const t of ['staff', 'users', 'reviews', 'company_reviews', 'promos', 'news', 'slides', 'services']) expect(count(db, t), t).toBe(0);
+    for (const t of ['staff', 'users', 'reviews', 'company_reviews', 'promos', 'news', 'slides']) expect(count(db, t), t).toBe(0);
+    // F5 (G06): одна услуга по ремонту техники заведена миграцией по просьбе владельца, остальных нет
+    expect(count(db, 'services')).toBe(1);
   });
 
   it('с файлом каталога импортирует его; повтор ничего не дублирует', async () => {

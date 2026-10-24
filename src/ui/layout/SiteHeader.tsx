@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { CALLBACK_HREF, LOGIN_HREF, SEARCH_ACTION } from '../nav';
 import { Placeholder } from '../placeholder';
 import { DEFAULT_SHELL, type ShellContext } from '../shell-context';
-import { ArrowRightIcon, ClockIcon, MenuLinesIcon, PhoneIcon, PinIcon, SearchIcon } from '../home/home-icons';
+import { ArrowRightIcon, MenuLinesIcon, PhoneIcon, PinIcon, SearchIcon } from '../home/home-icons';
 import { HeaderCounters } from './HeaderCounters';
 import { UserIcon } from './icons';
 import { SiteNav } from './SiteNav';
@@ -10,7 +10,7 @@ import { SiteNav } from './SiteNav';
 const telOf = (phone: string): string => `tel:${phone.replace(/[^\d+]/g, '')}`;
 
 /**
- * Шапка: контактная полоса (адрес, часы, телефон, «Заказать звонок», вход), затем логотип, «Каталог», поиск,
+ * Шапка: контактная полоса (адрес, телефон, «Заказать звонок», вход), затем логотип, «Каталог», поиск,
  * счётчики (избранное, сравнение, корзина) и меню. Данные — из настроек магазина; нет данных — метка-заглушка.
  */
 export function SiteHeader({ shell = DEFAULT_SHELL }: { shell?: ShellContext }) {
@@ -22,10 +22,6 @@ export function SiteHeader({ shell = DEFAULT_SHELL }: { shell?: ShellContext }) 
             <span className="site-header__address">
               <PinIcon size={16} />
               {shell.address ?? <Placeholder label="АДРЕС" />}</span>
-            <span className="site-header__hours">
-              <ClockIcon size={16} />
-              {shell.hours ?? <Placeholder label="ЧАСЫ РАБОТЫ" />}
-            </span>
             <span className="site-header__phone">
               <PhoneIcon size={16} />
               {shell.phone ? <a href={shell.phoneHref ?? telOf(shell.phone)}>{shell.phone}</a> : <Placeholder label="ТЕЛЕФОН" />}

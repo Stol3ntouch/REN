@@ -12,7 +12,7 @@ import '../catalog/catalog.css';
 import { NewsCard, ReviewCard, ServiceCard } from './cards';
 import './home.css';
 import { HomeHero } from './HomeHero';
-import { ArrowRightIcon, BoxIcon, CartLineIcon, ChevronRightIcon, ClipboardIcon, ClockIcon, GearIcon, LeafIcon, MailIcon, PhoneIcon, PinIcon, WrenchIcon } from './home-icons';
+import { ArrowRightIcon, BoxIcon, CartLineIcon, ChevronRightIcon, ClipboardIcon, GearIcon, LeafIcon, MailIcon, PhoneIcon, PinIcon, WrenchIcon } from './home-icons';
 import { HomeProductTabs, type ProductTab } from './HomeProductTabs';
 import { excerptText, RichText } from './RichText';
 
@@ -118,7 +118,7 @@ export function HomeView({ data }: { data: HomeData }) {
             {data.categories.map((c) => (
               <li key={c.id}>
                 <Link className="category-tile" href={`/catalog/${c.slug}`}>
-                  <ProductImage image={c.image ? { ...c.image, alt: '' } : null} name={c.name} sizes="(min-width: 64rem) 12rem, 45vw" />
+                  <ProductImage image={c.image ? { ...c.image, alt: '' } : null} name="" sizes="(min-width: 64rem) 12rem, 45vw" />
                   <span className="category-tile__row">
                     <span className="category-tile__text">
                       <span className="category-tile__name">{c.name}</span>
@@ -235,13 +235,6 @@ export function HomeView({ data }: { data: HomeData }) {
                 <span>
                   <span className="home-contacts__label">Телефон</span>
                   {shop.phone ? <a href={shop.phoneHref ?? undefined}>{shop.phone}</a> : <Placeholder label="ТЕЛЕФОН" />}
-                </span>
-              </li>
-              <li>
-                <ClockIcon size={22} />
-                <span>
-                  <span className="home-contacts__label">Часы работы</span>
-                  {shop.hours ?? <Placeholder label="ЧАСЫ РАБОТЫ" />}
                 </span>
               </li>
               <li>

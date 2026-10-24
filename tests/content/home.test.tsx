@@ -12,7 +12,7 @@ const NOW = new Date(T0);
 const recent = new Date(T0 - 3 * 86_400_000).toISOString();
 
 describe('главная без данных', () => {
-  it('скрывает пустые блоки, показывает метки вместо выдуманного', async () => {
+  it('скрывает пустые блоки; из начальных данных — только услуга по ремонту, текст «О компании» и карта (F5)', async () => {
     const db = createTestDb();
     const data = await getHomeData({ db, now: NOW });
     expect(data.slides).toEqual([]);
@@ -21,7 +21,8 @@ describe('главная без данных', () => {
     expect(data.popularProducts).toEqual([]);
     expect(data.promoProducts).toEqual([]);
     expect(data.promotions).toEqual([]);
-    expect(data.services).toEqual([]);
+    // F5 (G06): единственная начальная услуга — «Ремонт и обслуживание садовой техники»
+    expect(data.services.map((s) => s.slug)).toEqual(['remont-sadovoj-tehniki']);
     expect(data.reviews).toEqual([]);
     expect(data.news).toEqual([]);
     expect(data.catalogProducts).toEqual([]);
@@ -29,7 +30,7 @@ describe('главная без данных', () => {
     const html = renderToStaticMarkup(<HomeView data={data} />);
     expect(html).toMatch(/<h1/);
     expect(html).not.toContain('home-slider');
-    for (const title of ['Популярные категории', 'Новинки', 'Хиты', 'Популярные товары', 'Товары каталога', 'Акции', 'Услуги', 'Отзывы о компании', 'Новости']) {
+    for (const title of ['Популярные категории', 'Новинки', 'Хиты', 'Популярные товары', 'Товары каталога', 'Акции', 'Отзывы о компании', 'Новости']) {
       expect(html).not.toContain(`>${title}<`);
     }
     // герой с слоганом пользователя и полоса преимуществ есть всегда; рейтингов и звёзд без отзывов нет
@@ -40,12 +41,15 @@ describe('главная без данных', () => {
     expect(html).not.toContain('★');
     expect(html).not.toContain('review-card');
     expect(html).not.toContain('home-badge');
-    // блоки «О компании» и «Контакты» остаются: тексты — метки; карты нет, но есть маршрут по адресу
+    // F5: «О компании» — текст из брифа (без меток), услуга в списке, карта по координатам из миграции 0952
+    expect(html).toContain('>Услуги<');
+    expect(html).toContain('Ремонт и обслуживание садовой техники');
     expect(html).toContain('О компании');
-    expect(html).toContain('впиши]');
+    expect(html).not.toContain('ТЕКСТ О КОМПАНИИ');
+    expect(html).toContain('[EMAIL — впиши]'); // email владелец не давал — метка остаётся
     expect(html).toContain('Талдом, Садовый переулок д10');
-    expect(html).not.toContain('shop-map__canvas');
-    expect(html).toContain(`https://www.openstreetmap.org/search?query=${encodeURIComponent('Талдом, Садовый переулок д10')}`);
+    expect(html).toContain('shop-map__canvas');
+    expect(html).toContain('https://www.openstreetmap.org/directions?to=56.7299446');
     expect(html).toContain('Построить маршрут');
   });
 });
@@ -154,6 +158,6 @@ describe('главная с данными', () => {
     expect(data.promoProducts).toEqual([]);
     expect(data.promotions).toEqual([]);
     expect(data.reviews).toEqual([]);
-    expect(data.services).toEqual([]);
+    expect(data.services.map((s) => s.title)).toEqual(['Ремонт и обслуживание садовой техники']); // начальная услуга (F5), «Скрыта» не попала
   });
 });

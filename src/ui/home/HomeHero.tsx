@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { SlideView } from './HomeSlider';
 import { HomeSlider } from './HomeSlider';
-import { ArrowRightIcon, GearIcon, LeafIcon, ScissorsIcon, WrenchIcon } from './home-icons';
+import { ArrowRightIcon } from './home-icons';
 
 /** Заголовок делится по двоеточию: «РемТехСад — профессиональный подход…:» крупно, продолжение — слоганом. */
 function splitTitle(title: string): [string, string | null] {
@@ -12,7 +12,8 @@ function splitTitle(title: string): [string, string | null] {
 
 /**
  * Герой на всю ширину. Есть слайды (≤3) — слайдер с ними, а заголовок страницы h1 остаётся для скринридеров;
- * нет — оформленный CSS-баннер: зелёный градиент и декоративные значки техники, без фотографий.
+ * нет — баннер с фоновой иллюстрацией сада (public/brand/hero-garden.svg, оригинальный рисунок, без фотографий)
+ * и затемнением под текстом, чтобы слоган читался.
  */
 export function HomeHero({ title, slides }: { title: string; slides: SlideView[] }) {
   if (slides.length > 0) {
@@ -27,12 +28,6 @@ export function HomeHero({ title, slides }: { title: string; slides: SlideView[]
   return (
     <div className="home-hero">
       <section className="home-hero__banner" aria-label="О магазине">
-        <div className="home-hero__art" aria-hidden="true">
-          <GearIcon className="home-hero__ic home-hero__ic--gear" size={160} />
-          <WrenchIcon className="home-hero__ic home-hero__ic--wrench" size={120} />
-          <LeafIcon className="home-hero__ic home-hero__ic--leaf" size={110} />
-          <ScissorsIcon className="home-hero__ic home-hero__ic--scissors" size={90} />
-        </div>
         <div className="home-hero__text">
           <h1 className="home-hero__title">
             {head}

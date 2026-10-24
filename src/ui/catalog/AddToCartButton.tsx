@@ -28,9 +28,10 @@ export function AddToCartButton({
     return (
       <div className="add-to-cart">
         <button type="button" className="button add-to-cart__button" disabled aria-describedby={`${id}-note`}>
-          В корзину
+          {compact ? 'Нет в наличии' : 'В корзину'}
         </button>
-        <p id={`${id}-note`} className="add-to-cart__note">
+        {/* в карточке списка причина — в самой кнопке, а пояснение скрыто: так карточки остаются одной высоты */}
+        <p id={`${id}-note`} className={compact ? 'visually-hidden' : 'add-to-cart__note'}>
           Нет в наличии — добавить в корзину нельзя
         </p>
       </div>

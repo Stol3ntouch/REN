@@ -50,10 +50,6 @@
   font-size: 0.9375rem;
 }
 
-.site-header__hours {
-  display: none;
-}
-
 .site-header__phone a {
   font-weight: 700;
   text-decoration: none;
@@ -324,10 +320,6 @@
     align-items: center;
   }
 
-  .site-header__hours {
-    display: inline;
-  }
-
   .site-header__main {
     grid-template-columns: auto auto minmax(0, 1fr) auto;
     align-items: center;
@@ -415,11 +407,9 @@
 .site-footer__logo {
   display: inline-flex;
   margin-bottom: var(--space-2);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius);
-  background: #ffffff; /* логотип с белым фоном и чёрным «REM» — на тёмном подвале кладём его на светлую подложку */
 }
 
+/* прозрачный светлый вариант логотипа (logo-dark.png) прямо на тёмном фоне, без плашки */
 .site-footer__logo img {
   display: block;
   height: 2.25rem;

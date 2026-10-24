@@ -17,7 +17,8 @@ export type ShellContext = {
   phoneHref?: string;
   /** Путь или URL логотипа; нет — показывается [ЛОГОТИП — загрузи]. */
   logoUrl?: string;
-  hours?: string;
+  /** Светлый вариант логотипа для тёмного подвала; нет — подвал берёт logoUrl. */
+  logoDarkUrl?: string;
   email?: string;
   requisites?: string;
   /** Только заданные соцссылки. */

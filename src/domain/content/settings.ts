@@ -10,7 +10,6 @@ import { MEDIA_BASE } from '@/domain/catalog/images';
 export const EDITABLE_SETTING_KEYS = [
   'phone',
   'address',
-  'work_hours',
   'email',
   'latitude',
   'longitude',
@@ -29,7 +28,9 @@ export type EditableSettingKey = (typeof EDITABLE_SETTING_KEYS)[number];
 export type SettingKey = EditableSettingKey | 'logo_path';
 
 export const SITE_NAME = 'РемТехСад';
-export const DEFAULT_LOGO_URL = '/brand/logo.jpg';
+export const DEFAULT_LOGO_URL = '/brand/logo.png';
+/** Вариант для тёмного подвала: чёрные буквы светлые, зелёные остаются. */
+export const DEFAULT_LOGO_DARK_URL = '/brand/logo-dark.png';
 const KEY_RE = /^[a-z][a-z0-9_.]{0,63}$/;
 const MAX_VALUE = 5000;
 
@@ -61,7 +62,6 @@ export type ShopInfo = {
   /** tel:+79166550606 */
   phoneHref: string | null;
   address: string | null;
-  hours: string | null;
   email: string | null;
   latitude: number | null;
   longitude: number | null;
@@ -103,7 +103,6 @@ export function getShopInfo(opts: Opts = {}): ShopInfo {
     phone: nonEmpty(s.phone),
     phoneHref: telHref(s.phone),
     address: nonEmpty(s.address),
-    hours: nonEmpty(s.work_hours),
     email: nonEmpty(s.email),
     latitude: hasCoords ? lat : null,
     longitude: hasCoords ? lng : null,

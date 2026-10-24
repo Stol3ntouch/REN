@@ -7,7 +7,7 @@ import { SiteFooter } from '@/ui/layout/SiteFooter';
 import { createTestDb } from '@/server/db/testing';
 
 describe('настройки магазина (shop_settings)', () => {
-  it('телефон из брифа лежит в начальных настройках, остальные факты пусты', () => {
+  it('телефон и адрес из брифа лежат в начальных настройках; часов работы в настройках нет (F5, G04)', () => {
     const db = createTestDb();
     expect(getSetting('phone', { db })).toBe('+7 916-655-06-06');
     expect(getSetting('address', { db })).toBe('Талдом, Садовый переулок д10');
@@ -35,12 +35,12 @@ describe('шапка и подвал берут данные из настрое
     expect(header).toContain('+7 916-655-06-06');
     expect(header).not.toContain('[ТЕЛЕФОН — впиши]');
     expect(header).not.toContain('[ЛОГОТИП — загрузи]');
-    expect(header).toMatch(/<img[^>]*src="\/brand\/logo\.jpg"/);
+    expect(header).toMatch(/<img[^>]*src="\/brand\/logo\.png"/); // F5 (G07): прозрачный логотип вместо JPEG с белым фоном
     expect(header).toMatch(/<img[^>]*alt="РемТехСад"/);
     expect(header).toContain('Талдом, Садовый переулок д10');
     const footer = renderToStaticMarkup(<SiteFooter shell={shell} />);
     expect(footer).toContain('+7 916-655-06-06');
-    expect(footer).toContain('[ЧАСЫ РАБОТЫ — впиши]');
+    expect(footer).not.toContain('ЧАСЫ РАБОТЫ'); // F5 (G04): часы работы больше нигде не выводятся
   });
 
   it('смена телефона и адреса в настройках меняет шапку; соцсети — только заданные', () => {

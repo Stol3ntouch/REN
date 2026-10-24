@@ -8,9 +8,10 @@ const sqlFiles = () => readdirSync(join(root, 'migrations')).filter((f) => /^05\
 const seedFiles = () => readdirSync(join(root, 'scripts', 'seed')).filter((f) => f.endsWith('.ts'));
 
 describe('нет выдуманного содержимого (R48)', () => {
-  it('после миграций нет ни одного слайда, новости, акции, услуги и отзыва о компании', () => {
+  it('после миграций нет ни одного слайда, новости, акции и отзыва о компании; услуга одна — «Ремонт» (F5, G06)', () => {
     const db = createTestDb();
-    for (const t of ['slides', 'news', 'promotions', 'services', 'company_reviews']) {
+    expect((db.prepare('SELECT COUNT(*) AS n FROM services').get() as { n: number }).n).toBe(1);
+    for (const t of ['slides', 'news', 'promotions', 'company_reviews']) {
       expect((db.prepare(`SELECT COUNT(*) AS n FROM ${t}`).get() as { n: number }).n, t).toBe(0);
     }
   });
@@ -27,15 +28,15 @@ describe('нет выдуманного содержимого (R48)', () => {
     }
   });
 
-  it('системные страницы — только метки-заглушки, правовые помечены черновиком', () => {
+  it('системные страницы — метки-заглушки (кроме «О компании» — её текст из брифа записан в F5), правовые помечены черновиком', () => {
     const db = createTestDb();
     const rows = db.prepare('SELECT key, body, legal_draft FROM pages').all() as { key: string; body: string; legal_draft: number }[];
     const byKey = Object.fromEntries(rows.map((r) => [r.key, r]));
     for (const k of ['about', 'delivery', 'warranty', 'faq', 'terms', 'privacy']) expect(byKey[k], k).toBeDefined();
     expect(byKey.about!.legal_draft).toBe(0);
     for (const k of ['delivery', 'warranty', 'faq', 'terms', 'privacy']) expect(byKey[k]!.legal_draft, k).toBe(1);
-    // тексты о компании не выдуманы: только метка
-    expect(byKey.about!.body).toMatch(/\[[^\]]+— впиши\]/);
-    expect(byKey.about!.body.replace(/\[[^\]]+— впиши\]/g, '').trim()).toBe('');
+    // «О компании»: текст только из брифа (0951_about_text.sql), меток нет; остальные страницы — по-прежнему метки
+    expect(byKey.about!.body).not.toMatch(/\[[^\]]+— впиши\]/);
+    for (const k of ['warranty', 'faq']) expect(byKey[k]!.body, k).toMatch(/\[[^\]]+— впиши\]/);
   });
 });
