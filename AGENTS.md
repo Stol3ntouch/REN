@@ -17,7 +17,7 @@ Next.js 16 (App Router) + TypeScript strict + SQLite через `node:sqlite` (N
 | администратор | `ADMIN_PASSWORD=<пароль> npm run admin:create -- <логин или email>` |
 | dev-сервер | `npm run dev` (порт 3000); другой порт: `npm run dev -- -p 4300` |
 | проверка живости | `GET /api/health` |
-| вся проверка | `npm run check` (typecheck + lint + vitest; 105 файлов / 932 теста зелёные) |
+| вся проверка | `npm run check` (typecheck + lint + vitest; 109 файлов / 1001 тест зелёные) |
 | один тест | `npx vitest run tests/<путь>.test.ts` |
 | сборка / прод | `npm run build`, `npm run start` |
 | бэкап / восстановление | `npm run backup`, `npm run restore -- <файл>` |

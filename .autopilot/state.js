@@ -13,8 +13,8 @@ window.STATE =
   "skillDir": "C:/Users/OxO/Desktop/RemTexSad/skills-2.2.0/skills/autopilot",
   "baseCommit": "2ee729c",
   "startedAt": "2026-10-22T21:26:04+03:00",
-  "updatedAt": "2026-10-23T15:47:58+03:00",
-  "finishedAt": "2026-10-23T15:47:58+03:00",
+  "updatedAt": "2026-10-24T14:21:26+03:00",
+  "finishedAt": "2026-10-24T14:21:26+03:00",
   "stages": [
     {
       "id": "preflight",
@@ -25,49 +25,49 @@ window.STATE =
     {
       "id": "manifest",
       "status": "done",
-      "startedAt": "2026-10-22T21:27:24+03:00",
-      "finishedAt": "2026-10-22T21:27:55+03:00"
+      "startedAt": "2026-10-23T15:58:34+03:00",
+      "finishedAt": "2026-10-23T15:59:27+03:00"
     },
     {
       "id": "briefing",
-      "status": "done",
-      "startedAt": "2026-10-22T21:27:55+03:00",
-      "finishedAt": "2026-10-22T21:33:03+03:00"
+      "status": "skipped",
+      "note": "не понадобился",
+      "finishedAt": "2026-10-24T14:21:26+03:00"
     },
     {
       "id": "spec",
       "status": "done",
-      "startedAt": "2026-10-22T21:33:03+03:00",
-      "finishedAt": "2026-10-22T21:36:52+03:00"
+      "startedAt": "2026-10-23T15:59:27+03:00",
+      "finishedAt": "2026-10-23T15:59:27+03:00"
     },
     {
       "id": "plan",
       "status": "done",
-      "startedAt": "2026-10-22T21:36:52+03:00",
-      "finishedAt": "2026-10-22T21:39:19+03:00"
+      "startedAt": "2026-10-23T15:59:27+03:00",
+      "finishedAt": "2026-10-23T15:59:27+03:00"
     },
     {
       "id": "build",
       "status": "done",
-      "startedAt": "2026-10-22T21:39:19+03:00",
-      "finishedAt": "2026-10-23T15:04:24+03:00"
+      "startedAt": "2026-10-23T15:59:27+03:00",
+      "finishedAt": "2026-10-24T14:21:26+03:00"
     },
     {
       "id": "review",
-      "status": "done",
-      "startedAt": "2026-10-23T15:04:24+03:00",
-      "finishedAt": "2026-10-23T15:28:55+03:00"
+      "status": "skipped",
+      "note": "не понадобился",
+      "finishedAt": "2026-10-24T14:21:26+03:00"
     },
     {
       "id": "final",
       "status": "done",
-      "startedAt": "2026-10-23T15:28:55+03:00",
-      "finishedAt": "2026-10-23T15:47:58+03:00"
+      "finishedAt": "2026-10-24T14:21:26+03:00",
+      "startedAt": "2026-10-24T14:21:26+03:00"
     }
   ],
   "requirements": {
-    "total": 54,
-    "done": 52,
+    "total": 65,
+    "done": 63,
     "inTicket": 0,
     "inSpec": 0,
     "placeholder": 2,
@@ -683,19 +683,157 @@ window.STATE =
       "review": "нет",
       "model": "обычная",
       "status": "done",
-      "retries": 0,
-      "repairs": 0,
       "startedAt": "2026-10-23T15:41:38+03:00",
       "finishedAt": "2026-10-23T15:45:34+03:00",
+      "retries": 0,
+      "repairs": 0,
       "tests": {
         "passed": 932,
         "failed": 0
       },
       "commit": "d39d9eb"
+    },
+    {
+      "id": "F3",
+      "title": "Скрытие позиций товаров в админке",
+      "requirements": [
+        "G01"
+      ],
+      "blockedBy": [],
+      "wave": 10,
+      "zone": [
+        "src/app/admin/(panel)/catalog/**",
+        "src/domain/catalog/**",
+        "src/domain/ordering/**",
+        "src/domain/customers/{favorites,compare,cards}.ts",
+        "src/domain/seo/**",
+        "src/domain/content/home.ts",
+        "src/server/db/repositories/{products,catalog-admin,carts,home-products}.ts",
+        "src/importing/**",
+        "src/app/(shop)/product/**",
+        "migrations/0900-0949",
+        "tests/**"
+      ],
+      "review": "нет",
+      "model": "обычная",
+      "status": "done",
+      "startedAt": "2026-10-23T15:59:27+03:00",
+      "finishedAt": "2026-10-23T16:08:55+03:00",
+      "retries": 0,
+      "repairs": 0,
+      "tests": {
+        "passed": 947,
+        "failed": 0
+      },
+      "commit": "f7ba664"
+    },
+    {
+      "id": "F4",
+      "title": "Инструкция по запуску на OpenServer, Vercel и Supabase",
+      "requirements": [
+        "G02"
+      ],
+      "blockedBy": [],
+      "wave": 10,
+      "zone": [
+        "docs/hosting.md",
+        "README.md"
+      ],
+      "review": "нет",
+      "model": "обычная",
+      "status": "done",
+      "startedAt": "2026-10-23T15:59:27+03:00",
+      "finishedAt": "2026-10-23T16:08:56+03:00",
+      "retries": 0,
+      "repairs": 0,
+      "tests": {
+        "passed": 947,
+        "failed": 0
+      },
+      "commit": "846d5ab"
+    },
+    {
+      "id": "F5",
+      "title": "Правки внешнего вида и контента по просьбе владельца",
+      "requirements": [
+        "G03",
+        "G04",
+        "G05",
+        "G06",
+        "G07",
+        "G08",
+        "G09"
+      ],
+      "blockedBy": [],
+      "wave": 11,
+      "zone": [
+        "src/ui/home/**",
+        "src/ui/layout/**",
+        "src/ui/map/**",
+        "src/ui/catalog/**",
+        "src/ui/theme.css",
+        "public/brand/**",
+        "src/domain/content/**",
+        "src/app/(shop)/{page.tsx,contacts,services,about}/**",
+        "src/app/(shop)/catalog/**",
+        "src/server/db/repositories/{settings,services,pages}.ts",
+        "migrations/0950-0999",
+        "tests/**"
+      ],
+      "review": "нет",
+      "model": "обычная",
+      "status": "done",
+      "startedAt": "2026-10-24T13:51:27+03:00",
+      "retries": 0,
+      "repairs": 0,
+      "finishedAt": "2026-10-24T14:10:10+03:00",
+      "tests": {
+        "passed": 966,
+        "failed": 0
+      },
+      "commit": "b4f1cc9"
+    },
+    {
+      "id": "F6",
+      "title": "Скрытие категорий каталога и страниц сайта в админке",
+      "requirements": [
+        "G10",
+        "G11"
+      ],
+      "blockedBy": [
+        "05"
+      ],
+      "wave": 12,
+      "zone": [
+        "src/app/admin/(panel)/{catalog,content}/**",
+        "src/domain/catalog/**",
+        "src/domain/content/**",
+        "src/domain/seo/**",
+        "src/domain/customers/{cards,favorites}.ts",
+        "src/server/db/repositories/{categories,products,pages,services,news,promotions,catalog-admin,home-products,carts}.ts",
+        "src/importing/**",
+        "src/ui/layout/**",
+        "src/ui/catalog/**",
+        "src/app/(shop)/{catalog,product,pages,about,buyers,news,promotions,services,privacy,contacts}/**",
+        "migrations/1000-1049",
+        "tests/**"
+      ],
+      "review": "нет",
+      "model": "обычная",
+      "status": "done",
+      "retries": 0,
+      "repairs": 0,
+      "startedAt": "2026-10-24T14:10:11+03:00",
+      "finishedAt": "2026-10-24T14:20:55+03:00",
+      "tests": {
+        "passed": 1001,
+        "failed": 0
+      },
+      "commit": "d94def4"
     }
   ],
   "tests": {
-    "passed": 932,
+    "passed": 1001,
     "failed": 0
   },
   "debt": {
@@ -755,15 +893,7 @@ window.STATE =
     "T11: SQL product_seo/sitemap в domain/seo/store.ts (правило 4); style-src 'unsafe-inline'; за прокси нужен X-Forwarded-Proto",
     "T12: не запускались CI, живой SMTP, реальные 1С/оплата/доставка, Playwright, нагрузка, скачивание фото с champion.ru; клавиатурный проход корзины/оформления и админки не делался; npm audit — 5 high в lint-цепочке"
   ],
-  "blind": {
-    "checked": 34,
-    "matched": 31,
-    "mismatches": [
-      "R09 — SEO-текст категории не показывается: в админке нечем заполнить поля (исправляется таском F2)",
-      "R41 — тестовая оплата не включена по умолчанию: нужна переменная PAYMENT_PROVIDER=test (описано в docs/local-setup.md, в README не сказано)",
-      "R27 — карта без метки: координаты магазина не заданы (нужны от тебя)"
-    ]
-  },
+  "blind": null,
   "beats": [
     "2026-10-22T21:26:04+03:00",
     "2026-10-22T21:27:24+03:00",
@@ -837,9 +967,26 @@ window.STATE =
     "2026-10-23T15:41:38+03:00",
     "2026-10-23T15:45:34+03:00",
     "2026-10-23T15:47:35+03:00",
-    "2026-10-23T15:47:58+03:00"
+    "2026-10-23T15:47:58+03:00",
+    "2026-10-23T15:58:34+03:00",
+    "2026-10-23T15:58:53+03:00",
+    "2026-10-23T15:58:54+03:00",
+    "2026-10-23T15:59:25+03:00",
+    "2026-10-23T15:59:26+03:00",
+    "2026-10-23T15:59:27+03:00",
+    "2026-10-23T16:08:55+03:00",
+    "2026-10-23T16:08:56+03:00",
+    "2026-10-24T13:51:23+03:00",
+    "2026-10-24T13:51:26+03:00",
+    "2026-10-24T13:51:27+03:00",
+    "2026-10-24T13:55:55+03:00",
+    "2026-10-24T14:10:10+03:00",
+    "2026-10-24T14:10:11+03:00",
+    "2026-10-24T14:20:55+03:00",
+    "2026-10-24T14:21:25+03:00",
+    "2026-10-24T14:21:26+03:00"
   ],
-  "rev": 85,
+  "rev": 104,
   "waiting": null,
   "waits": [
     {
@@ -1485,6 +1632,148 @@ window.STATE =
       "t": "2026-10-23T15:47:58+03:00",
       "k": "finish",
       "result": "Интернет-магазин РемТехСад: каталог 1214 товаров, корзина и заказы, кабинет, заявки, отзывы, админка, заглушки 1С/оплаты/доставки/почты, SEO; 932 теста зелёные"
+    },
+    {
+      "t": "2026-10-23T15:58:34+03:00",
+      "k": "reopen"
+    },
+    {
+      "t": "2026-10-23T15:58:53+03:00",
+      "k": "tickets",
+      "n": 15
+    },
+    {
+      "t": "2026-10-23T15:58:54+03:00",
+      "k": "gate",
+      "g": "G3",
+      "ok": false,
+      "problems": 1
+    },
+    {
+      "t": "2026-10-23T15:59:25+03:00",
+      "k": "tickets",
+      "n": 16
+    },
+    {
+      "t": "2026-10-23T15:59:26+03:00",
+      "k": "gate",
+      "g": "G3",
+      "ok": true,
+      "problems": 0
+    },
+    {
+      "t": "2026-10-23T15:59:27+03:00",
+      "k": "stage",
+      "id": "build",
+      "act": "start"
+    },
+    {
+      "t": "2026-10-23T15:59:27+03:00",
+      "k": "ticket",
+      "ids": [
+        "F3",
+        "F4"
+      ],
+      "act": "start"
+    },
+    {
+      "t": "2026-10-23T16:08:55+03:00",
+      "k": "ticket",
+      "ids": [
+        "F3"
+      ],
+      "act": "done",
+      "tests": {
+        "passed": 947,
+        "failed": 0
+      }
+    },
+    {
+      "t": "2026-10-23T16:08:56+03:00",
+      "k": "ticket",
+      "ids": [
+        "F4"
+      ],
+      "act": "done",
+      "tests": {
+        "passed": 947,
+        "failed": 0
+      }
+    },
+    {
+      "t": "2026-10-24T13:51:23+03:00",
+      "k": "tickets",
+      "n": 17
+    },
+    {
+      "t": "2026-10-24T13:51:26+03:00",
+      "k": "gate",
+      "g": "G3",
+      "ok": true,
+      "problems": 0
+    },
+    {
+      "t": "2026-10-24T13:51:27+03:00",
+      "k": "ticket",
+      "ids": [
+        "F5"
+      ],
+      "act": "start"
+    },
+    {
+      "t": "2026-10-24T13:55:55+03:00",
+      "k": "tickets",
+      "n": 18
+    },
+    {
+      "t": "2026-10-24T13:55:55+03:00",
+      "k": "gate",
+      "g": "G3",
+      "ok": true,
+      "problems": 0
+    },
+    {
+      "t": "2026-10-24T14:10:10+03:00",
+      "k": "ticket",
+      "ids": [
+        "F5"
+      ],
+      "act": "done",
+      "tests": {
+        "passed": 966,
+        "failed": 0
+      }
+    },
+    {
+      "t": "2026-10-24T14:10:11+03:00",
+      "k": "ticket",
+      "ids": [
+        "F6"
+      ],
+      "act": "start"
+    },
+    {
+      "t": "2026-10-24T14:20:55+03:00",
+      "k": "ticket",
+      "ids": [
+        "F6"
+      ],
+      "act": "done",
+      "tests": {
+        "passed": 1001,
+        "failed": 0
+      }
+    },
+    {
+      "t": "2026-10-24T14:21:25+03:00",
+      "k": "tests",
+      "passed": 1001,
+      "failed": 0
+    },
+    {
+      "t": "2026-10-24T14:21:26+03:00",
+      "k": "finish",
+      "result": "Магазин РемТехСад: каталог 1214 товаров, заказы, кабинет, заявки, админка со скрытием товаров, категорий и страниц, карта и контент; 1001 тест зелёный"
     }
   ],
   "reqList": [
@@ -1759,35 +2048,71 @@ window.STATE =
       "id": "R02i",
       "text": "(подразумевается) «инструкции по Open Server/Windows» — локальный запуск на Windows",
       "status": "done"
+    },
+    {
+      "id": "G01",
+      "text": "«Добавь в админку функцию скрытия позиций товаров»",
+      "status": "done"
+    },
+    {
+      "id": "G02",
+      "text": "«напиши инструкцию как запустить все на openserver или vercel или supabase»",
+      "status": "done"
+    },
+    {
+      "id": "G03",
+      "text": "«Добавить изображение на фон со слоганом»",
+      "status": "done"
+    },
+    {
+      "id": "G04",
+      "text": "«Убери часы работы»",
+      "status": "done"
+    },
+    {
+      "id": "G05",
+      "text": "«Сделай карточки товаров одного размера»",
+      "status": "done"
+    },
+    {
+      "id": "G06",
+      "text": "«Добавь услугу по ремонту техники»",
+      "status": "done"
+    },
+    {
+      "id": "G07",
+      "text": "«Убери белый фон с логотипа»",
+      "status": "done"
+    },
+    {
+      "id": "G08",
+      "text": "«Напиши текст о компании»",
+      "status": "done"
+    },
+    {
+      "id": "G09",
+      "text": "«Сделай интерактивную карту с меткой по адресу - Талдом, Садовый Переулок 10»",
+      "status": "done"
+    },
+    {
+      "id": "G10",
+      "text": "«Добавь в админку функции скрытия каталогов»",
+      "status": "done"
+    },
+    {
+      "id": "G11",
+      "text": "«Добавь в админку функции скрытия … страниц на сайте»",
+      "status": "done"
     }
   ],
   "gates": {
-    "G1": {
-      "ok": false,
-      "at": "2026-10-22T21:33:03+03:00",
-      "open": 54,
-      "total": 54
-    },
-    "G2": {
-      "ok": true,
-      "at": "2026-10-22T21:36:19+03:00",
-      "found": 14,
-      "fixed": 10,
-      "deferred": 4
-    },
     "G3": {
       "ok": true,
-      "at": "2026-10-23T15:41:37+03:00",
+      "at": "2026-10-24T13:55:55+03:00",
       "problems": 0
-    },
-    "G4": {
-      "ok": false,
-      "at": "2026-10-23T15:41:36+03:00",
-      "checked": 34,
-      "matched": 31
     }
   },
-  "result": "Интернет-магазин РемТехСад: каталог 1214 товаров, корзина и заказы, кабинет, заявки, отзывы, админка, заглушки 1С/оплаты/доставки/почты, SEO; 932 теста зелёные",
+  "result": "Магазин РемТехСад: каталог 1214 товаров, заказы, кабинет, заявки, админка со скрытием товаров, категорий и страниц, карта и контент; 1001 тест зелёный",
   "report": [
     "В выгрузке 4 товара без цены (id 217943, 217944, 217946, 217947) — не импортированы, нужна цена от владельца",
     "Фото скачиваются командой import:yml --images; по сети на реальном champion.ru не проверялось",
