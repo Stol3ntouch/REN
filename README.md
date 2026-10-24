@@ -92,3 +92,5 @@ npm run dev
 - `tests/` — Vitest; каждый тест получает свою БД в памяти.
 
 Данные локально — в `data/` (не попадает в git): `rts.sqlite`, `uploads/`, `backups/`, `onec-inbox/`, `onec-outbox/`.
+#   r t s s  
+ 
