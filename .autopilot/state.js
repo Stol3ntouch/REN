@@ -13,7 +13,7 @@ window.STATE =
   "skillDir": "C:/Users/OxO/Desktop/RemTexSad/skills-2.2.0/skills/autopilot",
   "baseCommit": "2ee729c",
   "startedAt": "2026-10-22T21:26:04+03:00",
-  "updatedAt": "2026-10-24T22:13:49+03:00",
+  "updatedAt": "2026-10-24T22:42:06+03:00",
   "finishedAt": null,
   "stages": [
     {
@@ -24,8 +24,9 @@ window.STATE =
     },
     {
       "id": "manifest",
-      "status": "active",
-      "startedAt": "2026-10-24T22:05:44+03:00"
+      "status": "done",
+      "startedAt": "2026-10-24T22:05:44+03:00",
+      "finishedAt": "2026-10-24T22:14:12+03:00"
     },
     {
       "id": "briefing",
@@ -33,15 +34,20 @@ window.STATE =
     },
     {
       "id": "spec",
-      "status": "pending"
+      "status": "done",
+      "startedAt": "2026-10-24T22:14:12+03:00",
+      "finishedAt": "2026-10-24T22:14:12+03:00"
     },
     {
       "id": "plan",
-      "status": "pending"
+      "status": "done",
+      "startedAt": "2026-10-24T22:14:12+03:00",
+      "finishedAt": "2026-10-24T22:14:12+03:00"
     },
     {
       "id": "build",
-      "status": "pending"
+      "status": "active",
+      "startedAt": "2026-10-24T22:14:12+03:00"
     },
     {
       "id": "review",
@@ -54,8 +60,8 @@ window.STATE =
   ],
   "requirements": {
     "total": 111,
-    "done": 63,
-    "inTicket": 46,
+    "done": 66,
+    "inTicket": 43,
     "inSpec": 0,
     "placeholder": 2,
     "deferred": 0,
@@ -618,9 +624,16 @@ window.STATE =
       ],
       "review": "да — фундамент",
       "model": "сильная",
-      "status": "pending",
+      "status": "review",
       "retries": 0,
-      "repairs": 0
+      "repairs": 0,
+      "startedAt": "2026-10-24T22:14:12+03:00",
+      "finishedAt": "2026-10-24T22:42:05+03:00",
+      "tests": {
+        "passed": 1074,
+        "failed": 0
+      },
+      "commit": "ffe869f"
     },
     {
       "id": "C02",
@@ -1254,7 +1267,7 @@ window.STATE =
     }
   ],
   "tests": {
-    "passed": 1001,
+    "passed": 1074,
     "failed": 0
   },
   "debt": {
@@ -1410,9 +1423,12 @@ window.STATE =
     "2026-10-24T22:13:39+03:00",
     "2026-10-24T22:13:40+03:00",
     "2026-10-24T22:13:48+03:00",
-    "2026-10-24T22:13:49+03:00"
+    "2026-10-24T22:13:49+03:00",
+    "2026-10-24T22:14:12+03:00",
+    "2026-10-24T22:42:05+03:00",
+    "2026-10-24T22:42:06+03:00"
   ],
-  "rev": 109,
+  "rev": 113,
   "waiting": null,
   "waits": [
     {
@@ -2228,6 +2244,40 @@ window.STATE =
       "g": "G3",
       "ok": true,
       "problems": 0
+    },
+    {
+      "t": "2026-10-24T22:14:12+03:00",
+      "k": "stage",
+      "id": "build",
+      "act": "start"
+    },
+    {
+      "t": "2026-10-24T22:14:12+03:00",
+      "k": "ticket",
+      "ids": [
+        "C01"
+      ],
+      "act": "start"
+    },
+    {
+      "t": "2026-10-24T22:42:05+03:00",
+      "k": "ticket",
+      "ids": [
+        "C01"
+      ],
+      "act": "done",
+      "tests": {
+        "passed": 1074,
+        "failed": 0
+      }
+    },
+    {
+      "t": "2026-10-24T22:42:06+03:00",
+      "k": "ticket",
+      "ids": [
+        "C01"
+      ],
+      "act": "review"
     }
   ],
   "reqList": [
@@ -2566,7 +2616,7 @@ window.STATE =
     {
       "id": "G13",
       "text": "«Все страницы должны образовывать единую систему дизайна»",
-      "status": "in-ticket"
+      "status": "done"
     },
     {
       "id": "G14",
@@ -2576,7 +2626,7 @@ window.STATE =
     {
       "id": "G15",
       "text": "«Создай фиксированную или закрепляемую слева навигационную панель» (сворачивание, активный пункт, группы, подразделы, иконки, адаптив; структура Главная/Каталог/Продажи/Контент/Услуги/Настройки)",
-      "status": "in-ticket"
+      "status": "done"
     },
     {
       "id": "G16",
@@ -2766,7 +2816,7 @@ window.STATE =
     {
       "id": "G53",
       "text": "«Сделай переиспользуемые компоненты» (AdminLayout, Sidebar, Topbar, Breadcrumbs, PageHeader, DataTable, Pagination, SearchInput, FilterPanel, StatusBadge, Toggle, ConfirmDialog, FormField, SelectField, FileUploader, ImagePreview, Tabs, Emp…",
-      "status": "in-ticket"
+      "status": "done"
     },
     {
       "id": "G54",
