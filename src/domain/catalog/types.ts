@@ -26,6 +26,12 @@ export type CatalogQuery = {
   priceMin?: number;
   priceMax?: number;
   inStockOnly?: boolean;
+  /** Бренды (slug), ИЛИ между значениями. */
+  brands?: string[];
+  /** Диапазоны числовых характеристик: ключ — id характеристики, значения в единицах характеристики. */
+  ranges?: Record<string, { min?: number; max?: number }>;
+  /** Подкатегории (slug) внутри выбранной категории, ИЛИ между значениями. */
+  subcategories?: string[];
   /** По умолчанию: 'relevance' при тексте, иначе 'name'. */
   sort: SortKey;
   page: number;
@@ -56,11 +62,31 @@ export type ProductCard = {
 
 export type SearchResult = { items: ProductCard[]; total: number; page: number; pageSize: number; hasMore: boolean };
 
-export type FacetValue = { value: string; count: number };
-export type Facet = { id: number; name: string; values: FacetValue[] };
+/** label — подпись значения, если она отличается от value (бренд: value = slug, label = название). */
+export type FacetValue = { value: string; count: number; label?: string };
+
+export type FacetKind = 'price' | 'brand' | 'stock' | 'attribute' | 'category';
+export type FacetWidget = 'checkbox' | 'range' | 'select';
+
+/**
+ * Фильтр панели витрины (настроенный в админке). id — id характеристики для вида attribute (как раньше), иначе id фильтра.
+ * key — имя параметра в адресе (a<id> | brand | stock | sub; цена — min/max; диапазон характеристики — a<id>_min/a<id>_max).
+ * range: для цены — в рублях (округлено наружу), для характеристики — в её единицах; null — товаров с ценой/значением нет.
+ */
+export type Facet = {
+  id: number;
+  filterId: number;
+  key: string;
+  kind: FacetKind;
+  widget: FacetWidget;
+  name: string;
+  unit?: string | null;
+  values: FacetValue[];
+  range?: { min: number; max: number } | null;
+};
 
 /** Контекст выбора, под который считаются счётчики фасетов. */
-export type FacetContext = Pick<CatalogQuery, 'text' | 'filters' | 'priceMin' | 'priceMax' | 'inStockOnly'>;
+export type FacetContext = Pick<CatalogQuery, 'text' | 'filters' | 'priceMin' | 'priceMax' | 'inStockOnly' | 'brands' | 'ranges' | 'subcategories'>;
 
 export type CategoryNode = {
   id: number;

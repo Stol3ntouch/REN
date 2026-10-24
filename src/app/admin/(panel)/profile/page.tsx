@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { FormField } from '@/ui/admin/kit/FormField';
-import { ROLE_LABELS } from '@/ui/admin/kit/labels';
 import { PageHeader } from '@/ui/admin/kit/PageHeader';
 import { SaveBar } from '@/ui/admin/kit/SaveBar';
 import { FlashToast } from '@/ui/admin/kit/Toaster';
@@ -15,7 +14,7 @@ export const dynamic = 'force-dynamic';
 
 /** Профиль сотрудника: имя и смена своего пароля. Доступен любому авторизованному сотруднику. */
 export default async function AdminProfilePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const session = await requireStaffPage(null);
+  const session = await requireStaffPage('staff.self');
   const sp = await searchParams;
   const profile = profileOps.get(session);
   const passwordChanged = str(sp.saved) === 'password';
@@ -30,7 +29,7 @@ export default async function AdminProfilePage({ searchParams }: { searchParams:
           <h2 id="profile-h">Основное</h2>
           <div className="ak-form-grid">
             <FormField name="login" label="Логин" value={profile.email} readOnly hint="Логин меняет администратор в разделе «Пользователи»." />
-            <FormField name="role" label="Роль" value={ROLE_LABELS[profile.role] ?? profile.role} readOnly />
+            <FormField name="role" label="Роль" value={profile.roleName} readOnly />
             <FormField name="name" label="Имя" defaultValue={profile.name ?? ''} maxLength={100} autoComplete="name" hint="Показывается в верхней панели и в журнале." />
           </div>
           <p className="ak-field__hint">Последний вход: {fmtTime(profile.lastLoginAt)}</p>

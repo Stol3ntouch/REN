@@ -1,6 +1,6 @@
 import { getDb, type Db } from '@/server/db/connection';
 import { buildMatchQuery } from './fts';
-import { categoryScope, countProducts, listCards, type Scope } from './store';
+import { categoryScope, countProducts, listCards, resolveSubcategories, type Scope } from './store';
 import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, type CatalogQuery, type SearchResult } from './types';
 
 function empty(page: number, pageSize: number): SearchResult {
@@ -31,7 +31,18 @@ export async function searchProducts(q: CatalogQuery, opts: { db?: Db } = {}): P
     if (match === null) return empty(page, pageSize);
   }
 
-  const scope: Scope = { categoryIds, match, text: q.text, filters: q.filters, priceMin: q.priceMin, priceMax: q.priceMax, inStockOnly: q.inStockOnly };
+  const scope: Scope = {
+    categoryIds,
+    subCategoryIds: resolveSubcategories(db, categoryIds, q.subcategories),
+    match,
+    text: q.text,
+    filters: q.filters,
+    priceMin: q.priceMin,
+    priceMax: q.priceMax,
+    inStockOnly: q.inStockOnly,
+    brands: q.brands,
+    ranges: q.ranges,
+  };
   const total = countProducts(db, scope);
   const offset = (page - 1) * pageSize;
   const items = listCards(db, scope, q.sort, pageSize, offset);

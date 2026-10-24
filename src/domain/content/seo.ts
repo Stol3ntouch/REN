@@ -13,6 +13,10 @@ export type SeoInput = {
   path: string;
   image?: CatalogImage | null;
   type?: 'website' | 'article';
+  /** Задан админом: канонический адрес вместо path. */
+  canonical?: string | null;
+  /** Закрыть страницу от индексации (robots noindex). */
+  noindex?: boolean;
 };
 
 /** Первые max символов текста без разметки-заглушек: для description по умолчанию. */
@@ -20,8 +24,12 @@ export function plainExcerpt(text: string | null | undefined, max = 160): string
   if (!text) return undefined;
   const clean = text
     .replace(/\[[^\]]*—\s*(?:впиши|загрузи)\]/g, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/\*{1,2}([^*\n]+)\*{1,2}/g, '$1')
+    .replace(/^>\s?/gm, '')
     .replace(/^#+\s*/gm, '')
-    .replace(/^-\s+/gm, '')
+    .replace(/^(?:[-*]|\d{1,3}\.)\s+/gm, '')
     .replace(/\s+/g, ' ')
     .trim();
   if (clean === '') return undefined;
@@ -34,7 +42,8 @@ export function contentMetadata(input: SeoInput): Metadata {
   return {
     title,
     description,
-    alternates: { canonical: input.path },
+    alternates: { canonical: input.canonical?.trim() || input.path },
+    ...(input.noindex ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       title,
       description,

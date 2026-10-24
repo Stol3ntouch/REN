@@ -20,6 +20,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     seoDescription: item.seoDescription,
     fallbackDescription: item.excerpt ?? plainExcerpt(item.body),
     path: `/news/${item.slug}`,
+    canonical: item.canonical,
+    noindex: item.noindex,
     image: item.image,
     type: 'article',
   });
@@ -35,6 +37,7 @@ export default async function NewsArticlePage({ params }: Props) {
       <h1>{item.h1 || item.title}</h1>
       <p className="content-meta">
         <time dateTime={isoDate(date)}>{formatDate(date)}</time>
+        {item.authorName ? <> · <span>Автор: {item.authorName}</span></> : null}
       </p>
       {item.image ? (
         <figure className="content-figure">

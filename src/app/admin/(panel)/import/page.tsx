@@ -47,7 +47,7 @@ function Errors({ run }: { run: ImportRunRow }) {
 export default async function AdminImportPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const session = await requireStaffPage('integrations.read');
   const sp = await searchParams;
-  const canRun = hasPermission(session.role, 'integrations.run');
+  const canRun = hasPermission(session, 'integrations.run');
   const previewId = int(sp.preview, 0);
   const reportId = int(sp.report, 0);
   const preview = previewId ? importOps.getRun(session, previewId) : null;

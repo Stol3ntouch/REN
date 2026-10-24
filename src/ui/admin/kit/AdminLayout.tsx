@@ -34,7 +34,7 @@ export function AdminLayout({
         <a href="#admin-main" className="skip-link">
           Перейти к содержимому
         </a>
-        <Sidebar groups={visibleNavGroups(session.role)} />
+        <Sidebar groups={visibleNavGroups(session)} />
         <ShellOverlay />
         <div className="ak-body">
           <Topbar session={session} logout={logout} features={features} />

@@ -24,7 +24,7 @@ async function setup() {
 describe('сотрудники', () => {
   it('createStaff: scrypt-хеш, email в нижнем регистре, роль, запись в аудите; дубль → конфликт; короткий пароль → ошибка', async () => {
     const { db, manager } = await setup();
-    const row = db.prepare('SELECT email, role, password_hash FROM staff WHERE id = ?').get(manager.staffId) as {
+    const row = db.prepare('SELECT s.email, r.code AS role, s.password_hash FROM staff s JOIN roles r ON r.id = s.role_id WHERE s.id = ?').get(manager.staffId) as {
       email: string;
       role: string;
       password_hash: string;
@@ -48,7 +48,7 @@ describe('сотрудники', () => {
     const set = cookies.sets.find((s) => s.name === ADMIN_SESSION_COOKIE)!;
     expect(set.options).toMatchObject({ httpOnly: true, path: '/' });
     expect(['lax', 'strict']).toContain(set.options!.sameSite);
-    expect(getStaffSession(cookies, { db, now: T0 + MINUTE })).toEqual({ staffId: admin.staffId, email: 'boss@shop.test', name: null, role: 'admin' });
+    expect(getStaffSession(cookies, { db, now: T0 + MINUTE })).toMatchObject({ staffId: admin.staffId, email: 'boss@shop.test', name: null, role: 'admin', roleName: 'Администратор' });
     const stored = db.prepare('SELECT token_hash FROM staff_sessions').get() as { token_hash: string };
     expect(stored.token_hash).not.toBe(set.value);
   });

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { categoryHeading, getCategoryBreadcrumbs, getCategoryBySlug, getCategoryTree, getSiblingCategories } from '@/domain/catalog/categories';
-import { getFacets } from '@/domain/catalog/facets';
+import { facetContext, getFacets } from '@/domain/catalog/facets';
 import { buildCatalogQueryString, parseCatalogParams } from '@/domain/catalog/params';
 import { searchProducts } from '@/domain/catalog/search';
 import type { CategoryNode } from '@/domain/catalog/types';
@@ -48,7 +48,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   }
 
   const [facets, tree, crumbs, siblings] = await Promise.all([
-    getFacets(category.id, { text: query.text, filters: query.filters, priceMin: query.priceMin, priceMax: query.priceMax, inStockOnly: query.inStockOnly }),
+    getFacets(category.id, facetContext(query)),
     getCategoryTree(),
     getCategoryBreadcrumbs(slug),
     getSiblingCategories(slug),

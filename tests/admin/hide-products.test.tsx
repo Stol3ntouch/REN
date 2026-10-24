@@ -111,12 +111,12 @@ describe('скрытый товар исчезает с сайта', () => {
   it('фильтры и их счётчики: скрытые не считаются, характеристика пропадает при <3 видимых', async () => {
     const { db, cat, power } = shop();
     const before = await getFacets(cat, { filters: {} }, { db });
-    expect(before.find((f) => String(f.id) === power)?.values).toEqual([{ value: '1000 Вт', count: 4 }]);
+    expect(before.find((f) => f.kind === 'attribute' && String(f.id) === power)?.values).toEqual([{ value: '1000 Вт', count: 4 }]);
     db.prepare('UPDATE products SET hidden_by_admin = 1 WHERE id = (SELECT MIN(id) FROM products)').run();
     const after = await getFacets(cat, { filters: {} }, { db });
-    expect(after.find((f) => String(f.id) === power)?.values).toEqual([{ value: '1000 Вт', count: 3 }]);
+    expect(after.find((f) => f.kind === 'attribute' && String(f.id) === power)?.values).toEqual([{ value: '1000 Вт', count: 3 }]);
     db.prepare('UPDATE products SET hidden_by_admin = 1 WHERE id = (SELECT MAX(id) FROM products)').run();
-    expect((await getFacets(cat, { filters: {} }, { db })).find((f) => String(f.id) === power)).toBeUndefined(); // правило «≥3 товара»
+    expect((await getFacets(cat, { filters: {} }, { db })).find((f) => f.kind === 'attribute' && String(f.id) === power)).toBeUndefined(); // правило «≥3 товара»
   });
 
   it('сопутствующие и страница товара: скрытый — null (404), в чужих «сопутствующих» не появляется', async () => {

@@ -1,176 +1,52 @@
 import { z } from 'zod';
-import { requirePermission, type StaffSession } from '@/domain/admin/permissions';
 import { audit } from '@/domain/admin/audit';
-import { slugify } from '@/importing/yml/slug';
-import { getDb, withTransaction, type Db } from '@/server/db/connection';
+import { findPromotionConflict } from '@/domain/pricing/promotion-rules';
+import { withTransaction } from '@/server/db/connection';
 import { companyReviewsRepo, type CompanyReviewRow, type CompanyReviewWrite } from '@/server/db/repositories/company-reviews';
-import { newsRepo, type NewsRow, type NewsWrite } from '@/server/db/repositories/news';
-import { pagesRepo, type PageRow, type PageWrite } from '@/server/db/repositories/pages';
+import { newsRepo, staffDisplayName, type NewsRow, type NewsWrite } from '@/server/db/repositories/news';
+import { newsCategoriesRepo, type NewsCategoryRow, type NewsCategoryWrite } from '@/server/db/repositories/news-categories';
 import { promotionsRepo, type PromotionRow, type PromotionWrite } from '@/server/db/repositories/promotions';
+import { serviceCategoriesRepo, type ServiceCategoryRow, type ServiceCategoryWrite } from '@/server/db/repositories/service-categories';
 import { servicesRepo, type ServiceRow, type ServiceWrite } from '@/server/db/repositories/services';
 import { MAX_SLIDES, slidesRepo, type SlideRow, type SlideWrite } from '@/server/db/repositories/slides';
 import { settingsRepo } from '@/server/db/repositories/settings';
-import { NotFoundError, ValidationError } from '@/server/http/errors';
-import { intakeImage, type ImageInput } from './images';
-import { HIDEABLE_SECTIONS, isPageHideLocked, isSectionHidden, sectionSettingKey, type HideableSection } from './queries';
+import { formatRub } from '@/domain/pricing/format';
+import { ValidationError } from '@/server/http/errors';
+import { intakeImage } from './images';
+import {
+  authorize, copySlug, flag, image, int, link, makeOps, nul, opt, parse, required, resolve, resolveSlug, seoShape, stamp,
+  type Ctx, type ImageInput, type Session,
+} from './ops-core';
+import { bannerOps } from './ops-banners';
+import { pageOps } from './ops-pages';
+import { visibilityOps } from './ops-visibility';
+import { canonicalSchema, resolvePublication, statusSchema } from './publication';
+import { HIDEABLE_SECTIONS, isSectionHidden, sectionSettingKey, type HideableSection } from './queries';
 import { EDITABLE_SETTING_KEYS, type EditableSettingKey } from './settings';
 
+export type { Ctx, ImageInput };
+
 /**
- * Операции админки «Контент и услуги». Каждая сама проверяет право content.write (только admin) —
- * не полагаясь на обработчик, — валидирует вход (zod), пишет через репозиторий и фиксирует аудит.
+ * Операции админки «Контент». Каждая сама проверяет право content.write (promos.write / reviews.moderate для купонов
+ * и отзывов) — не полагаясь на обработчик, — валидирует вход (zod), пишет через репозиторий и фиксирует аудит.
  * Семантика save: значения полей из формы заменяют сохранённые; картинка — только если загружена новая или отмечено удаление.
  */
-export type Ctx = { db?: Db; now?: number; uploadsDir?: string };
-export type { ImageInput };
-type Session = StaffSession | null | undefined;
-type Resolved = { db: Db; now: number; uploadsDir?: string };
-
-const resolve = (ctx: Ctx): Resolved => ({ db: ctx.db ?? getDb(), now: ctx.now ?? Date.now(), uploadsDir: ctx.uploadsDir });
-
-function authorize(session: Session): asserts session is StaffSession {
-  requirePermission(session, 'content.write');
-}
-
-function parse<T>(schema: z.ZodType<T>, raw: unknown): T {
-  const r = schema.safeParse(raw);
-  if (r.success) return r.data;
-  const fields: Record<string, string[]> = {};
-  for (const issue of r.error.issues) {
-    const key = String(issue.path[0] ?? '_');
-    (fields[key] ??= []).push(issue.message);
-  }
-  throw new ValidationError(r.error.issues[0]?.message ?? 'Проверьте введённые данные', fields);
-}
-
-// ---------- общие куски схем ----------
-
-const opt = (max: number) => z.string().trim().max(max, `Не длиннее ${max} символов`).optional();
-const required = (max: number, msg: string) => z.string().trim().min(1, msg).max(max, `Не длиннее ${max} символов`);
-const image = z.custom<ImageInput>((v) => v === undefined || (typeof v === 'object' && v !== null)).optional();
-const flag = z.boolean().optional();
-const int = z.number().int('Нужно целое число').nullable().optional();
-const stamp = z.number().int().nullable().optional();
-const nul = (v: string | undefined): string | null => (v === undefined || v.trim() === '' ? null : v.trim());
-
-const seoShape = {
-  slug: opt(100),
-  h1: opt(200),
-  seoTitle: opt(200),
-  seoDescription: opt(400),
-  imageAlt: opt(200),
-  image,
-};
-
-function resolveSlug(repo: SlugRepo, db: Db, wanted: string | undefined, title: string, existing: { id: number; slug: string } | null): string {
-  const explicit = nul(wanted);
-  const base = slugify(explicit ?? existing?.slug ?? title);
-  if (base === '') throw new ValidationError('Адрес (slug) должен содержать буквы или цифры', { slug: ['Адрес (slug) должен содержать буквы или цифры'] });
-  if (!repo.slugTaken(db, base, existing?.id)) return base;
-  if (explicit !== null || existing) throw new ValidationError('Такой адрес (slug) уже занят', { slug: ['Такой адрес (slug) уже занят'] });
-  for (let n = 2; n < 1000; n++) {
-    const candidate = `${base}-${n}`;
-    if (!repo.slugTaken(db, candidate)) return candidate;
-  }
-  throw new ValidationError('Не удалось подобрать свободный адрес (slug)');
-}
-
-type SlugRepo = { slugTaken(db: Db, slug: string, exceptId?: number): boolean };
-type Repo<Row, Write> = SlugRepo & {
-  get(db: Db, id: number): Row | null;
-  insert(db: Db, data: Write, now: number): number;
-  update(db: Db, id: number, data: Write, now: number): void;
-  remove(db: Db, id: number): void;
-};
-
-/** Для аудита: без длинных текстов (они остаются в самой записи). */
-function auditView(row: unknown): unknown {
-  if (!row || typeof row !== 'object') return row;
-  return Object.fromEntries(Object.entries(row).map(([k, v]) => [k, typeof v === 'string' && v.length > 200 ? `${v.slice(0, 200)}…` : v]));
-}
-
-type EntityConfig<Row extends { id: number }, Write extends object, In extends { image?: ImageInput }> = {
-  entity: string;
-  repo: Repo<Row, Write>;
-  schema: z.ZodType<In>;
-  hasImage: boolean;
-  /** Проверки перед созданием (лимиты). */
-  beforeInsert?(db: Db): void;
-  build(input: In, existing: Row | null, env: { db: Db; now: number }): Write;
-};
-
-function makeOps<Row extends { id: number }, Write extends object, In extends { image?: ImageInput }>(cfg: EntityConfig<Row, Write, In>) {
-  return {
-    async save(session: Session, id: number | null, raw: In, ctx: Ctx = {}): Promise<{ id: number }> {
-      authorize(session);
-      const { db, now, uploadsDir } = resolve(ctx);
-      const input = parse(cfg.schema, raw);
-      const existing = id === null ? null : cfg.repo.get(db, id);
-      if (id !== null && !existing) throw new NotFoundError('Запись не найдена');
-      if (!existing) cfg.beforeInsert?.(db);
-
-      const write: Record<string, unknown> = { ...(cfg.build(input, existing, { db, now }) as Record<string, unknown>) };
-      if (cfg.hasImage) {
-        if (input.image?.bytes && input.image.bytes.byteLength > 0) {
-          const stored = await intakeImage(input.image.bytes, uploadsDir);
-          write.imagePath = stored.imagePath;
-          write.imageVariants = stored.imageVariants;
-        } else if (input.image?.remove) {
-          write.imagePath = null;
-          write.imageVariants = null;
-        }
-      }
-
-      let savedId: number;
-      try {
-        savedId = withTransaction(db, () => {
-          if (existing) {
-            cfg.repo.update(db, existing.id, write as Write, now);
-            return existing.id;
-          }
-          return cfg.repo.insert(db, write as Write, now);
-        });
-      } catch (e) {
-        if (e instanceof Error && e.message.includes('slides_limit')) throw new ValidationError(`В слайдере не больше ${MAX_SLIDES} слайдов`);
-        throw e;
-      }
-      audit.record(
-        {
-          actorId: session.staffId,
-          actorType: 'staff',
-          action: `content.${cfg.entity}.${existing ? 'update' : 'create'}`,
-          entity: `content_${cfg.entity}`,
-          entityId: savedId,
-          before: existing ? auditView(existing) : undefined,
-          after: auditView(cfg.repo.get(db, savedId)),
-        },
-        { db, now },
-      );
-      return { id: savedId };
-    },
-
-    async remove(session: Session, id: number, ctx: Ctx = {}): Promise<void> {
-      authorize(session);
-      const { db, now } = resolve(ctx);
-      const existing = cfg.repo.get(db, id);
-      if (!existing) throw new NotFoundError('Запись не найдена');
-      cfg.repo.remove(db, id);
-      audit.record(
-        { actorId: session.staffId, actorType: 'staff', action: `content.${cfg.entity}.delete`, entity: `content_${cfg.entity}`, entityId: id, before: auditView(existing) },
-        { db, now },
-      );
-    },
-  };
-}
 
 // ---------- новости ----------
 
 const newsSchema = z.object({
   title: required(200, 'Укажите название'),
   ...seoShape,
+  canonical: canonicalSchema,
+  noindex: flag,
   excerpt: opt(400),
   body: opt(50000),
   published: flag,
+  status: statusSchema,
   publishedAt: stamp,
+  categoryId: z.number().int().min(1).nullable().optional(),
+  authorStaffId: z.number().int().min(1).nullable().optional(),
+  authorName: opt(100),
 });
 
 const news = makeOps<NewsRow, NewsWrite, z.infer<typeof newsSchema>>({
@@ -178,18 +54,68 @@ const news = makeOps<NewsRow, NewsWrite, z.infer<typeof newsSchema>>({
   repo: newsRepo,
   schema: newsSchema,
   hasImage: true,
-  build: (i, existing, { db, now }) => ({
-    slug: resolveSlug(newsRepo, db, i.slug, i.title, existing),
-    title: i.title,
-    h1: nul(i.h1),
-    seoTitle: nul(i.seoTitle),
-    seoDescription: nul(i.seoDescription),
-    excerpt: nul(i.excerpt),
-    body: i.body ?? '',
-    imageAlt: nul(i.imageAlt),
-    published: i.published ?? false,
-    publishedAt: i.publishedAt ?? existing?.publishedAt ?? (i.published ? now : null),
+  validate: (i, _e, { db }) => {
+    if (i.categoryId && !newsCategoriesRepo.get(db, i.categoryId)) throw new ValidationError('Категория новостей не найдена', { categoryId: ['Категория не найдена'] });
+    if (i.authorStaffId && staffDisplayName(db, i.authorStaffId) === null) throw new ValidationError('Автор не найден среди сотрудников', { authorStaffId: ['Сотрудник не найден'] });
+  },
+  build: (i, existing, { db, now }) => {
+    const pub = resolvePublication({ status: i.status, published: i.published, publishedAt: i.publishedAt }, existing ? { published: existing.published, publishedAt: existing.publishedAt } : null, now);
+    const staffId = i.authorStaffId ?? null;
+    return {
+      slug: resolveSlug(newsRepo, db, i.slug, i.title, existing),
+      title: i.title,
+      h1: nul(i.h1),
+      seoTitle: nul(i.seoTitle),
+      seoDescription: nul(i.seoDescription),
+      canonical: nul(i.canonical),
+      noindex: i.noindex ?? existing?.noindex ?? false,
+      excerpt: nul(i.excerpt),
+      body: i.body ?? '',
+      imageAlt: nul(i.imageAlt),
+      published: pub.published,
+      publishedAt: pub.publishedAt,
+      categoryId: i.categoryId === undefined ? (existing?.categoryId ?? null) : i.categoryId,
+      authorStaffId: staffId,
+      authorName: staffId ? staffDisplayName(db, staffId) : nul(i.authorName),
+    };
+  },
+  duplicate: (row, { db }) => ({
+    slug: copySlug(newsRepo, db, row.slug),
+    title: `${row.title} (копия)`.slice(0, 200),
+    h1: row.h1,
+    seoTitle: row.seoTitle,
+    seoDescription: row.seoDescription,
+    excerpt: row.excerpt,
+    body: row.body,
+    imagePath: row.imagePath,
+    imageVariants: row.imageVariants,
+    imageAlt: row.imageAlt,
+    published: false,
+    publishedAt: null,
+    categoryId: row.categoryId,
+    authorStaffId: row.authorStaffId,
+    authorName: row.authorName,
   }),
+});
+
+// ---------- категории новостей и услуг ----------
+
+const categorySchema = z.object({ name: required(100, 'Укажите название'), slug: opt(100), sort: int });
+
+const newsCategories = makeOps<NewsCategoryRow, NewsCategoryWrite, z.infer<typeof categorySchema>>({
+  entity: 'news_categories',
+  repo: newsCategoriesRepo,
+  schema: categorySchema,
+  hasImage: false,
+  build: (i, existing, { db }) => ({ slug: resolveSlug(newsCategoriesRepo, db, i.slug, i.name, existing), name: i.name, sort: i.sort ?? existing?.sort ?? 0 }),
+});
+
+const serviceCategories = makeOps<ServiceCategoryRow, ServiceCategoryWrite, z.infer<typeof categorySchema>>({
+  entity: 'service_categories',
+  repo: serviceCategoriesRepo,
+  schema: categorySchema,
+  hasImage: false,
+  build: (i, existing, { db }) => ({ slug: resolveSlug(serviceCategoriesRepo, db, i.slug, i.name, existing), name: i.name, sort: i.sort ?? existing?.sort ?? 0 }),
 });
 
 // ---------- услуги ----------
@@ -200,6 +126,7 @@ const serviceSchema = z.object({
   summary: opt(400),
   body: opt(50000),
   priceText: opt(100),
+  categoryId: z.number().int().min(1).nullable().optional(),
   published: flag,
   sort: int,
 });
@@ -209,6 +136,9 @@ const services = makeOps<ServiceRow, ServiceWrite, z.infer<typeof serviceSchema>
   repo: servicesRepo,
   schema: serviceSchema,
   hasImage: true,
+  validate: (i, _e, { db }) => {
+    if (i.categoryId && !serviceCategoriesRepo.get(db, i.categoryId)) throw new ValidationError('Категория услуг не найдена', { categoryId: ['Категория не найдена'] });
+  },
   build: (i, existing, { db }) => ({
     slug: resolveSlug(servicesRepo, db, i.slug, i.title, existing),
     title: i.title,
@@ -219,8 +149,25 @@ const services = makeOps<ServiceRow, ServiceWrite, z.infer<typeof serviceSchema>
     body: i.body ?? '',
     priceText: nul(i.priceText),
     imageAlt: nul(i.imageAlt),
+    categoryId: i.categoryId === undefined ? (existing?.categoryId ?? null) : i.categoryId,
     published: i.published ?? false,
     sort: i.sort ?? 0,
+  }),
+  duplicate: (row, { db }) => ({
+    slug: copySlug(servicesRepo, db, row.slug),
+    title: `${row.title} (копия)`.slice(0, 200),
+    h1: row.h1,
+    seoTitle: row.seoTitle,
+    seoDescription: row.seoDescription,
+    summary: row.summary,
+    body: row.body,
+    priceText: row.priceText,
+    imagePath: row.imagePath,
+    imageVariants: row.imageVariants,
+    imageAlt: row.imageAlt,
+    categoryId: row.categoryId,
+    published: false,
+    sort: row.sort + 1,
   }),
 });
 
@@ -232,6 +179,7 @@ const promotionSchema = z
     ...seoShape,
     summary: opt(400),
     body: opt(50000),
+    conditions: opt(2000),
     promoCode: z
       .string()
       .trim()
@@ -242,39 +190,126 @@ const promotionSchema = z
     endsAt: stamp,
     published: flag,
     sort: int,
+    discountType: z.enum(['percent', 'fixed', 'none'], { error: 'Неизвестный тип скидки' }).optional(),
+    /** percent: 1–99; fixed: копейки. */
+    discountValue: z.number().int('Нужно целое число').min(0).optional(),
+    minSubtotalKopecks: z.number().int().min(0, 'Не меньше нуля').nullable().optional(),
+    maxDiscountKopecks: z.number().int().min(1, 'Не меньше копейки').nullable().optional(),
+    priority: z.number().int().min(-1000).max(1000).nullable().optional(),
+    productIds: z.array(z.number().int().min(1)).max(500).optional(),
+    categoryIds: z.array(z.number().int().min(1)).max(200).optional(),
   })
   .refine((v) => v.startsAt == null || v.endsAt == null || v.endsAt >= v.startsAt, { message: 'Дата окончания раньше даты начала', path: ['endsAt'] });
 
-const promotions = makeOps<PromotionRow, PromotionWrite, z.infer<typeof promotionSchema>>({
+type PromotionInput = z.infer<typeof promotionSchema>;
+
+const fail = (field: string, message: string): never => {
+  throw new ValidationError(message, { [field]: [message] });
+};
+
+/** Итоговые правила скидки акции с учётом прежних значений при частичном вводе. */
+function promotionRules(i: PromotionInput, e: PromotionRow | null) {
+  const discountType = i.discountType ?? e?.discountType ?? 'none';
+  const discountValue = discountType === 'none' ? 0 : (i.discountValue ?? e?.discountValue ?? 0);
+  return {
+    discountType,
+    discountValue,
+    minSubtotalKopecks: i.minSubtotalKopecks === null ? 0 : (i.minSubtotalKopecks ?? e?.minSubtotalKopecks ?? 0),
+    maxDiscountKopecks: i.maxDiscountKopecks === undefined ? (e?.maxDiscountKopecks ?? null) : i.maxDiscountKopecks,
+    priority: i.priority === null ? 0 : (i.priority ?? e?.priority ?? 0),
+    published: i.published ?? e?.published ?? false,
+    startsAt: i.startsAt === undefined ? (e?.startsAt ?? null) : i.startsAt,
+    endsAt: i.endsAt === undefined ? (e?.endsAt ?? null) : i.endsAt,
+  };
+}
+
+const promotions = makeOps<PromotionRow, PromotionWrite, PromotionInput>({
   entity: 'promotions',
   repo: promotionsRepo,
   schema: promotionSchema,
   hasImage: true,
-  build: (i, existing, { db }) => ({
-    slug: resolveSlug(promotionsRepo, db, i.slug, i.title, existing),
-    title: i.title,
-    h1: nul(i.h1),
-    seoTitle: nul(i.seoTitle),
-    seoDescription: nul(i.seoDescription),
-    summary: nul(i.summary),
-    body: i.body ?? '',
-    imageAlt: nul(i.imageAlt),
-    promoCode: nul(i.promoCode),
-    startsAt: i.startsAt ?? null,
-    endsAt: i.endsAt ?? null,
-    published: i.published ?? false,
-    sort: i.sort ?? 0,
+  validate: (i, existing, { db }) => {
+    const r = promotionRules(i, existing);
+    const targets = {
+      productIds: i.productIds ?? (existing ? promotionsRepo.targets(db, existing.id).productIds : []),
+      categoryIds: i.categoryIds ?? (existing ? promotionsRepo.targets(db, existing.id).categoryIds : []),
+    };
+    if (i.productIds && promotionsRepo.existingProductIds(db, i.productIds).size !== new Set(i.productIds).size) fail('productIds', 'Один из выбранных товаров не найден');
+    if (i.categoryIds && promotionsRepo.existingCategoryIds(db, i.categoryIds).size !== new Set(i.categoryIds).size) fail('categoryIds', 'Одна из выбранных категорий не найдена');
+    if (r.discountType === 'none') return;
+
+    if (r.discountType === 'percent' && (r.discountValue < 1 || r.discountValue > 99)) fail('discountValue', 'Процент скидки — от 1 до 99: цена не может стать нулевой');
+    if (r.discountType === 'fixed' && r.discountValue < 1) fail('discountValue', 'Скидка в рублях должна быть больше нуля');
+    if (targets.productIds.length === 0 && targets.categoryIds.length === 0) fail('productIds', 'Скидка применяется к товарам: выберите товары или категории акции');
+    if (r.discountType === 'fixed') {
+      const min = promotionsRepo.minPrice(db, targets);
+      if (min !== null && r.discountValue >= min) fail('discountValue', `Скидка ${formatRub(r.discountValue)} не меньше цены самого дешёвого товара акции (${formatRub(min)}): цена стала бы нулевой`);
+    }
+    if (r.published) {
+      const conflict = findPromotionConflict(db, { id: existing?.id ?? null, discountType: r.discountType, priority: r.priority, startsAt: r.startsAt, endsAt: r.endsAt, targets });
+      if (conflict) {
+        fail('priority', `На товар «${conflict.productName}» в те же даты уже действует акция «${conflict.promotionTitle}» с таким же приоритетом. Задайте разный приоритет: применится акция с большим.`);
+      }
+    }
+  },
+  build: (i, existing, { db }) => {
+    const r = promotionRules(i, existing);
+    return {
+      slug: resolveSlug(promotionsRepo, db, i.slug, i.title, existing),
+      title: i.title,
+      h1: nul(i.h1),
+      seoTitle: nul(i.seoTitle),
+      seoDescription: nul(i.seoDescription),
+      summary: nul(i.summary),
+      body: i.body ?? '',
+      conditions: nul(i.conditions),
+      imageAlt: nul(i.imageAlt),
+      promoCode: nul(i.promoCode),
+      startsAt: r.startsAt,
+      endsAt: r.endsAt,
+      published: r.published,
+      sort: i.sort ?? 0,
+      discountType: r.discountType,
+      discountValue: r.discountValue,
+      minSubtotalKopecks: r.minSubtotalKopecks,
+      maxDiscountKopecks: r.maxDiscountKopecks,
+      priority: r.priority,
+      ...(existing ? {} : { createdAt: Date.now() }),
+    };
+  },
+  afterSave: (id, i, existing, { db }) => {
+    if (i.productIds === undefined && i.categoryIds === undefined) return;
+    const current = existing ? promotionsRepo.targets(db, id) : { productIds: [], categoryIds: [] };
+    promotionsRepo.replaceTargets(db, id, { productIds: [...new Set(i.productIds ?? current.productIds)], categoryIds: [...new Set(i.categoryIds ?? current.categoryIds)] });
+  },
+  afterDuplicate: (newId, sourceId, { db }) => promotionsRepo.replaceTargets(db, newId, promotionsRepo.targets(db, sourceId)),
+  duplicate: (row, { db }) => ({
+    slug: copySlug(promotionsRepo, db, row.slug),
+    title: `${row.title} (копия)`.slice(0, 200),
+    h1: row.h1,
+    seoTitle: row.seoTitle,
+    seoDescription: row.seoDescription,
+    summary: row.summary,
+    body: row.body,
+    conditions: row.conditions,
+    imagePath: row.imagePath,
+    imageVariants: row.imageVariants,
+    imageAlt: row.imageAlt,
+    promoCode: null,
+    startsAt: row.startsAt,
+    endsAt: row.endsAt,
+    published: false,
+    sort: row.sort + 1,
+    discountType: row.discountType,
+    discountValue: row.discountValue,
+    minSubtotalKopecks: row.minSubtotalKopecks,
+    maxDiscountKopecks: row.maxDiscountKopecks,
+    priority: row.priority,
+    createdAt: Date.now(),
   }),
 });
 
 // ---------- слайды ----------
-
-const link = z
-  .string()
-  .trim()
-  .max(300, 'Не длиннее 300 символов')
-  .refine((v) => v === '' || (v.startsWith('/') && !v.startsWith('//')) || /^https?:\/\/\S+$/i.test(v), 'Ссылка — путь на сайте (/catalog) или адрес https://…')
-  .optional();
 
 const slideSchema = z.object({
   title: required(120, 'Укажите заголовок'),
@@ -333,67 +368,8 @@ const reviews = makeOps<CompanyReviewRow, CompanyReviewWrite, z.infer<typeof rev
   }),
 });
 
-// ---------- страницы (правка существующих; системные страницы не создаются и не удаляются) ----------
 
-const pageSchema = z.object({
-  title: required(200, 'Укажите название'),
-  slug: required(100, 'Укажите адрес (slug)'),
-  h1: opt(200),
-  seoTitle: opt(200),
-  seoDescription: opt(400),
-  body: opt(50000),
-  legalDraft: flag,
-});
-
-const pageOps = makeOps<PageRow, PageWrite, z.infer<typeof pageSchema> & { image?: ImageInput }>({
-  entity: 'pages',
-  repo: pagesRepo,
-  schema: pageSchema as z.ZodType<z.infer<typeof pageSchema> & { image?: ImageInput }>,
-  hasImage: false,
-  build: (i, existing, { db }) => ({
-    slug: resolveSlug(pagesRepo, db, i.slug, i.title, existing),
-    title: i.title,
-    h1: nul(i.h1),
-    seoTitle: nul(i.seoTitle),
-    seoDescription: nul(i.seoDescription),
-    body: i.body ?? '',
-    legalDraft: i.legalDraft ?? false,
-  }),
-});
-
-const pages = {
-  async save(session: Session, id: number | null, raw: z.infer<typeof pageSchema>, ctx: Ctx = {}): Promise<{ id: number }> {
-    authorize(session);
-    if (id === null) throw new ValidationError('Системные страницы создать нельзя — отредактируйте существующую');
-    return pageOps.save(session, id, raw, ctx);
-  },
-
-  /**
-   * Скрыть (hidden=true) или вернуть страницу на сайт. Право content.write (только admin). Страницу не удаляем:
-   * скрытая даёт 404 и пропадает из меню, подвала и sitemap. Страницы, на которые ссылаются формы (политика ПДн),
-   * скрыть нельзя — ValidationError. Повтор того же — { changed: false } без аудита. Аудит page.visibility.
-   */
-  async setHidden(session: Session, id: unknown, hidden: unknown, ctx: Ctx = {}): Promise<{ changed: boolean }> {
-    authorize(session);
-    const pageIdValue = parse(z.number({ error: 'Страница не найдена' }).int('Страница не найдена').min(1, 'Страница не найдена'), id);
-    const flag = parse(z.boolean({ error: 'Неверное действие' }), hidden);
-    const { db, now } = resolve(ctx);
-    return withTransaction(db, () => {
-      const page = pagesRepo.get(db, pageIdValue);
-      if (!page) throw new NotFoundError('Страница не найдена');
-      if (flag && isPageHideLocked(page)) {
-        throw new ValidationError('Эту страницу скрыть нельзя: на неё ссылаются формы сайта (согласие на обработку персональных данных).');
-      }
-      if (page.hiddenByAdmin === flag) return { changed: false };
-      pagesRepo.setHidden(db, page.id, flag);
-      audit.record(
-        { actorId: session.staffId, actorType: 'staff', action: 'page.visibility', entity: 'content_pages', entityId: page.id, before: { hidden: !flag }, after: { hidden: flag } },
-        { db, now },
-      );
-      return { changed: true };
-    });
-  },
-};
+const pages = pageOps;
 
 // ---------- разделы целиком (новости, акции, услуги) ----------
 
@@ -508,4 +484,5 @@ const settings = {
   },
 };
 
-export const contentOps = { settings, pages, sections, slides, news, services, promotions, reviews };
+
+export const contentOps = { settings, pages, sections, slides, banners: bannerOps, news, newsCategories, services, serviceCategories, promotions, reviews, visibility: visibilityOps };

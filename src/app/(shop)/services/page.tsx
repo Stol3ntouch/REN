@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
-import { isSectionHidden, listPublishedServices } from '@/domain/content/queries';
+import { getServiceCategoryBySlug, isSectionHidden, listPublishedServices, listServiceCategories } from '@/domain/content/queries';
 import { contentMetadata } from '@/domain/content/seo';
 import { ServiceCard } from '@/ui/home/cards';
 import { Placeholder } from '@/ui/placeholder';
@@ -11,13 +12,29 @@ import '@/ui/home/home.css';
 
 export const metadata: Metadata = contentMetadata({ title: 'Ремонт и услуги', fallbackDescription: 'Ремонт садовой техники и другие услуги магазина «РемТехСад».', path: '/services' });
 
-export default async function ServicesPage() {
+export default async function ServicesPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
   await connection();
   if (isSectionHidden('services')) notFound(); // администратор скрыл раздел целиком
-  const services = listPublishedServices();
+  const sp = await searchParams;
+  const categories = listServiceCategories();
+  const category = sp.category ? getServiceCategoryBySlug(sp.category) : null;
+  if (sp.category && !category) notFound();
+  const services = listPublishedServices({ categoryId: category?.id ?? null });
   return (
     <>
-      <h1>Ремонт и услуги</h1>
+      <h1>{category ? `Ремонт и услуги: ${category.name}` : 'Ремонт и услуги'}</h1>
+      {categories.length > 0 ? (
+        <nav className="pager" aria-label="Категории услуг">
+          <Link href="/services" aria-current={category ? undefined : 'page'}>
+            Все
+          </Link>
+          {categories.map((c) => (
+            <Link key={c.id} href={`/services?category=${encodeURIComponent(c.slug)}`} aria-current={category?.id === c.id ? 'page' : undefined}>
+              {c.name} ({c.count})
+            </Link>
+          ))}
+        </nav>
+      ) : null}
       {services.length === 0 ? (
         <EmptyState title="Список услуг появится здесь">
           <p>

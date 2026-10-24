@@ -23,7 +23,7 @@ function maskLogin(login: string): string {
 }
 
 /**
- * Создаёт первого (или ещё одного) администратора. Использование:
+ * Создаёт первого (или ещё одного) суперадминистратора. Использование:
  *   npm run admin:create -- admin@example.ru
  * Пароль: переменная ADMIN_PASSWORD или скрытый ввод. Пароль нигде не печатается и не логируется;
  * email в выводе замаскирован. Возвращает код выхода процесса.
@@ -45,8 +45,8 @@ export async function runAdminCreate(io: AdminCreateIo): Promise<number> {
   }
 
   try {
-    const { staffId } = await createStaff({ email, password, role: 'admin' }, { db: io.db, now: io.now, actor: { id: 'cli', type: 'system' } });
-    io.out(`Администратор создан: ${maskLogin(email.trim().toLowerCase())} (id ${staffId}). Вход: /admin/login`);
+    const { staffId } = await createStaff({ email, password, role: 'super_admin' }, { db: io.db, now: io.now, actor: { id: 'cli', type: 'system' } });
+    io.out(`Суперадминистратор создан: ${maskLogin(email.trim().toLowerCase())} (id ${staffId}). Вход: /admin/login`);
     return 0;
   } catch (e) {
     io.err(e instanceof AppError ? `Не удалось создать администратора: ${e.message}` : 'Не удалось создать администратора: внутренняя ошибка.');

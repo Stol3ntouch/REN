@@ -28,8 +28,8 @@ export default async function AdminOrderPage({ params, searchParams }: Props) {
 
   const events = orderOps.history(session, order.id);
   const staff = orderOps.staffForAssignment(session);
-  const canWrite = hasPermission(session.role, 'orders.write');
-  const canRefund = hasPermission(session.role, REFUND_PERMISSION) && order.isPaid;
+  const canWrite = hasPermission(session, 'orders.write');
+  const canRefund = hasPermission(session, REFUND_PERMISSION) && order.isPaid;
   const nextStatuses = TRANSITIONS[order.status].filter((s) => !MANUAL_BLOCKED.includes(s));
   const canCancel = TRANSITIONS[order.status].includes('cancelled') && !order.isPaid;
   const staffName = new Map(staff.map((s) => [s.id, s.label]));

@@ -155,7 +155,7 @@ describe('товары скрытой категории исчезают с с�
     expect(await getProductBySlug('trimmer-1', { db })).toBeNull();
     expect(await getProductBySlug('benzotrimmer', { db })).toBeNull();
     expect(await getProductBySlug('sekator', { db })).not.toBeNull();
-    expect(await getFacets(trim, { filters: {} }, { db })).toEqual([]);
+    expect((await getFacets(trim, { filters: {} }, { db })).filter((f) => f.kind === 'attribute')).toEqual([]);
     expect(await getRelatedProducts(trimmers[0]!, { db })).toEqual([]);
     expect(sad).toBeGreaterThan(0);
   });

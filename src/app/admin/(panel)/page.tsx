@@ -22,7 +22,7 @@ export default async function AdminOverviewPage({ searchParams }: { searchParams
   const range = parseRange(sp);
   const by = parseBucket(sp.by);
   const view = overviewOps.get(session, range, by);
-  const sections = visibleNav(session.role).filter((i) => i.href !== '/admin');
+  const sections = visibleNav(session).filter((i) => i.href !== '/admin');
   const maxRevenue = Math.max(1, ...(view.series ?? []).map((r) => r.revenueKopecks));
   const requestsTotal = view.requests.repair + view.requests.callback + view.requests.question + view.requests.reviewsPending;
 

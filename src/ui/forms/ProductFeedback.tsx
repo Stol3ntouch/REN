@@ -53,6 +53,12 @@ export function ProductFeedback({ productId }: { productId: number }) {
                       <time dateTime={new Date(r.createdAt).toISOString()}>{DATE.format(new Date(r.createdAt))}</time>
                     </div>
                     <p>{r.body}</p>
+                    {r.adminReply ? (
+                      <div className="admin-reply">
+                        <p className="admin-reply__title">Ответ магазина</p>
+                        <p>{r.adminReply}</p>
+                      </div>
+                    ) : null}
                   </li>
                 ))}
               </ul>

@@ -29,7 +29,7 @@ export default async function AdminIntegrationsPage({ searchParams }: { searchPa
   const session = await requireStaffPage('integrations.read');
   const sp = await searchParams;
   const view = integrationsOps.overview(session);
-  const canRun = hasPermission(session.role, 'integrations.run');
+  const canRun = hasPermission(session, 'integrations.run');
 
   return (
     <>

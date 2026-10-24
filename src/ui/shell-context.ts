@@ -29,6 +29,8 @@ export type ShellContext = {
   catalogLinks?: ShellLink[];
   buyerLinks?: ShellLink[];
   companyLinks?: ShellLink[];
+  /** Полоса над шапкой из баннера позиции top_strip (текст и ссылка — как ввёл администратор). */
+  topStrip?: { text: string; href?: string };
 };
 
 export const DEFAULT_SHELL: ShellContext = { siteName: 'РемТехСад' };

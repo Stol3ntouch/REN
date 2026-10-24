@@ -1,5 +1,6 @@
 import { applyPromo, normalizePromoCode, PROMO_MESSAGES, resolvePrice, type Promo, type PromoError, type PricedCart } from '@/domain/pricing';
 import { formatRub } from '@/domain/pricing/format';
+import { priceLinesWithPromotions } from '@/domain/pricing/promotion-rules';
 import { getDb, withTransaction, type Db } from '@/server/db/connection';
 import { cartsRepo, type CartItemRow, type CartRow } from '@/server/db/repositories/carts';
 import { promosRepo, type PromoRow } from '@/server/db/repositories/promos';
@@ -14,6 +15,10 @@ export type PricedItem = {
   original: number | null;
   available: boolean;
   unavailableReason: 'out_of_stock' | 'unpublished' | null;
+  /** Акция (C08), по которой посчитана цена; null — цена обычная или собственная скидочная. */
+  promotionId: number | null;
+  /** Цена ниже обычной (скидка товара или акция): купоны с excludeOnSale такие позиции пропускают. */
+  onSale: boolean;
 };
 
 export type ComputedCart = {
@@ -39,6 +44,7 @@ function toPromo(p: PromoRow): Promo {
     usedCount: p.usedCount,
     minSubtotalKopecks: p.minSubtotalKopecks,
     enabled: p.enabled,
+    excludeOnSale: p.excludeOnSale,
   };
 }
 
@@ -52,15 +58,27 @@ export function promoErrorMessage(error: PromoError, promo: PromoRow | null): st
 /** Единая точка пересчёта корзины: цены, наличие, сумма, скидка, список изменений. Читает БД, ничего не пишет. */
 export function computeCart(db: Db, cart: CartRow | null, now: number): ComputedCart {
   const rows = cart ? cartsRepo.listItems(db, cart.id) : [];
-  const items: PricedItem[] = rows.map((row) => {
+  const base = rows.map((row) => {
     const price = resolvePrice({ priceKopecks: row.product.priceKopecks, discountPriceKopecks: row.product.discountPriceKopecks });
     const reason = !row.product.published ? 'unpublished' : !row.product.inStock ? 'out_of_stock' : null;
-    return { row, unit: price.unit, original: price.original ?? null, available: reason === null, unavailableReason: reason };
+    return { row, price, reason } as const;
+  });
+  // Акции (C08): цена по акции считается на сервере по доступным позициям; без подходящей акции цена остаётся прежней.
+  const promoPrices = priceLinesWithPromotions(
+    db,
+    base.filter((b) => b.reason === null).map((b) => ({ productId: b.row.productId, listKopecks: b.row.product.priceKopecks, ownKopecks: b.price.unit, qty: b.row.qty })),
+    now,
+  );
+  const items: PricedItem[] = base.map(({ row, price, reason }) => {
+    const promo = promoPrices.get(row.productId);
+    const unit = promo ? promo.unit : price.unit;
+    const original = promo ? promo.original : (price.original ?? null);
+    return { row, unit, original, available: reason === null, unavailableReason: reason, promotionId: promo?.promotionId ?? null, onSale: unit < row.product.priceKopecks };
   });
 
   const available = items.filter((i) => i.available);
   const priced: PricedCart = {
-    items: available.map((i) => ({ productId: i.row.productId, unit: i.unit, qty: i.row.qty })),
+    items: available.map((i) => ({ productId: i.row.productId, unit: i.unit, qty: i.row.qty, onSale: i.onSale })),
     subtotal: available.reduce((sum, i) => sum + i.unit * i.row.qty, 0),
   };
 
@@ -139,6 +157,19 @@ function ensureCart(db: Db, owner: OwnerRef, now: number): CartRow {
   return cartsRepo.findById(db, id)!;
 }
 
+/**
+ * После действия покупателя (добавил, изменил количество, убрал) цена позиции могла стать акционной из-за суммы корзины
+ * (акция с минимальной суммой). Это его собственное действие, а не «изменение цены»: запоминаем новую цену как увиденную.
+ * Изменения, которых покупатель не делал (акция закончилась, админ поменял цену), по-прежнему показываются.
+ */
+function syncPromoSeen(db: Db, cartId: number, now: number): void {
+  const c = cartsRepo.findById(db, cartId);
+  if (!c) return;
+  for (const i of computeCart(db, c, now).items) {
+    if (i.available && i.promotionId !== null && i.unit !== i.row.seenUnitKopecks) cartsRepo.setSeen(db, cartId, i.row.productId, i.unit, i.row.seenInStock);
+  }
+}
+
 const view = (db: Db, owner: OwnerRef, now: number): CartView => computeCart(db, cartsRepo.findByOwner(db, owner), now).view;
 
 export type ApplyPromoResult = { cart: CartView; error?: string; errorCode?: PromoError };
@@ -184,6 +215,7 @@ export const cart = {
         cartsRepo.insertItem(db, { cartId: c.id, productId, qty, seenUnitKopecks: unit, seenInStock: true, now });
       }
       cartsRepo.touch(db, c.id, now);
+      syncPromoSeen(db, c.id, now);
     });
     const result = view(db, owner, now);
     return notice ? { ...result, notice } : result;
@@ -198,6 +230,7 @@ export const cart = {
     const c = cartsRepo.findByOwner(db, owner);
     if (!c || !cartsRepo.setQty(db, c.id, productId, qty)) throw new NotFoundError('Позиции нет в корзине');
     cartsRepo.touch(db, c.id, now);
+    syncPromoSeen(db, c.id, now);
     return view(db, owner, now);
   },
 
@@ -208,6 +241,7 @@ export const cart = {
     if (c) {
       cartsRepo.removeItem(db, c.id, assertProductId(productId));
       cartsRepo.touch(db, c.id, now);
+      syncPromoSeen(db, c.id, now);
     }
     return view(db, owner, now);
   },

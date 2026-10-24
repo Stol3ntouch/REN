@@ -20,9 +20,9 @@ export const overviewOps = {
   get(session: StaffSession | null, range: Period, by: Bucket, opts: { db?: Db; now?: number } = {}): OverviewView {
     if (!session) throw new UnauthorizedError('Требуется вход в админку');
     const o = overview(range, by, opts);
-    const canOrders = hasPermission(session.role, 'orders.read');
-    const canMoney = hasPermission(session.role, 'analytics.read');
-    const canIntegrations = hasPermission(session.role, 'integrations.read');
+    const canOrders = hasPermission(session, 'orders.read');
+    const canMoney = hasPermission(session, 'analytics.read');
+    const canIntegrations = hasPermission(session, 'integrations.read');
     return {
       empty: o.empty,
       orders: canOrders ? { counted: o.summary.ordersCounted, created: o.summary.ordersCreated } : null,

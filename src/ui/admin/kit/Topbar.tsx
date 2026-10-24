@@ -40,7 +40,7 @@ export function Topbar({
           <span className="visually-hidden"> (откроется в новой вкладке)</span>
         </a>
         {features.notifications ? <NotificationBell unread={unreadNotifications} /> : null}
-        <UserMenu initial={initialOf(session.name, session.email)} name={displayName} roleLabel={roleLabel(session.role)} logout={logout} />
+        <UserMenu initial={initialOf(session.name, session.email)} name={displayName} roleLabel={session.roleName ?? roleLabel(session.role)} logout={logout} />
       </div>
     </header>
   );

@@ -20,7 +20,7 @@ import type { Actor, Opts, Order, OrderEvent } from './types';
 export const REFUND_PERMISSION: Permission = 'settings.write';
 export const ORDERS_PAGE_SIZE = 30;
 
-const actorOf = (s: StaffSession): Actor => ({ type: 'staff', staffId: s.staffId, role: s.role });
+const actorOf = (s: StaffSession): Actor => ({ type: 'staff', staffId: s.staffId, role: s.role, permissions: s.permissions });
 
 export type OrderFilters = {
   q?: string;
@@ -147,6 +147,8 @@ const promoSchema = z
     usageLimit: z.number().int('Лимит — целое число').positive('Лимит должен быть больше нуля').nullable(),
     minSubtotalKopecks: z.number().int().min(0, 'Минимальная сумма не может быть отрицательной'),
     enabled: z.boolean(),
+    /** C08: купон не действует на позиции по акции и со скидкой. */
+    excludeOnSale: z.boolean().optional(),
   })
   .refine((v) => v.type !== 'percent' || v.value <= 100, { path: ['value'], message: 'Процент — от 1 до 100' })
   .refine((v) => v.startsAt === null || v.endsAt === null || v.startsAt <= v.endsAt, {
@@ -173,6 +175,7 @@ const promoSnapshot = (p: PromoRow | PromoWrite) => ({
   usageLimit: p.usageLimit,
   minSubtotalKopecks: p.minSubtotalKopecks,
   enabled: p.enabled,
+  excludeOnSale: p.excludeOnSale ?? false,
 });
 
 function isUnique(e: unknown): boolean {

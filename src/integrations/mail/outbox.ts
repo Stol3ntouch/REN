@@ -59,7 +59,7 @@ export function resolveRecipients(db: Db, audience: OutboxAudience): string[] {
   if (audience === 'admin') {
     return staffAdminRepo
       .list(db)
-      .filter((s) => s.role === 'admin' && s.active)
+      .filter((s) => (s.role === 'admin' || s.role === 'super_admin') && s.active)
       .map((s) => s.email);
   }
   return [];

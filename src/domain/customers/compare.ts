@@ -73,7 +73,7 @@ export const compare = {
     const attrs = products.map((p) => {
       const m = new Map<string, string>();
       // повтор одного имени у товара — берём первое значение
-      for (const a of attributesRepo.listByProduct(db, p.id)) if (!m.has(a.name)) m.set(a.name, a.value);
+      for (const a of attributesRepo.listByProduct(db, p.id, { comparableOnly: true })) if (!m.has(a.name)) m.set(a.name, a.value);
       return m;
     });
     const names: string[] = [];

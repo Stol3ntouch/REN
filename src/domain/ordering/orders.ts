@@ -91,7 +91,7 @@ function cleanNote(note: string | undefined): string | null {
 
 /** Права по роли, которые не выражены таблицей переходов. Бросает ForbiddenError. */
 function assertActorMayMove(actor: Actor, to: OrderStatus, viaRefund = false): void {
-  if (actor.type === 'staff' && !hasPermission(actor.role, 'orders.write')) {
+  if (actor.type === 'staff' && !hasPermission(actor, 'orders.write')) {
     throw new ForbiddenError('Недостаточно прав для смены статуса заказа');
   }
   // R41.1: «оплачен» / «ошибка оплаты» — только по проверенному webhook (система), не руками и не возвратом браузера.
@@ -260,7 +260,7 @@ export const orders = {
   assign(orderId: number, staffId: number | null, actor: Actor, opts: Opts = {}): Order {
     const db = opts.db ?? getDb();
     const now = opts.now ?? Date.now();
-    if (actor.type !== 'staff' || !hasPermission(actor.role, 'orders.write')) throw new ForbiddenError('Недостаточно прав');
+    if (actor.type !== 'staff' || !hasPermission(actor, 'orders.write')) throw new ForbiddenError('Недостаточно прав');
     return withTransaction(db, () => {
       const row = ordersRepo.findById(db, orderId);
       if (!row) throw new NotFoundError('Заказ не найден');
@@ -297,7 +297,7 @@ export const orders = {
   addNote(orderId: number, text: string, actor: Actor, opts: Opts = {}): void {
     const db = opts.db ?? getDb();
     const now = opts.now ?? Date.now();
-    if (actor.type !== 'staff' || !hasPermission(actor.role, 'orders.write')) throw new ForbiddenError('Недостаточно прав');
+    if (actor.type !== 'staff' || !hasPermission(actor, 'orders.write')) throw new ForbiddenError('Недостаточно прав');
     const note = cleanNote(text);
     if (!note) throw new ValidationError('Введите текст заметки');
     withTransaction(db, () => {

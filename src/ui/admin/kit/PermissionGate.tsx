@@ -2,8 +2,8 @@ import type { ReactNode } from 'react';
 import { hasPermission, type Permission, type StaffSession } from '@/domain/admin/permissions';
 
 /** Может ли сотрудник выполнить действие. Только удобство интерфейса: сервер проверяет право сам (requirePermission). */
-export function can(session: Pick<StaffSession, 'role'> | null | undefined, permission: Permission): boolean {
-  return !!session && hasPermission(session.role, permission);
+export function can(session: Pick<StaffSession, 'role' | 'permissions'> | null | undefined, permission: Permission): boolean {
+  return !!session && hasPermission(session, permission);
 }
 
 /**
@@ -16,7 +16,7 @@ export function PermissionGate({
   fallback = null,
   children,
 }: {
-  session: Pick<StaffSession, 'role'> | null | undefined;
+  session: Pick<StaffSession, 'role' | 'permissions'> | null | undefined;
   permission: Permission;
   fallback?: ReactNode;
   children: ReactNode;

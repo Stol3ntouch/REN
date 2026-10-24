@@ -1,4 +1,5 @@
 import { trustProxyWarning } from '@/server/config';
+import { rolesService } from '@/domain/admin/roles';
 import { setPopularitySource } from '@/domain/catalog/popularity';
 import { NOT_COUNTED_STATUSES } from '@/domain/ordering/status';
 import { connectMail } from '@/integrations/mail';
@@ -21,6 +22,8 @@ export function connectApp(o: { startMailWorker?: boolean } = {}): void {
   if (process.env.NEXT_PHASE === 'phase-production-build') return;
   const proxyWarning = trustProxyWarning();
   if (proxyWarning) console.warn(proxyWarning);
+  // Системные роли на месте (идемпотентно: правки прав администратором не затираются).
+  rolesService.ensureSystemRoles();
   connectPaymentRunLog();
   setPopularitySource(() => popularitySql());
   registerPaymentProvider();

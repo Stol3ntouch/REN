@@ -17,7 +17,7 @@ export default async function AdminCategorySeoPage({ params, searchParams }: { p
   const id = Number(rawId);
   const category = Number.isInteger(id) ? categorySeoOps.get(session, id) : null;
   if (!category) notFound();
-  const canEdit = hasPermission(session.role, 'catalog.write');
+  const canEdit = hasPermission(session, 'catalog.write');
 
   return (
     <>

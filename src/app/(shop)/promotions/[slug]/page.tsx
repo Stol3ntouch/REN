@@ -4,6 +4,10 @@ import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
 import { getPublishedPromotion, isPromotionActiveNow } from '@/domain/content/queries';
 import { contentMetadata, plainExcerpt } from '@/domain/content/seo';
+import { formatRub } from '@/domain/pricing/format';
+import { promotionPrice } from '@/domain/pricing/promotion-rules';
+import { getDb } from '@/server/db/connection';
+import { promotionsRepo } from '@/server/db/repositories/promotions';
 import { formatDate } from '@/ui/home/format';
 import { RichText } from '@/ui/home/RichText';
 import '@/ui/home/home.css';
@@ -29,6 +33,7 @@ export default async function PromotionPage({ params }: Props) {
   const item = getPublishedPromotion((await params).slug);
   if (!item) notFound();
   const active = isPromotionActiveNow(item);
+  const products = active && item.discountType !== 'none' ? promotionsRepo.participatingProducts(getDb(), promotionsRepo.targets(getDb(), item.id), 24, 0) : [];
   return (
     <article className="content-article">
       <h1>{item.h1 || item.title}</h1>
@@ -49,6 +54,35 @@ export default async function PromotionPage({ params }: Props) {
       ) : null}
       {item.summary ? <p>{item.summary}</p> : null}
       <RichText text={item.body} />
+      {item.conditions ? (
+        <section aria-labelledby="promo-conditions">
+          <h2 id="promo-conditions">Условия акции</h2>
+          <p>{item.conditions}</p>
+        </section>
+      ) : null}
+      {active && item.discountType !== 'none' && products.length > 0 ? (
+        <section aria-labelledby="promo-products">
+          <h2 id="promo-products">Товары по акции</h2>
+          {item.minSubtotalKopecks > 0 ? <p>Акция действует, если сумма товаров в корзине от {formatRub(item.minSubtotalKopecks)}.</p> : null}
+          <ul className="promo-products">
+            {products.map((p) => {
+              const price = promotionPrice(p.priceKopecks, item);
+              return (
+                <li key={p.id}>
+                  <Link href={`/product/${p.slug}`}>{p.name}</Link>{' '}
+                  {price !== null ? (
+                    <>
+                      <s>{formatRub(p.priceKopecks)}</s> <strong>{formatRub(price)}</strong>
+                    </>
+                  ) : (
+                    formatRub(p.priceKopecks)
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
       {active && item.promoCode ? (
         <div className="promo-code-box">
           <span>Промокод</span>

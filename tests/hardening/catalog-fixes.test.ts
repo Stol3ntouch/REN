@@ -95,7 +95,7 @@ describe('дерево категорий читается один раз на 
     expect(spy.mock.calls.length).toBeLessThanOrEqual(1);
     // результат страницы не меняется
     expect(result.total).toBe(3);
-    expect(facets.map((f) => f.name)).toEqual(['Тип']);
+    expect(facets.filter((f) => f.kind === 'attribute').map((f) => f.name)).toEqual(['Тип']);
     expect(tree[0]?.children.map((c) => c.slug)).toEqual(['trim', 'kosilki']);
     expect(crumbs.map((c) => c.name)).toEqual(['Садовая техника', 'Триммеры']);
     expect(siblings.map((s) => s.slug)).toEqual(['kosilki']);

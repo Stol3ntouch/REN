@@ -1,79 +1,89 @@
 import { Fragment, type ReactNode } from 'react';
+import { parseBody, parseInline, type Block, type Inline } from '@/domain/content/markup';
 import { Placeholder } from '../placeholder';
 
 /**
- * Текст страниц и записей из админки. Это не HTML: разметка не выполняется (нет XSS), только:
- * пустая строка — новый абзац, «## » — подзаголовок, строки с «- » — список,
- * «[МЕТКА — впиши]» — заметная метка-заглушка.
+ * Текст страниц и записей из админки. Это не HTML: разметка не выполняется (нет XSS). Синтаксис и список допустимых
+ * ссылок/картинок — в domain/content/markup.ts: заголовки (## … ####), абзацы, **жирный**, *курсив*, [ссылки](…),
+ * списки (- и 1.), цитаты (>), разделитель (---), изображения из хранилища загрузок и метки «[… — впиши]».
+ * Любой другой текст, включая теги, выводится как обычный экранированный текст.
  */
-const LABEL = /\[([^\]\n]+?) — (впиши|загрузи)\]/g;
-
-function inline(text: string): ReactNode[] {
-  const out: ReactNode[] = [];
-  let last = 0;
-  for (const m of text.matchAll(LABEL)) {
-    const at = m.index ?? 0;
-    if (at > last) out.push(text.slice(last, at));
-    out.push(<Placeholder key={at} label={m[1] as string} verb={m[2] as 'впиши' | 'загрузи'} />);
-    last = at + m[0].length;
-  }
-  if (last < text.length) out.push(text.slice(last));
-  return out;
+function renderInline(nodes: Inline[]): ReactNode[] {
+  return nodes.map((n, i) => {
+    switch (n.t) {
+      case 'text':
+        return <Fragment key={i}>{n.v}</Fragment>;
+      case 'br':
+        return <br key={i} />;
+      case 'strong':
+        return <strong key={i}>{renderInline(n.c)}</strong>;
+      case 'em':
+        return <em key={i}>{renderInline(n.c)}</em>;
+      case 'link': {
+        const external = /^https?:/i.test(n.href);
+        return (
+          <a key={i} href={n.href} {...(external ? { rel: 'noopener noreferrer nofollow', target: '_blank' } : {})}>
+            {renderInline(n.c)}
+          </a>
+        );
+      }
+      case 'label':
+        return <Placeholder key={i} label={n.label} verb={n.verb} />;
+    }
+  });
 }
 
-function lines(block: string): ReactNode[] {
-  return block.split('\n').map((line, i, all) => (
-    <Fragment key={i}>
-      {inline(line)}
-      {i < all.length - 1 ? <br /> : null}
-    </Fragment>
-  ));
+function renderBlock(b: Block, i: number): ReactNode {
+  switch (b.t) {
+    case 'heading': {
+      const Tag = `h${b.level}` as 'h2' | 'h3' | 'h4';
+      return <Tag key={i}>{renderInline(b.c)}</Tag>;
+    }
+    case 'paragraph':
+      return <p key={i}>{renderInline(b.c)}</p>;
+    case 'quote':
+      return <blockquote key={i}>{renderInline(b.c)}</blockquote>;
+    case 'list': {
+      const Tag = b.ordered ? 'ol' : 'ul';
+      return (
+        <Tag key={i}>
+          {b.items.map((it, j) => (
+            <li key={j}>{renderInline(it)}</li>
+          ))}
+        </Tag>
+      );
+    }
+    case 'image':
+      return (
+        <figure key={i} className="content-figure">
+          {/* eslint-disable-next-line @next/next/no-img-element -- локальный файл из хранилища загрузок, адрес проверен markup.safeImageSrc */}
+          <img src={b.src} alt={b.alt} loading="lazy" decoding="async" />
+          {b.alt ? <figcaption>{b.alt}</figcaption> : null}
+        </figure>
+      );
+    case 'rule':
+      return <hr key={i} />;
+  }
 }
 
 export function RichText({ text, className }: { text: string; className?: string }) {
-  const blocks = text
-    .replace(/\r\n/g, '\n')
-    .split(/\n{2,}/)
-    .map((b) => b.trim())
-    .filter((b) => b !== '');
-  return (
-    <div className={className ?? 'rich-text'}>
-      {blocks.map((block, i) => {
-        if (block.startsWith('## ')) return <h2 key={i}>{inline(block.slice(3).split('\n')[0] as string)}</h2>;
-        const rows = block.split('\n');
-        if (rows.every((r) => r.startsWith('- '))) {
-          return (
-            <ul key={i}>
-              {rows.map((r, j) => (
-                <li key={j}>{inline(r.slice(2))}</li>
-              ))}
-            </ul>
-          );
-        }
-        // «## Заголовок» в начале блока и текст следом
-        if (rows[0]?.startsWith('## ')) {
-          return (
-            <Fragment key={i}>
-              <h2>{inline(rows[0].slice(3))}</h2>
-              <p>{lines(rows.slice(1).join('\n'))}</p>
-            </Fragment>
-          );
-        }
-        return <p key={i}>{lines(block)}</p>;
-      })}
-    </div>
-  );
+  return <div className={className ?? 'rich-text'}>{parseBody(text).map(renderBlock)}</div>;
 }
 
-/** Первые абзацы текста до max символов (для анонсов). Метки не режутся посередине. */
+/** Строка как строчная разметка (для коротких подписей с метками). */
+export function InlineText({ text }: { text: string }) {
+  return <>{renderInline(parseInline(text))}</>;
+}
+
+/** Первые абзацы текста до max символов (для анонсов): заголовки, списки, картинки и разделители пропускаются. */
 export function excerptText(text: string, max = 450): string {
-  const blocks = text
+  const paragraphs = text
     .replace(/\r\n/g, '\n')
     .split(/\n{2,}/)
     .map((b) => b.trim())
-    .filter((b) => b !== '' && !b.startsWith('## '));
+    .filter((b) => b !== '' && !/^(#{2,4} |[-*] |\d{1,3}\. |> |!\[|---)/.test(b));
   let out = '';
-  for (const b of blocks) {
+  for (const b of paragraphs) {
     if (out !== '' && out.length + b.length > max) break;
     out = out === '' ? b : `${out}\n\n${b}`;
     if (out.length >= max) break;

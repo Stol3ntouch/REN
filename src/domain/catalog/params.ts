@@ -9,6 +9,21 @@ const MAX_ATTRS = 12;
 const MAX_VALUES_PER_ATTR = 30;
 const MAX_VALUE_LENGTH = 200;
 const ATTR_KEY = /^a(\d{1,9})$/;
+const RANGE_KEY = /^a(\d{1,9})_(min|max)$/;
+const SLUG_VALUE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const MAX_SLUGS = 30;
+
+/** «1200», «3,5», «-2.25» → число; иначе undefined. */
+function rangeNumber(v: string): number | undefined {
+  const s = v.trim().replace(',', '.');
+  if (!/^-?\d{1,12}(\.\d{1,6})?$/.test(s)) return undefined;
+  return Number(s);
+}
+
+/** Число для адреса. */
+function numberParam(n: number): string {
+  return String(n);
+}
 
 function entries(raw: RawParams): [string, string][] {
   if (raw instanceof URLSearchParams) return [...raw.entries()];
@@ -55,7 +70,26 @@ export function parseCatalogParams(raw: RawParams, base: { categorySlug?: string
     if (values.length < MAX_VALUES_PER_ATTR && !values.includes(v)) values.push(v);
   }
 
+  const ranges: Record<string, { min?: number; max?: number }> = {};
+  const brands: string[] = [];
+  const subcategories: string[] = [];
+  for (const [k, v] of list) {
+    const m = RANGE_KEY.exec(k);
+    if (m) {
+      const n = rangeNumber(v);
+      const id = m[1] as string;
+      if (n === undefined || (!(id in ranges) && Object.keys(ranges).length >= MAX_ATTRS)) continue;
+      (ranges[id] ??= {})[m[2] as 'min' | 'max'] ??= n;
+    } else if ((k === 'brand' || k === 'sub') && SLUG_VALUE.test(v) && v.length <= 100) {
+      const target = k === 'brand' ? brands : subcategories;
+      if (target.length < MAX_SLUGS && !target.includes(v)) target.push(v);
+    }
+  }
+
   const q: CatalogQuery = { filters, sort, page };
+  if (Object.keys(ranges).length > 0) q.ranges = ranges;
+  if (brands.length > 0) q.brands = brands;
+  if (subcategories.length > 0) q.subcategories = subcategories;
   if (base.categorySlug) q.categorySlug = base.categorySlug;
   if (text !== '') q.text = text;
   const priceMin = rublesToKopecks(first(list, 'min'));
@@ -78,5 +112,11 @@ export function buildCatalogQueryString(q: CatalogQuery, overrides: Partial<Cata
   if (m.priceMax !== undefined) p.set('max', String(Math.floor(m.priceMax / 100)));
   if (m.inStockOnly) p.set('stock', '1');
   for (const [id, values] of Object.entries(m.filters)) for (const v of values) p.append(`a${id}`, v);
+  for (const [id, r] of Object.entries(m.ranges ?? {})) {
+    if (r.min !== undefined) p.set(`a${id}_min`, numberParam(r.min));
+    if (r.max !== undefined) p.set(`a${id}_max`, numberParam(r.max));
+  }
+  for (const b of m.brands ?? []) p.append('brand', b);
+  for (const c of m.subcategories ?? []) p.append('sub', c);
   return p.toString();
 }

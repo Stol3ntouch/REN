@@ -25,13 +25,13 @@ function run(over: Partial<Parameters<typeof runAdminCreate>[0]> & { argv: strin
 }
 
 describe('npm run admin:create', () => {
-  it('email из аргумента, пароль из ADMIN_PASSWORD: создаёт admin, пароль не печатается, вход работает', async () => {
+  it('email из аргумента, пароль из ADMIN_PASSWORD: создаёт суперадмина, пароль не печатается, вход работает', async () => {
     const { db, lines, errs, done } = run({ argv: ['Boss@Shop.test'], env: { ADMIN_PASSWORD: SECRET } });
     expect(await done).toBe(0);
 
-    const row = db.prepare('SELECT email, role, password_hash FROM staff').get() as { email: string; role: string; password_hash: string };
+    const row = db.prepare('SELECT s.email, r.code AS role, s.password_hash FROM staff s JOIN roles r ON r.id = s.role_id').get() as { email: string; role: string; password_hash: string };
     expect(row.email).toBe('boss@shop.test');
-    expect(row.role).toBe('admin');
+    expect(row.role).toBe('super_admin');
     expect(row.password_hash).not.toContain(SECRET);
     expect(await verifyPassword(SECRET, row.password_hash)).toBe(true);
 

@@ -1,107 +1,94 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import { DataTable, FilterPanel, FormField, PageHeader, Pagination, SelectField, StatusBadge, parseListParams, type DataTableColumn } from '@/ui/admin/kit';
+import { FlashToast } from '@/ui/admin/kit/Toaster';
 import { requireStaffPage } from '@/ui/admin/guard';
+import { getDb } from '@/server/db/connection';
+import { rolesRepo } from '@/server/db/repositories/roles';
+import type { StaffListRow } from '@/server/db/repositories/staff-admin';
 import { staffOps } from '../_lib/staff-ops';
-import { ACCESS_NAV, Flash, fmtTime, str, SubNav } from '../_lib/ui';
-import { createStaffAction, setActiveAction, setRoleAction } from './actions';
+import { fmtTime, str } from '../_lib/ui';
 
-export const metadata: Metadata = { title: 'Сотрудники' };
+export const metadata: Metadata = { title: 'Пользователи' };
 export const dynamic = 'force-dynamic';
 
-const ROLE_LABELS = { admin: 'администратор', manager: 'менеджер' } as const;
+const SORTS = ['login', 'name', 'role', 'created', 'last_login'] as const;
 
 export default async function AdminStaffPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const session = await requireStaffPage('staff.manage');
+  const session = await requireStaffPage('users.manage');
   const sp = await searchParams;
-  const staff = staffOps.list(session);
+  const lp = parseListParams(sp, { sorts: SORTS, defaultSort: 'login' });
+  const roleId = Number(str(sp.role));
+  const status = str(sp.status);
+  const { rows, total } = staffOps.search(session, {
+    q: lp.q,
+    roleId: Number.isInteger(roleId) && roleId > 0 ? roleId : undefined,
+    active: status === 'active' ? true : status === 'blocked' ? false : undefined,
+    sort: (lp.sort ?? 'login') as (typeof SORTS)[number],
+    dir: lp.dir,
+    limit: lp.pageSize,
+    offset: (lp.page - 1) * lp.pageSize,
+  });
+  const roles = rolesRepo.list(getDb());
+
+  const columns: DataTableColumn<StaffListRow>[] = [
+    {
+      key: 'login',
+      header: 'Пользователь',
+      sortKey: 'login',
+      cell: (s) => (
+        <>
+          <Link href={`/admin/staff/${s.id}`}>
+            <strong>{s.name || s.email}</strong>
+          </Link>
+          {s.name ? <div className="ak-field__hint">{s.email}</div> : null}
+        </>
+      ),
+    },
+    { key: 'role', header: 'Роль', sortKey: 'role', cell: (s) => s.roleName },
+    { key: 'status', header: 'Статус', cell: (s) => <StatusBadge tone={s.active ? 'success' : 'danger'}>{s.active ? 'Активен' : 'Заблокирован'}</StatusBadge> },
+    { key: 'last', header: 'Последний вход', sortKey: 'last_login', hideOnNarrow: true, cell: (s) => fmtTime(s.lastLoginAt) },
+    { key: 'created', header: 'Создан', sortKey: 'created', hideOnNarrow: true, cell: (s) => fmtTime(s.createdAt) },
+  ];
 
   return (
     <>
-      <h1>Сотрудники</h1>
-      <SubNav items={ACCESS_NAV} current="/admin/staff" />
-      <Flash ok={str(sp.ok)} error={str(sp.error)} okText="Сохранено." />
-      <div className="adm-table-wrap">
-        <table className="adm-table">
-          <caption className="visually-hidden">Сотрудники и роли</caption>
-          <thead>
-            <tr>
-              <th scope="col">Email</th>
-              <th scope="col">Имя</th>
-              <th scope="col">Роль</th>
-              <th scope="col">Статус</th>
-              <th scope="col">Последний вход</th>
-              <th scope="col">Действия</th>
-            </tr>
-          </thead>
-          <tbody>
-            {staff.map((s) => (
-              <tr key={s.id}>
-                <td>{s.email}</td>
-                <td>{s.name ?? '—'}</td>
-                <td>{ROLE_LABELS[s.role]}</td>
-                <td>
-                  <span className={`ops-badge ${s.active ? 'ops-badge--ok' : 'ops-badge--error'}`}>{s.active ? 'активен' : 'заблокирован'}</span>
-                </td>
-                <td>{fmtTime(s.lastLoginAt)}</td>
-                <td>
-                  <div className="adm-inline">
-                    <form action={setRoleAction} className="adm-inline">
-                      <input type="hidden" name="id" value={s.id} />
-                      <label className="visually-hidden" htmlFor={`role-${s.id}`}>
-                        Роль для {s.email}
-                      </label>
-                      <select id={`role-${s.id}`} name="role" defaultValue={s.role}>
-                        <option value="admin">администратор</option>
-                        <option value="manager">менеджер</option>
-                      </select>
-                      <button type="submit" className="button button--outline">
-                        Сменить роль
-                      </button>
-                    </form>
-                    <form action={setActiveAction}>
-                      <input type="hidden" name="id" value={s.id} />
-                      <input type="hidden" name="active" value={s.active ? '0' : '1'} />
-                      <button type="submit" className="button button--outline" aria-label={`${s.active ? 'Заблокировать' : 'Разблокировать'} ${s.email}`}>
-                        {s.active ? 'Заблокировать' : 'Разблокировать'}
-                      </button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <p className="ops-muted">Последнего администратора нельзя понизить или заблокировать; себя заблокировать нельзя. Блокировка сразу закрывает сессии.</p>
-
-      <form action={createStaffAction} className="adm-card" aria-label="Новый сотрудник">
-        <h2>Новый сотрудник</h2>
-        <div className="adm-filters">
-          <div className="adm-field">
-            <label htmlFor="st-email">Email</label>
-            <input id="st-email" name="email" type="email" required maxLength={254} autoComplete="off" />
-          </div>
-          <div className="adm-field">
-            <label htmlFor="st-name">Имя</label>
-            <input id="st-name" name="name" maxLength={100} autoComplete="off" />
-          </div>
-          <div className="adm-field">
-            <label htmlFor="st-pass">Пароль (не короче 10 символов)</label>
-            <input id="st-pass" name="password" type="password" required minLength={10} autoComplete="new-password" />
-          </div>
-          <div className="adm-field">
-            <label htmlFor="st-role">Роль</label>
-            <select id="st-role" name="role" defaultValue="manager">
-              <option value="manager">менеджер</option>
-              <option value="admin">администратор</option>
-            </select>
-          </div>
-        </div>
-        <div className="adm-inline">
-          <button type="submit" className="button">
-            Создать
-          </button>
-        </div>
-      </form>
+      <PageHeader
+        title="Пользователи"
+        description="Сотрудники админки: роли, блокировка и сброс пароля"
+        actions={
+          <Link href="/admin/staff/new" className="ak-btn ak-btn--primary">
+            Добавить пользователя
+          </Link>
+        }
+      />
+      <FlashToast ok={str(sp.ok)} error={str(sp.error)} okText="Сохранено." />
+      <FilterPanel basePath="/admin/staff" params={sp}>
+        <FormField name="q" label="Поиск" defaultValue={lp.q} placeholder="Логин или имя" maxLength={100} />
+        <SelectField name="role" label="Роль" defaultValue={str(sp.role)} placeholder="Все роли" options={roles.map((r) => ({ value: String(r.id), label: r.name }))} />
+        <SelectField
+          name="status"
+          label="Статус"
+          defaultValue={status}
+          placeholder="Любой"
+          options={[
+            { value: 'active', label: 'Активные' },
+            { value: 'blocked', label: 'Заблокированные' },
+          ]}
+        />
+      </FilterPanel>
+      <DataTable
+        caption="Сотрудники"
+        columns={columns}
+        rows={rows}
+        rowKey={(s) => s.id}
+        basePath="/admin/staff"
+        params={sp}
+        sort={lp.sort}
+        dir={lp.dir}
+        empty={{ title: 'Никого не найдено', description: 'Измените условия поиска или добавьте пользователя.' }}
+        footer={<Pagination page={lp.page} pageSize={lp.pageSize} total={total} basePath="/admin/staff" params={sp} />}
+      />
     </>
   );
 }

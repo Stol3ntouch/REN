@@ -488,3 +488,17 @@
     font-size: 0.9375rem;
   }
 }
+
+/* Полоса над шапкой (баннер top_strip, C08) */
+.top-strip {
+  background: var(--brand-dark);
+  color: #ffffff;
+  text-align: center;
+  font-size: 0.9rem;
+  padding: 0.4rem 1rem;
+}
+
+.top-strip a {
+  color: inherit;
+  text-decoration: underline;
+}

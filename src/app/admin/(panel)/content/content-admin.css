@@ -92,3 +92,42 @@
   flex-wrap: wrap;
   gap: var(--space-2);
 }
+
+/* C08: действия в строках списков, ответы на отзывы, выбор товаров, версии страниц */
+.ak-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: flex-end;
+}
+
+.ak-row-actions form {
+  margin: 0;
+}
+
+.ak-reply {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  max-width: 36rem;
+}
+
+.ak-review-text {
+  margin: 0.25rem 0;
+  max-width: 48rem;
+}
+
+.ak-picker__found,
+.ak-picker__picked,
+.ak-versions {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.ak-content-form {
+  display: grid;
+  gap: 1rem;
+}

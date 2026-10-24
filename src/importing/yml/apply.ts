@@ -3,12 +3,13 @@ import { safeFetchImage } from '@/media/safe-fetch';
 import { storeImage, type StoredImage } from '@/media/store-image';
 import { withTransaction, type Db } from '@/server/db/connection';
 import { attributesRepo } from '@/server/db/repositories/attributes';
+import { brandsRepo } from '@/server/db/repositories/brands';
 import { categoriesRepo } from '@/server/db/repositories/categories';
 import { imagesRepo } from '@/server/db/repositories/images';
 import { importRunsRepo } from '@/server/db/repositories/import-runs';
 import { productsRepo, type ProductPatch } from '@/server/db/repositories/products';
 import { categorySlugBase, diffProduct, productSlugBase } from './plan';
-import { uniqueSlug } from './slug';
+import { slugify, uniqueSlug } from './slug';
 import { YML_SOURCE, type ImportPlan, type ImportReport, type RowError } from './types';
 
 export type ImageIngestOptions = {
@@ -25,6 +26,27 @@ export type ApplyOptions = {
   /** Скачивать фото (по умолчанию нет: хранится только url_source). */
   images?: false | ImageIngestOptions;
 };
+
+/**
+ * Бренд товара — только из данных файла (<vendor>). Бренд ищется по названию без учёта регистра, иначе создаётся (source=yml).
+ * Бренд, назначенный администратором вручную (не из импорта), не перезаписывается; нет <vendor> — ничего не меняется.
+ */
+function bindBrand(db: Db, productId: number, vendor: string | null | undefined, takenSlugs: Set<string>, nowIso: string): void {
+  const name = (vendor ?? '').trim();
+  if (name === '') return;
+  let brand = brandsRepo.findByName(db, name);
+  if (!brand) {
+    const key = name.toLowerCase();
+    const slug = uniqueSlug(slugify(name) || 'brand', slugify(name) || key, takenSlugs);
+    const id = brandsRepo.insert(db, { name, slug, description: null, siteUrl: null, published: true, sort: 0, seoTitle: null, seoDescription: null, source: YML_SOURCE, externalId: key }, nowIso);
+    brand = brandsRepo.findById(db, id);
+  }
+  if (!brand) return;
+  const current = brandsRepo.getProductBrandId(db, productId);
+  if (current === brand.id) return;
+  if (current != null && brandsRepo.findById(db, current)?.source !== YML_SOURCE) return;
+  brandsRepo.setProductBrand(db, productId, brand.id);
+}
 
 function errorText(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
@@ -98,6 +120,7 @@ export async function applyImport(plan: ImportPlan, db: Db, opts: ApplyOptions =
 
     // --- товары
     const takenProductSlugs = productsRepo.allSlugs(db);
+    const takenBrandSlugs = brandsRepo.allSlugs(db);
     for (const pp of plan.products) {
       const offer = pp.data;
       try {
@@ -122,12 +145,14 @@ export async function applyImport(plan: ImportPlan, db: Db, opts: ApplyOptions =
             });
             attributesRepo.replaceForProduct(db, id, offer.attributes);
             imagesRepo.replaceForProduct(db, id, offer.pictures, offer.name);
+            bindBrand(db, id, offer.vendor, takenBrandSlugs, nowIso);
             touchedProducts.set(id, offer.externalId);
             report.products.created++;
             return;
           }
 
           touchedProducts.set(existing.id, offer.externalId);
+          bindBrand(db, existing.id, offer.vendor, takenBrandSlugs, nowIso);
           // Решение принимается по текущему состоянию БД (план мог устареть) и актуальному locked_fields.
           const diff = diffProduct(db, existing, offer);
           report.products.lockedFieldsSkipped += diff.lockedSkipped.length;

@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { getFacets } from '@/domain/catalog/facets';
 import { searchProducts } from '@/domain/catalog/search';
+import type { Facet } from '@/domain/catalog/types';
 import { addCategory, addProduct, attributeId, baseQuery, createTestDb } from './helpers';
+
+/** Панель теперь включает цену и наличие; прежние проверки касаются фильтров характеристик. */
+const attrs = (facets: Facet[]) => facets.filter((f) => f.kind === 'attribute');
 
 describe('getFacets: правило ≥3 товара и ≤30 значений', () => {
   it('характеристика у двух товаров категории фильтром не становится, у трёх — становится', async () => {
@@ -13,7 +17,7 @@ describe('getFacets: правило ≥3 товара и ≤30 значений'
     addProduct(db, { name: 'Без характеристик', categoryId: cat });
     // «Редкая» есть у всех трёх; уберём её у одного, чтобы осталось 2
     db.exec(`DELETE FROM product_attributes WHERE id IN (SELECT pa.id FROM product_attributes pa JOIN attribute_definitions d ON d.id = pa.attribute_id WHERE d.name = 'Редкая' LIMIT 1)`);
-    const facets = await getFacets(cat, undefined, { db });
+    const facets = attrs(await getFacets(cat, undefined, { db }));
     expect(facets.map((f) => f.name)).toEqual(['Тип']);
     expect(facets[0]?.values).toEqual([
       { value: 'Бензиновый', count: 1 },
@@ -29,8 +33,8 @@ describe('getFacets: правило ≥3 товара и ≤30 значений'
       addProduct(db, { name: `A${i}`, categoryId: thirtyOne, attrs: { Размер: `v${i}` } });
       if (i < 30) addProduct(db, { name: `B${i}`, categoryId: thirty, attrs: { Размер: `v${i}` } });
     }
-    expect((await getFacets(thirty, undefined, { db })).map((f) => f.name)).toEqual(['Размер']);
-    expect(await getFacets(thirtyOne, undefined, { db })).toEqual([]);
+    expect(attrs(await getFacets(thirty, undefined, { db })).map((f) => f.name)).toEqual(['Размер']);
+    expect(attrs(await getFacets(thirtyOne, undefined, { db }))).toEqual([]);
   });
 
   it('считает товары подкатегорий и не считает неопубликованные', async () => {
@@ -41,8 +45,8 @@ describe('getFacets: правило ≥3 товара и ≤30 значений'
     addProduct(db, { name: 'B', categoryId: sub, attrs: { Цвет: 'Красный' } });
     addProduct(db, { name: 'C', categoryId: sub, attrs: { Цвет: 'Синий' } });
     addProduct(db, { name: 'D', categoryId: sub, attrs: { Цвет: 'Синий' }, published: false });
-    expect(await getFacets(sub, undefined, { db })).toEqual([]); // только 2 опубликованных товара
-    const f = await getFacets(root, undefined, { db });
+    expect(attrs(await getFacets(sub, undefined, { db }))).toEqual([]); // только 2 опубликованных товара
+    const f = attrs(await getFacets(root, undefined, { db }));
     expect(f[0]?.values).toEqual([
       { value: 'Красный', count: 2 },
       { value: 'Синий', count: 1 },
@@ -63,7 +67,7 @@ describe('getFacets: правило ≥3 товара и ≤30 значений'
     const drive = attributeId(db, 'Привод');
 
     const ctx = { filters: { [drive]: ['Передний'] }, inStockOnly: true };
-    const facets = await getFacets(cat, ctx, { db });
+    const facets = attrs(await getFacets(cat, ctx, { db }));
     const typeFacet = facets.find((f) => f.name === 'Тип');
     expect(typeFacet?.values).toEqual([
       { value: 'Бензиновая', count: 1 },

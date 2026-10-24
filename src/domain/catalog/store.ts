@@ -3,6 +3,7 @@
  * потому что зона T04 не включает репозитории; запросы только параметризованные.
  */
 import type { Db } from '@/server/db/connection';
+import { ensureFold } from '@/server/db/fold';
 import { categoriesRepo, type CategoryRow } from '@/server/db/repositories/categories';
 import { parseVariants } from '@/server/db/repositories/images';
 import { visibleProductSql } from '@/server/db/repositories/products';
@@ -11,20 +12,9 @@ import { toCatalogImage } from './images';
 import { getPopularitySql } from './popularity';
 import type { CatalogImage, FacetContext, ProductCard, SortKey } from './types';
 
+export { ensureFold };
+
 type SqlValue = string | number | null;
-
-const folded = new WeakSet<Db>();
-
-/** Регистрирует регистронезависимое сравнение для кириллицы (NOCASE в SQLite знает только ASCII). */
-export function ensureFold(db: Db): void {
-  if (folded.has(db)) return;
-  db.function('rts_fold', { deterministic: true }, (s) =>
-    String(s ?? '')
-      .toLowerCase()
-      .replace(/ё/g, 'е'),
-  );
-  folded.add(db);
-}
 
 /** Цена к оплате: скидочная, если она действительно ниже обычной. */
 export const EFFECTIVE_PRICE = `(CASE WHEN p.discount_price_kopecks IS NOT NULL AND p.discount_price_kopecks < p.price_kopecks THEN p.discount_price_kopecks ELSE p.price_kopecks END)`;
@@ -56,6 +46,8 @@ export function categoryScope(db: Db, slug: string): { category: CategoryRow; id
 
 export type Scope = FacetContext & {
   categoryIds?: number[];
+  /** Выбранные подкатегории вместе с потомками (уже разрешены из slug; undefined — фильтр не задан). */
+  subCategoryIds?: number[];
   /** Выражение MATCH уже собрано (null — текста нет). */
   match: string | null;
 };
@@ -64,7 +56,27 @@ type Built = { joins: string; where: string; params: SqlValue[] };
 
 const SCORE_JOIN = `JOIN (SELECT rowid AS id, bm25(product_search, 10.0, 6.0, 8.0) AS score FROM product_search WHERE product_search MATCH ?) m ON m.id = p.id`;
 
-/** Условия отбора. omitAttr — не применять фильтр этой характеристики (для счётчиков фасета). */
+/**
+ * Подкатегории из адреса (slug) → id вместе с потомками. Берутся только категории внутри текущей (но не она сама);
+ * неизвестные slug игнорируются. undefined — фильтр по подкатегориям не задан или не применим.
+ */
+export function resolveSubcategories(db: Db, categoryIds: number[] | undefined, slugs: readonly string[] | undefined): number[] | undefined {
+  if (!categoryIds || !slugs || slugs.length === 0) return undefined;
+  const rows = listCategoryRows(db);
+  const inside = new Set(categoryIds);
+  const wanted = new Set(slugs);
+  const out = new Set<number>();
+  for (const r of rows) {
+    if (!wanted.has(r.slug) || !inside.has(r.id) || r.id === categoryIds[0]) continue;
+    for (const id of descendantIds(rows, r.id)) out.add(id);
+  }
+  return out.size > 0 ? [...out] : undefined;
+}
+
+/**
+ * Условия отбора. omit — не применять фильтр этой группы (для счётчиков фасета): id характеристики (строкой),
+ * либо 'price' | 'stock' | 'brand' | 'sub'.
+ */
 export function buildScope(s: Scope, omitAttr?: string): Built {
   const joins: string[] = [];
   const params: SqlValue[] = [];
@@ -78,6 +90,21 @@ export function buildScope(s: Scope, omitAttr?: string): Built {
     where.push('p.category_id IN (SELECT value FROM json_each(?))');
     params.push(JSON.stringify(s.categoryIds));
   }
+  if (s.subCategoryIds && omitAttr !== 'sub') {
+    where.push('p.category_id IN (SELECT value FROM json_each(?))');
+    params.push(JSON.stringify(s.subCategoryIds));
+  }
+  if (s.brands && s.brands.length > 0 && omitAttr !== 'brand') {
+    where.push('p.brand_id IN (SELECT id FROM brands WHERE slug IN (SELECT value FROM json_each(?)))');
+    params.push(JSON.stringify(s.brands));
+  }
+  for (const [attrId, range] of Object.entries(s.ranges ?? {})) {
+    if (attrId === omitAttr || (range.min === undefined && range.max === undefined)) continue;
+    where.push(
+      'EXISTS (SELECT 1 FROM product_attributes pa WHERE pa.product_id = p.id AND pa.attribute_id = ? AND pa.value_num >= ? AND pa.value_num <= ?)',
+    );
+    params.push(Number(attrId), range.min ?? -1e15, range.max ?? 1e15);
+  }
   for (const [attrId, values] of Object.entries(s.filters)) {
     if (attrId === omitAttr || values.length === 0) continue;
     where.push(
@@ -85,15 +112,15 @@ export function buildScope(s: Scope, omitAttr?: string): Built {
     );
     params.push(Number(attrId), JSON.stringify(values));
   }
-  if (s.priceMin !== undefined) {
+  if (s.priceMin !== undefined && omitAttr !== 'price') {
     where.push(`${EFFECTIVE_PRICE} >= ?`);
     params.push(s.priceMin);
   }
-  if (s.priceMax !== undefined) {
+  if (s.priceMax !== undefined && omitAttr !== 'price') {
     where.push(`${EFFECTIVE_PRICE} <= ?`);
     params.push(s.priceMax);
   }
-  if (s.inStockOnly) where.push('p.in_stock = 1');
+  if (s.inStockOnly && omitAttr !== 'stock') where.push('p.in_stock = 1');
   return { joins: joins.join(' '), where: where.join(' AND '), params };
 }
 

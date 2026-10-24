@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { audit } from '@/domain/admin/audit';
-import type { StaffSession } from '@/domain/admin/permissions';
+import { requirePermission, type StaffSession } from '@/domain/admin/permissions';
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH, hashPassword, verifyPassword } from '@/domain/customers/password';
 import { getDb, withTransaction, type Db } from '@/server/db/connection';
 import { staffRepo } from '@/server/db/repositories/staff';
@@ -10,9 +10,9 @@ import { enforceRateLimit } from '@/server/http/rate-limit';
 
 type Opts = { db?: Db; now?: number };
 
-/** Профиль доступен любому авторизованному сотруднику (право «staff.self»): нужна только сессия. */
+/** Профиль доступен любому сотруднику с ролью: право «staff.self» входит в каждую роль и в матрице не снимается. */
 function requireSelf(session: StaffSession | null | undefined): asserts session is StaffSession {
-  if (!session) throw new UnauthorizedError('Требуется вход в админку');
+  requirePermission(session, 'staff.self');
 }
 
 function toValidation(error: z.ZodError): ValidationError {
@@ -35,7 +35,7 @@ const passwordSchema = z
   .refine((v) => v.next === v.confirm, { error: 'Пароли не совпадают', path: ['confirm'] })
   .refine((v) => v.next !== v.current, { error: 'Новый пароль должен отличаться от текущего', path: ['next'] });
 
-export type ProfileView = { email: string; name: string | null; role: StaffSession['role']; lastLoginAt: number | null };
+export type ProfileView = { email: string; name: string | null; role: StaffSession['role']; roleName: string; lastLoginAt: number | null };
 
 /** Профиль текущего сотрудника: имя и смена своего пароля. Логин и роль здесь не меняются. */
 export const profileOps = {
@@ -43,7 +43,7 @@ export const profileOps = {
     requireSelf(session);
     const row = staffRepo.findById(opts.db ?? getDb(), session.staffId);
     if (!row) throw new NotFoundError('Сотрудник не найден');
-    return { email: row.email, name: row.name, role: row.role, lastLoginAt: row.lastLoginAt };
+    return { email: row.email, name: row.name, role: row.role, roleName: row.roleName, lastLoginAt: row.lastLoginAt };
   },
 
   updateName(session: StaffSession | null, input: unknown, opts: Opts = {}): void {

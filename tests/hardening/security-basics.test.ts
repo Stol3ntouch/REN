@@ -23,7 +23,7 @@ describe('Secure-cookie берётся из isProductionEnv', () => {
     vi.stubEnv('APP_ENV', 'production');
     const db = createTestDb();
     db.prepare("INSERT INTO users (id,email,password_hash,created_at) VALUES (1,'a@b.ru','x',1)").run();
-    db.prepare("INSERT INTO staff (id,email,password_hash,role,active,created_at) VALUES (1,'boss','x','admin',1,1)").run();
+    db.prepare("INSERT INTO staff (id,email,password_hash,role_id,active,created_at) VALUES (1,'boss','x',(SELECT id FROM roles WHERE code = 'admin'),1,1)").run();
     const user = fakeCookies();
     createUserSession(user, 1, { db, now: 1 });
     expect(user.sets[0]?.options?.secure).toBe(true);

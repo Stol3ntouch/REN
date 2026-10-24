@@ -1,6 +1,8 @@
-import { toErrorResponse } from '@/server/http/errors';
+import { ForbiddenError, toErrorResponse } from '@/server/http/errors';
 import { assertOrigin } from '@/server/http/origin';
 import type { CookieReader } from '@/server/http/owner';
+import { audit } from './audit';
+import { requestInfoFromHeaders, runWithRequestInfo } from './audit-context';
 import { hasPermission, requirePermission, type Permission, type StaffSession } from './permissions';
 import { getStaffSession, requireStaff, type Opts } from './staff-session';
 
@@ -18,7 +20,7 @@ export type AdminAccess =
 export function resolveAdminAccess(cookies: CookieReader, perm: Permission | null = null, opts: Opts = {}): AdminAccess {
   const session = getStaffSession(cookies, opts);
   if (!session) return { ok: false, reason: 'unauthenticated', redirectTo: ADMIN_LOGIN_HREF };
-  if (perm && !hasPermission(session.role, perm)) return { ok: false, reason: 'forbidden' };
+  if (perm && !hasPermission(session, perm)) return { ok: false, reason: 'forbidden' };
   return { ok: true, session };
 }
 
@@ -53,11 +55,35 @@ export function withStaffPermission(perm: Permission, handler: StaffHandler, opt
   return async (req) => {
     try {
       assertOrigin(req);
+      const info = requestInfoFromHeaders(req.headers);
       const session = requireStaff(parseCookieHeader(req.headers.get('cookie')), opts);
-      requirePermission(session, perm);
-      return await handler(req, session);
+      try {
+        requirePermission(session, perm);
+      } catch (e) {
+        if (e instanceof ForbiddenError) recordDenied(session, perm, req, info, opts);
+        throw e;
+      }
+      return await runWithRequestInfo(info, () => handler(req, session));
     } catch (e) {
       return toErrorResponse(e);
     }
   };
+}
+
+/** Отказ по правам попадает в журнал (result = denied): кто, чего хотел и по какому адресу. */
+function recordDenied(session: StaffSession, perm: Permission, req: Request, info: ReturnType<typeof requestInfoFromHeaders>, opts: Opts): void {
+  let path = '';
+  try {
+    path = new URL(req.url).pathname;
+  } catch {
+    path = '';
+  }
+  try {
+    audit.record(
+      { actorId: session.staffId, actorType: 'staff', action: 'access.denied', entity: 'admin_route', entityId: path || null, after: { permission: perm, method: req.method }, result: 'denied', request: info },
+      { db: opts.db, now: opts.now },
+    );
+  } catch {
+    // журнал недоступен — отказ всё равно возвращается клиенту
+  }
 }

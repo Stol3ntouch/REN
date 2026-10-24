@@ -4,6 +4,7 @@ import { sessionsRepo } from '@/server/db/repositories/sessions';
 import { staffRepo } from '@/server/db/repositories/staff';
 import { UnauthorizedError } from '@/server/http/errors';
 import type { CookieReader, CookieStore } from '@/server/http/owner';
+import { loadRolePermissions } from './role-permissions';
 import type { StaffSession } from './permissions';
 
 /** Сессия сотрудника: своя cookie и своя таблица (staff_sessions), не пересекается с rts_session покупателя. */
@@ -26,7 +27,10 @@ export function destroyStaffSession(cookies: CookieStore, opts: Opts = {}): void
   cookies.set(ADMIN_SESSION_COOKIE, '', { ...sessionCookieOptions(0, 'strict'), maxAge: 0 });
 }
 
-/** Сотрудник по cookie rts_admin_session; отключённый или с истёкшей сессией → null. */
+/**
+ * Сотрудник по cookie rts_admin_session; отключённый или с истёкшей сессией → null.
+ * Права роли читаются из БД при каждом вызове: правка роли действует на открытые сессии со следующего запроса.
+ */
 export function getStaffSession(cookies: CookieReader, opts: Opts = {}): StaffSession | null {
   const token = cookies.get(ADMIN_SESSION_COOKIE)?.value;
   if (!token) return null;
@@ -34,7 +38,16 @@ export function getStaffSession(cookies: CookieReader, opts: Opts = {}): StaffSe
   const staffId = sessionsRepo.findOwnerId(db, 'staff', hashToken(token), opts.now ?? Date.now());
   if (staffId === null) return null;
   const s = staffRepo.findById(db, staffId);
-  return s && s.active ? { staffId: s.id, email: s.email, name: s.name, role: s.role } : null;
+  if (!s || !s.active) return null;
+  return {
+    staffId: s.id,
+    email: s.email,
+    name: s.name,
+    role: s.role,
+    roleId: s.roleId,
+    roleName: s.roleName,
+    permissions: loadRolePermissions(db, s.roleId, s.role),
+  };
 }
 
 /** Для обработчиков: сессия сотрудника или UnauthorizedError (401). Права — отдельно, requirePermission. */

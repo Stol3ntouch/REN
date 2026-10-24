@@ -3,7 +3,7 @@ import { companyReviewsRepo } from '@/server/db/repositories/company-reviews';
 import { listCategoryRows } from '@/domain/catalog/category-rows';
 import { MAIN_NAV } from '@/ui/nav';
 import type { ShellContext, ShellLink } from '@/ui/shell-context';
-import { countPublishedNews, getPageByKey, listActivePromotions, listPublishedServices, pagePath, type PageKey } from './queries';
+import { countPublishedNews, getPageByKey, listActivePromotions, listBanners, listPublishedServices, pagePath, type PageKey } from './queries';
 import { DEFAULT_LOGO_DARK_URL, DEFAULT_LOGO_URL, getShopInfo } from './settings';
 
 /** Адрес страницы отзывов о компании. */
@@ -20,21 +20,23 @@ export function loadShellContext(opts: Opts = {}): ShellContext {
   const db = opts.db ?? getDb();
   const now = opts.now ?? Date.now();
   const shop = getShopInfo({ db });
-  const hasNews = countPublishedNews({ db }) > 0;
+  const hasNews = countPublishedNews({ db, now }) > 0;
   const hasPromotions = listActivePromotions({ db, now }).length > 0;
   const hasServices = listPublishedServices({ db }).length > 0;
-  const hasAbout = getPageByKey('about', { db }) !== null;
+  const hasAbout = getPageByKey('about', { db, now }) !== null;
   const hasReviews = companyReviewsRepo.count(db, 'published = 1') > 0;
 
   const sectionShown: Record<string, boolean> = { '/news': hasNews, '/promotions': hasPromotions, '/services': hasServices, '/about': hasAbout };
   const nav = MAIN_NAV.filter((i) => sectionShown[i.href] ?? true);
   const pageLink = (key: PageKey): ShellLink[] => {
-    const page = getPageByKey(key, { db });
+    const page = getPageByKey(key, { db, now });
     return page ? [{ href: pagePath(page), label: page.title }] : [];
   };
 
+  const strip = listBanners('top_strip', { db, now })[0];
   return {
     siteName: shop.siteName,
+    topStrip: strip && strip.heading ? { text: strip.heading, href: strip.url ?? undefined } : undefined,
     address: shop.address ?? undefined,
     phone: shop.phone ?? undefined,
     phoneHref: shop.phoneHref ?? undefined,

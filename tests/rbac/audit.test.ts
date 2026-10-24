@@ -82,8 +82,8 @@ describe('audit', () => {
     const db = createTestDb();
     const id = audit.record({ actorId: 1, actorType: 'staff', action: 'a', entity: 'e' }, { db, now: T0 });
 
-    expect(Object.keys(auditRepo).sort()).toEqual(['insert', 'list']);
-    expect(Object.keys(audit).sort()).toEqual(['list', 'record']);
+    expect(Object.keys(auditRepo).sort()).toEqual(['insert', 'list', 'search']);
+    expect(Object.keys(audit).sort()).toEqual(['list', 'record', 'search']);
     expect(() => db.prepare('UPDATE audit_log SET action = ? WHERE id = ?').run('hacked', id)).toThrow(/append-only/);
     expect(() => db.prepare('DELETE FROM audit_log WHERE id = ?').run(id)).toThrow(/append-only/);
     expect(audit.list({}, { db })[0]!.action).toBe('a');

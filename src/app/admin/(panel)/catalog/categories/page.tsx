@@ -23,7 +23,7 @@ function parseConfirm(raw: string | undefined, session: Parameters<typeof catego
 export default async function AdminCategoriesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const session = await requireStaffPage('catalog.read');
   const sp = await searchParams;
-  const canWrite = hasPermission(session.role, 'catalog.write');
+  const canWrite = hasPermission(session, 'catalog.write');
   const rows = categoryVisibilityOps.list(session);
   const confirm = canWrite ? parseConfirm(str(sp.confirm), session, rows) : null;
   return (

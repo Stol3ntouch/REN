@@ -34,6 +34,8 @@ export type ParsedOffer = {
   slugHint: string | null;
   pictures: string[];
   attributes: ParsedAttribute[];
+  /** Производитель из <vendor>; null — в файле его нет (бренд не выдумывается). */
+  vendor?: string | null;
   /** Порядковый номер offer в файле. */
   position: number;
 };

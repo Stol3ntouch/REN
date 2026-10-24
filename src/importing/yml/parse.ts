@@ -168,6 +168,7 @@ function parseOffer(node: Node, position: number, errors: RowError[], seen: Set<
     slugHint: lastUrlSegment(text(node['url'])),
     pictures,
     attributes,
+    vendor: text(node['vendor']).slice(0, 120) || null,
     position,
   };
 }

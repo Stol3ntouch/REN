@@ -10,7 +10,7 @@ const MANAGER: StaffSession = { staffId: 2, email: 'mgr@x.test', name: 'Мене
 
 function withStaff() {
   const db = setupDb();
-  db.prepare("INSERT INTO staff (id, email, name, role, password_hash, created_at) VALUES (1, 'boss@x.test', 'Босс', 'admin', 'x', 1), (2, 'mgr@x.test', 'Менеджер', 'manager', 'x', 1)").run();
+  db.prepare("INSERT INTO staff (id, email, name, role_id, password_hash, created_at) VALUES (1, 'boss@x.test', 'Босс', (SELECT id FROM roles WHERE code = 'admin'), 'x', 1), (2, 'mgr@x.test', 'Менеджер', (SELECT id FROM roles WHERE code = 'manager'), 'x', 1)").run();
   return db;
 }
 

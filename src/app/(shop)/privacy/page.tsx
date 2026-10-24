@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   await connection();
   const page = getPageByKey('privacy');
   if (!page) return { title: 'Политика обработки персональных данных' };
-  return contentMetadata({ title: page.title, seoTitle: page.seoTitle, seoDescription: page.seoDescription, fallbackDescription: plainExcerpt(page.body), path: pagePath(page) });
+  return contentMetadata({ title: page.title, seoTitle: page.seoTitle, seoDescription: page.seoDescription, fallbackDescription: plainExcerpt(page.body), path: pagePath(page), canonical: page.canonical, noindex: page.noindex });
 }
 
 export default async function PrivacyPage() {

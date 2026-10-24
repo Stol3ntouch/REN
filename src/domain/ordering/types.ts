@@ -10,7 +10,7 @@ export type Opts = { db?: Db; now?: number; secret?: string; /** Только or
 
 /** Кто меняет заказ. system — проверенный webhook, импорт; staff — сотрудник; customer — сам покупатель. */
 export type Actor =
-  | { type: 'staff'; staffId: number; role: StaffRole }
+  | { type: 'staff'; staffId: number; role: StaffRole; permissions?: readonly string[] }
   | { type: 'system'; reason?: string }
   | { type: 'customer'; owner: OwnerRef };
 

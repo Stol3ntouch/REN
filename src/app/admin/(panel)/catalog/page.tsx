@@ -26,7 +26,7 @@ export default async function AdminCatalogPage({ searchParams }: { searchParams:
   const result = catalogOps.list(session, filter, {});
   const categories = catalogOps.categories(session);
   const manualEdit = catalogOps.isManualEditEnabled();
-  const canWrite = hasPermission(session.role, 'catalog.write');
+  const canWrite = hasPermission(session, 'catalog.write');
   const pages = Math.max(1, Math.ceil(result.total / result.pageSize));
   const link = (page: number) => {
     const p = new URLSearchParams();

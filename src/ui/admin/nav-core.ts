@@ -50,9 +50,9 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
     items: [
       { key: 'products', label: 'Товары', href: '/admin/catalog', icon: 'box', permission: 'catalog.read' },
       { key: 'categories', label: 'Категории', href: '/admin/catalog/categories', icon: 'grid', permission: 'catalog.read' },
-      { key: 'brands', label: 'Бренды', href: '/admin/catalog/brands', icon: 'tag', permission: 'catalog.read', pending: true },
-      { key: 'attributes', label: 'Характеристики', href: '/admin/catalog/attributes', icon: 'list', permission: 'catalog.read', pending: true },
-      { key: 'filters', label: 'Фильтры', href: '/admin/catalog/filters', icon: 'sliders', permission: 'catalog.read', pending: true },
+      { key: 'brands', label: 'Бренды', href: '/admin/catalog/brands', icon: 'tag', permission: 'catalog.read' },
+      { key: 'attributes', label: 'Характеристики', href: '/admin/catalog/attributes', icon: 'list', permission: 'catalog.read' },
+      { key: 'filters', label: 'Фильтры', href: '/admin/catalog/filters', icon: 'sliders', permission: 'catalog.read' },
       { key: 'import', label: 'Импорт / Экспорт', href: '/admin/import', icon: 'transfer', permission: 'integrations.read' },
       { key: 'warehouse', label: 'Склад', href: '/admin/warehouse', icon: 'warehouse', permission: 'catalog.read' },
     ],
@@ -87,8 +87,6 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
         href: '/admin/content/banners',
         icon: 'image',
         permission: 'content.write',
-        pending: true,
-        interim: { href: '/admin/content/slides', label: 'Слайды главной' },
         aliases: ['/admin/content/slides'],
       },
       { key: 'news', label: 'Новости', href: '/admin/content/news', icon: 'news', permission: 'content.write' },
@@ -133,7 +131,8 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
         ],
       },
       { key: 'shipping', label: 'Доставка и оплата', href: '/admin/settings/shipping', icon: 'truck', permission: 'settings.write', pending: true },
-      { key: 'staff', label: 'Пользователи', href: '/admin/staff', icon: 'user', permission: 'staff.manage' },
+      { key: 'staff', label: 'Пользователи', href: '/admin/staff', icon: 'user', permission: 'users.manage' },
+      { key: 'roles', label: 'Роли', href: '/admin/roles', icon: 'shield', permission: 'roles.manage' },
       { key: 'integrations', label: 'Интеграции', href: '/admin/integrations', icon: 'plug', permission: 'integrations.read' },
       { key: 'mail', label: 'Почта', href: '/admin/mail', icon: 'mail', permission: 'integrations.run' },
       { key: 'backup', label: 'Резервные копии', href: '/admin/settings/backup', icon: 'database', permission: 'settings.write', pending: true },
@@ -145,6 +144,7 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
 /** Страницы, которых нет в меню, но которые есть в админке (для хлебных крошек). */
 export const ADMIN_EXTRA_PAGES: Readonly<Record<string, string>> = {
   '/admin/profile': 'Профиль',
+  '/admin/staff/new': 'Новый пользователь',
 };
 
 /** Флаги верхней панели: включает C10 (поиск и уведомления), пока выключено — ничего фиктивного не показывается. */

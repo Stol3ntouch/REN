@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   await connection();
   const page = getPageBySlug((await params).slug);
   if (!page) return { title: 'Страница не найдена', robots: { index: false } };
-  return contentMetadata({ title: page.title, seoTitle: page.seoTitle, seoDescription: page.seoDescription, fallbackDescription: plainExcerpt(page.body), path: pagePath(page) });
+  return contentMetadata({ title: page.title, seoTitle: page.seoTitle, seoDescription: page.seoDescription, fallbackDescription: plainExcerpt(page.body), path: pagePath(page), canonical: page.canonical, noindex: page.noindex });
 }
 
 /** Редактируемые страницы: доставка и оплата, гарантия и возврат, вопросы и ответы, условия продажи. */

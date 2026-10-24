@@ -1,0 +1,57 @@
+/* Матрица разрешений роли (C02). Токены — из admin.css (--ak-*). */
+.rm-matrix {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.rm-group {
+  border: 1px solid var(--ak-border);
+  border-radius: var(--ak-radius);
+  padding: 12px 14px;
+  margin: 0;
+  background: var(--ak-surface);
+  min-width: 0;
+}
+.rm-group legend {
+  font-weight: 600;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rm-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.rm-group label {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  cursor: pointer;
+}
+.rm-group input[type='checkbox'] {
+  margin-top: 3px;
+  accent-color: var(--ak-primary);
+}
+.rm-group__toggle {
+  border: 0;
+  background: none;
+  color: var(--ak-primary);
+  font: inherit;
+  font-size: 0.85em;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.rm-group__toggle:focus-visible {
+  outline: 2px solid var(--ak-primary);
+  outline-offset: 2px;
+}
+.rm-legacy,
+.rm-lack {
+  color: var(--ak-muted);
+  font-style: normal;
+  font-size: 0.85em;
+}

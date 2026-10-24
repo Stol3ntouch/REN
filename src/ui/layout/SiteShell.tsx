@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { DEFAULT_SHELL, type ShellContext } from '../shell-context';
 import './layout.css';
 import { MobileTabBar } from './MobileTabBar';
+import { TopStrip } from './TopStrip';
 import { SiteFooter } from './SiteFooter';
 import { SiteHeader } from './SiteHeader';
 import { SkipLink } from './SkipLink';
@@ -15,6 +16,7 @@ export function SiteShell({ children, shell = DEFAULT_SHELL }: { children: React
   return (
     <>
       <SkipLink />
+      {shell.topStrip ? <TopStrip text={shell.topStrip.text} href={shell.topStrip.href} /> : null}
       <SiteHeader shell={shell} />
       <main id="main" className="site-main container" tabIndex={-1}>
         {children}

@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { facetContext, getFacets } from '@/domain/catalog/facets';
 import { buildCatalogQueryString, parseCatalogParams } from '@/domain/catalog/params';
 import { searchProducts } from '@/domain/catalog/search';
 import { Breadcrumbs } from '@/ui/catalog/Breadcrumbs';
 import { CatalogListing } from '@/ui/catalog/CatalogListing';
+import { countActiveFilters } from '@/ui/catalog/FiltersPanel';
 import { EmptyState } from '@/ui/states';
 import '@/ui/catalog/catalog.css';
 
@@ -40,12 +42,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         <EmptyState title="Введите запрос">
           <p>Название товара, модель или артикул — например, «HT625R» или «бензоножницы».</p>
         </EmptyState>
-      ) : result.total === 0 && Object.keys(query.filters).length === 0 && query.priceMin === undefined && query.priceMax === undefined && !query.inStockOnly ? (
+      ) : result.total === 0 && countActiveFilters(query) === 0 ? (
         <EmptyState title="Ничего не найдено">
           <p>По запросу «{text}» товаров нет. Проверьте написание или попробуйте другое слово, часть названия или артикул.</p>
         </EmptyState>
       ) : (
-        <CatalogListing basePath="/search" query={query} result={result} facets={[]} withRelevance />
+        <CatalogListing basePath="/search" query={query} result={result} facets={await getFacets(null, facetContext(query))} withRelevance />
       )}
     </>
   );

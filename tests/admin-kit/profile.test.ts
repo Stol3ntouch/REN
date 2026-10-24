@@ -103,7 +103,7 @@ describe('защита и каркас', () => {
   const read = (p: string) => readFileSync(resolve(__dirname, '../..', p), 'utf8');
 
   it('страница профиля требует вход (requireStaffPage), а админка целиком закрыта от индексации', () => {
-    expect(read('src/app/admin/(panel)/profile/page.tsx')).toMatch(/requireStaffPage\(null\)/);
+    expect(read('src/app/admin/(panel)/profile/page.tsx')).toMatch(/requireStaffPage\('staff\.self'\)/);
     expect(read('src/app/admin/layout.tsx')).toMatch(/robots:\s*\{\s*index:\s*false/);
   });
 

@@ -60,6 +60,7 @@ const PATHS = {
   plus: ['M12 5v14', 'M5 12h14'],
   pencil: ['M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5z'],
   filter: ['M22 3H2l8 9.5V19l4 2v-8.5z'],
+  shield: ['M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'],
 } as const;
 
 export type AdminIconName = keyof typeof PATHS;

@@ -11,14 +11,16 @@ import type { NewsRow } from '@/server/db/repositories/news';
 import type { PageRow } from '@/server/db/repositories/pages';
 import type { PromotionRow } from '@/server/db/repositories/promotions';
 import type { ServiceRow } from '@/server/db/repositories/services';
-import type { SlideRow } from '@/server/db/repositories/slides';
 import {
   getPageByKey,
+  listBanners,
   listActivePromotions,
-  listActiveSlides,
+  listHeroSlides,
   listPublishedNews,
   listPublishedReviews,
   listPublishedServices,
+  type BannerView,
+  type HeroSlide,
   type WithImage,
 } from './queries';
 import { getSettings, getShopInfo, type ShopInfo } from './settings';
@@ -36,7 +38,10 @@ export type HomeData = {
   shop: ShopInfo;
   /** Редактируемые SEO-поля главной (настройки home_h1, home_title, home_description). */
   seo: { h1: string; title: string | null; description: string | null };
-  slides: WithImage<SlideRow>[];
+  /** Баннеры позиции home_hero (до трёх): слайдер главной. */
+  slides: HeroSlide[];
+  /** Баннеры позиции home_middle: полоса между блоками. */
+  middleBanners: BannerView[];
   categories: HomeCategory[];
   newProducts: ProductCard[];
   popularProducts: ProductCard[];
@@ -97,7 +102,8 @@ export async function getHomeData(opts: Opts = {}): Promise<HomeData> {
       title: settings.home_title?.trim() || null,
       description: settings.home_description?.trim() || null,
     },
-    slides: listActiveSlides({ db }),
+    slides: listHeroSlides({ db, now: nowMs }),
+    middleBanners: listBanners('home_middle', { db, now: nowMs }),
     categories,
     newProducts,
     popularProducts,
@@ -106,7 +112,7 @@ export async function getHomeData(opts: Opts = {}): Promise<HomeData> {
     promotions: listActivePromotions({ db, now: nowMs }),
     services: listPublishedServices({ db }),
     reviews: listPublishedReviews({ db, limit: 3 }),
-    news: listPublishedNews({ db, limit: 3 }),
-    about: getPageByKey('about', { db }),
+    news: listPublishedNews({ db, limit: 3, now: nowMs }),
+    about: getPageByKey('about', { db, now: nowMs }),
   };
 }

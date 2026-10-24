@@ -56,7 +56,8 @@ function readPromo(form: FormData) {
     endsAt: dateOrNull(form, 'endsAt', true),
     usageLimit: intOrNull(form, 'usageLimit'),
     minSubtotalKopecks: minKopecks,
-    enabled: form.get('enabled') === 'on',
+    enabled: form.get('enabled') === '1' || form.get('enabled') === 'on',
+    excludeOnSale: form.get('excludeOnSale') === '1' || form.get('excludeOnSale') === 'on',
   };
 }
 

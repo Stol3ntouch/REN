@@ -66,7 +66,7 @@ describe('модерация отзывов и рейтинг', () => {
     const row = reviewsAdmin.moderate(manager, id, 'published', { db, now: T0 + 5 });
     expect(row.status).toBe('published');
     expect(listPublishedReviews(productId, { db }).map((r) => r.body)).toEqual(['Хороший товар, пользуюсь месяц']);
-    expect(Object.keys(listPublishedReviews(productId, { db })[0]!).sort()).toEqual(['authorName', 'body', 'createdAt', 'id', 'rating']);
+    expect(Object.keys(listPublishedReviews(productId, { db })[0]!).sort()).toEqual(['adminReply', 'authorName', 'body', 'createdAt', 'id', 'rating', 'repliedAt']);
   });
 
   it('рейтинг — среднее только по опубликованным; без опубликованных рейтинга нет', async () => {

@@ -37,7 +37,7 @@ export default async function AdminProductPage({ params, searchParams }: { param
   const found = Number.isInteger(id) ? catalogOps.get(session, id) : null;
   if (!found) notFound();
   const { product: p, manualEdit } = found;
-  const canWrite = hasPermission(session.role, 'catalog.write');
+  const canWrite = hasPermission(session, 'catalog.write');
   const canEdit = manualEdit && canWrite;
 
   return (
@@ -84,7 +84,7 @@ export default async function AdminProductPage({ params, searchParams }: { param
 
       {!canEdit ? (
         <p className="ops-readonly">
-          {!hasPermission(session.role, 'catalog.write')
+          {!hasPermission(session, 'catalog.write')
             ? 'Поля только для просмотра: правит администратор.'
             : 'Поля только для чтения: источник данных — импорт YML / 1С. Администратор может включить ручное редактирование в настройках.'}
         </p>

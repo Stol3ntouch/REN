@@ -9,10 +9,12 @@ export type ServiceRow = {
   seoDescription: string | null;
   summary: string | null;
   body: string;
+  /** Условие стоимости текстом («от …», «по договорённости») — только если его ввёл админ. */
   priceText: string | null;
   imagePath: string | null;
   imageVariants: string | null;
   imageAlt: string | null;
+  categoryId: number | null;
   published: boolean;
   sort: number;
   updatedAt: number;
@@ -21,7 +23,7 @@ export type ServiceWrite = Partial<Omit<ServiceRow, 'id' | 'updatedAt'>>;
 
 export const servicesRepo = makeContentRepo<ServiceRow, ServiceWrite>({
   table: 'services',
-  columns: ['slug', 'title', 'h1', 'seoTitle', 'seoDescription', 'summary', 'body', 'priceText', 'imagePath', 'imageVariants', 'imageAlt', 'published', 'sort'],
+  columns: ['slug', 'title', 'h1', 'seoTitle', 'seoDescription', 'summary', 'body', 'priceText', 'imagePath', 'imageVariants', 'imageAlt', 'categoryId', 'published', 'sort'],
   booleans: ['published'],
   order: 'sort, id',
 });

@@ -11,6 +11,8 @@ export type SlideView = {
   linkUrl: string | null;
   linkLabel: string | null;
   image: CatalogImage | null;
+  /** Отдельная картинка для телефона (баннер C08); нет — одна картинка на всех экранах. */
+  mobileImage?: CatalogImage | null;
 };
 
 /**
@@ -40,8 +42,10 @@ export function HomeSlider({ slides }: { slides: SlideView[] }) {
         {slides.map((s, i) => (
           <li key={s.id} className="home-slider__slide" aria-roledescription="слайд" aria-label={`${i + 1} из ${slides.length}`}>
             {s.image ? (
-              // eslint-disable-next-line @next/next/no-img-element -- локальный WebP из каталога загрузок
-              <img className="home-slider__image" src={s.image.src} alt={s.image.alt} width={s.image.width ?? 960} height={s.image.height ?? 400} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
+              <picture>
+                {s.mobileImage ? <source media="(max-width: 640px)" srcSet={s.mobileImage.src} /> : null}
+                <img className="home-slider__image" src={s.image.src} alt={s.image.alt} width={s.image.width ?? 960} height={s.image.height ?? 400} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
+              </picture>
             ) : null}
             <div className="home-slider__text">
               <p className="home-slider__title">{s.title}</p>

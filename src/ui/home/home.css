@@ -948,3 +948,121 @@
       var(--brand-dark);
   }
 }
+
+/* Баннеры позиций (C08): полоса на главной и блок на странице категории */
+.banner-block {
+  margin-block: 1.5rem;
+}
+
+.banner-block__list {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.banner-block__link {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 11rem;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: linear-gradient(120deg, var(--brand-black), var(--brand-dark));
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.banner-block__link:focus-visible {
+  outline: 3px solid var(--brand-accent, #7bd88f);
+  outline-offset: 2px;
+}
+
+.banner-block__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.banner-block__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(13, 21, 18, 0.78), rgba(13, 21, 18, 0.05) 70%);
+}
+
+.banner-block__text {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.4rem;
+  padding: 1rem 1.25rem;
+}
+
+.banner-block__heading {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.banner-block__sub {
+  font-size: 0.95rem;
+  opacity: 0.92;
+}
+
+/* Полоса над шапкой (позиция top_strip) */
+.top-strip {
+  background: var(--brand-dark);
+  color: #ffffff;
+  text-align: center;
+  font-size: 0.9rem;
+  padding: 0.4rem 1rem;
+}
+
+.top-strip a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+/* Содержимое страниц: цитаты, изображения, разделители */
+.rich-text blockquote {
+  margin: 1rem 0;
+  padding: 0.25rem 1rem;
+  border-left: 4px solid var(--brand-dark);
+  color: inherit;
+  opacity: 0.9;
+}
+
+.rich-text figure {
+  margin: 1rem 0;
+}
+
+.rich-text figure img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+
+.rich-text hr {
+  border: 0;
+  border-top: 1px solid currentColor;
+  opacity: 0.2;
+  margin: 1.5rem 0;
+}
+
+/* Ответ администратора под отзывом */
+.admin-reply {
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.9rem;
+  border-left: 3px solid var(--brand-dark);
+  background: rgba(20, 83, 45, 0.06);
+  border-radius: 0 0.4rem 0.4rem 0;
+}
+
+.admin-reply__title {
+  font-weight: 600;
+  margin: 0 0 0.2rem;
+}

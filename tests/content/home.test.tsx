@@ -106,7 +106,8 @@ describe('главная с данными', () => {
     const db = createTestDb();
     const ctx = { db, now: T0, uploadsDir: uploads.dir() };
     for (let i = 1; i <= 2; i++) {
-      await contentOps.slides.save(ADMIN, null, { title: `Слайд ${i}`, active: true, image: { bytes: await pngBytes(1200, 400) }, imageAlt: 'Баннер' }, ctx);
+      // слайды главной переехали в баннеры позиции home_hero (C08)
+      await contentOps.banners.save(ADMIN, null, { title: `Слайд ${i}`, heading: `Слайд ${i}`, position: 'home_hero', status: 'active', image: { bytes: await pngBytes(1200, 400) }, alt: 'Баннер' }, ctx);
     }
     await contentOps.promotions.save(ADMIN, null, { title: 'Весенняя акция', summary: 'Условия', published: true }, ctx);
     await contentOps.services.save(ADMIN, null, { title: 'Ремонт триммеров', summary: 'Диагностика', published: true }, ctx);

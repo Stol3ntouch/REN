@@ -4,7 +4,9 @@ import { newsRepo } from '@/server/db/repositories/news';
 import { pagesRepo } from '@/server/db/repositories/pages';
 import { promotionsRepo } from '@/server/db/repositories/promotions';
 import { servicesRepo } from '@/server/db/repositories/services';
-import { slidesRepo } from '@/server/db/repositories/slides';
+import { bannersRepo } from '@/server/db/repositories/banners';
+import { newsCategoriesRepo } from '@/server/db/repositories/news-categories';
+import { serviceCategoriesRepo } from '@/server/db/repositories/service-categories';
 import type { EntityKey } from './fields';
 import { isPageHideLocked } from './queries';
 import { getSettings } from './settings';
@@ -35,8 +37,12 @@ export function listAdminItems(entity: Exclude<EntityKey, 'settings'>, opts: { d
         hidden: r.hiddenByAdmin,
         hideLocked: isPageHideLocked(r),
       }));
-    case 'slides':
-      return slidesRepo.list(db).map((r) => ({ id: r.id, title: r.title, note: yn(r.active, 'показывается', 'скрыт'), record: { ...r } }));
+    case 'banners':
+      return bannersRepo.list(db).map((r) => ({ id: r.id, title: r.title, note: `${yn(r.status === 'active', 'активен', 'отключён')} · ${r.position}`, record: { ...r } }));
+    case 'news-categories':
+      return newsCategoriesRepo.list(db).map((r) => ({ id: r.id, title: r.name, note: `/${r.slug}`, record: { ...r } }));
+    case 'service-categories':
+      return serviceCategoriesRepo.list(db).map((r) => ({ id: r.id, title: r.name, note: `/${r.slug}`, record: { ...r } }));
     case 'news':
       return newsRepo.list(db).map((r) => ({ id: r.id, title: r.title, note: `${yn(r.published, 'опубликована', 'черновик')} · /${r.slug}`, record: { ...r } }));
     case 'services':

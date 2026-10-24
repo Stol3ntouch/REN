@@ -11,6 +11,7 @@ import { CALLBACK_HREF } from '../nav';
 import '../catalog/catalog.css';
 import { NewsCard, ReviewCard, ServiceCard } from './cards';
 import './home.css';
+import { BannerBlock } from './BannerBlock';
 import { HomeHero } from './HomeHero';
 import { ArrowRightIcon, BoxIcon, CartLineIcon, ChevronRightIcon, ClipboardIcon, GearIcon, LeafIcon, MailIcon, PhoneIcon, PinIcon, WrenchIcon } from './home-icons';
 import { HomeProductTabs, type ProductTab } from './HomeProductTabs';
@@ -111,6 +112,8 @@ export function HomeView({ data }: { data: HomeData }) {
           </li>
         ))}
       </ul>
+
+      <BannerBlock banners={data.middleBanners} />
 
       {data.categories.length > 0 ? (
         <Section id="home-categories" title="Популярные категории" more={{ href: '/catalog', label: 'Перейти в каталог' }}>
