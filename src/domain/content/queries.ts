@@ -5,6 +5,7 @@ import { newsRepo, type NewsRow } from '@/server/db/repositories/news';
 import { pagesRepo, type PageRow } from '@/server/db/repositories/pages';
 import { promotionsRepo, type PromotionRow } from '@/server/db/repositories/promotions';
 import { servicesRepo, type ServiceRow } from '@/server/db/repositories/services';
+import { settingsRepo } from '@/server/db/repositories/settings';
 import { slidesRepo, type SlideRow } from '@/server/db/repositories/slides';
 import { imageView } from './images';
 
@@ -25,16 +26,42 @@ export function pagePath(page: Pick<PageRow, 'key' | 'slug'>): string {
   return (page.key && FIXED_PATHS[page.key]) || `/pages/${page.slug}`;
 }
 
+/**
+ * Страницы, которые скрыть нельзя: на них ссылаются формы (согласие на обработку персональных данных).
+ * Проверяет сервер (contentOps.pages.setHidden); в админке кнопка неактивна.
+ */
+export const UNHIDEABLE_PAGE_KEYS: readonly string[] = ['privacy'];
+
+export function isPageHideLocked(page: Pick<PageRow, 'key'>): boolean {
+  return page.key !== null && UNHIDEABLE_PAGE_KEYS.includes(page.key);
+}
+
+// Публичное чтение страниц: скрытые администратором не отдаются (404, нет в меню, подвале и sitemap).
+// Админка читает pagesRepo напрямую и видит все.
+const shown = (p: PageRow | null): PageRow | null => (p && !p.hiddenByAdmin ? p : null);
+
 export function getPageByKey(key: PageKey, opts: Opts = {}): PageRow | null {
-  return pagesRepo.findByKey(dbOf(opts), key);
+  return shown(pagesRepo.findByKey(dbOf(opts), key));
 }
 
 export function getPageBySlug(slug: string, opts: Opts = {}): PageRow | null {
-  return pagesRepo.findBySlug(dbOf(opts), slug);
+  return shown(pagesRepo.findBySlug(dbOf(opts), slug));
 }
 
 export function listPages(opts: Opts = {}): PageRow[] {
-  return pagesRepo.list(dbOf(opts));
+  return pagesRepo.list(dbOf(opts)).filter((p) => !p.hiddenByAdmin);
+}
+
+// ---------- скрытие разделов целиком ----------
+
+/** Разделы с записями, которые администратор может скрыть целиком (настройка section_hidden_<раздел> в shop_settings). */
+export const HIDEABLE_SECTIONS = ['news', 'promotions', 'services'] as const;
+export type HideableSection = (typeof HIDEABLE_SECTIONS)[number];
+
+export const sectionSettingKey = (section: HideableSection): string => `section_hidden_${section}`;
+
+export function isSectionHidden(section: HideableSection, opts: Opts = {}): boolean {
+  return settingsRepo.get(dbOf(opts), sectionSettingKey(section)) === '1';
 }
 
 // ---------- слайды ----------
@@ -48,16 +75,19 @@ export function listActiveSlides(opts: Opts = {}): WithImage<SlideRow>[] {
 const withNewsImage = (n: NewsRow): WithImage<NewsRow> => ({ ...n, image: imageView(n, 'card', n.title) });
 
 export function listPublishedNews(opts: Opts & { limit?: number; offset?: number } = {}): WithImage<NewsRow>[] {
+  if (isSectionHidden('news', opts)) return [];
   const all = newsRepo.list(dbOf(opts), 'published = 1');
   const offset = opts.offset ?? 0;
   return all.slice(offset, opts.limit === undefined ? undefined : offset + opts.limit).map(withNewsImage);
 }
 
 export function countPublishedNews(opts: Opts = {}): number {
+  if (isSectionHidden('news', opts)) return 0;
   return newsRepo.count(dbOf(opts), 'published = 1');
 }
 
 export function getPublishedNews(slug: string, opts: Opts = {}): WithImage<NewsRow> | null {
+  if (isSectionHidden('news', opts)) return null;
   const n = newsRepo.findBySlug(dbOf(opts), slug);
   return n && n.published ? { ...n, image: imageView(n, 'large', n.title) } : null;
 }
@@ -70,6 +100,7 @@ export function isPromotionActive(p: Pick<PromotionRow, 'published' | 'startsAt'
 }
 
 export function listActivePromotions(opts: Opts = {}): WithImage<PromotionRow>[] {
+  if (isSectionHidden('promotions', opts)) return [];
   const now = opts.now ?? Date.now();
   return promotionsRepo
     .list(dbOf(opts), 'published = 1')
@@ -79,6 +110,7 @@ export function listActivePromotions(opts: Opts = {}): WithImage<PromotionRow>[]
 
 /** Страница акции открывается и после окончания (помечается завершённой) — ссылки и закладки не ломаются. */
 export function getPublishedPromotion(slug: string, opts: Opts = {}): WithImage<PromotionRow> | null {
+  if (isSectionHidden('promotions', opts)) return null;
   const p = promotionsRepo.findBySlug(dbOf(opts), slug);
   return p && p.published ? { ...p, image: imageView(p, 'large', p.title) } : null;
 }
@@ -86,10 +118,12 @@ export function getPublishedPromotion(slug: string, opts: Opts = {}): WithImage<
 // ---------- услуги ----------
 
 export function listPublishedServices(opts: Opts = {}): WithImage<ServiceRow>[] {
+  if (isSectionHidden('services', opts)) return [];
   return servicesRepo.list(dbOf(opts), 'published = 1').map((s) => ({ ...s, image: imageView(s, 'card', s.title) }));
 }
 
 export function getPublishedService(slug: string, opts: Opts = {}): WithImage<ServiceRow> | null {
+  if (isSectionHidden('services', opts)) return null;
   const s = servicesRepo.findBySlug(dbOf(opts), slug);
   return s && s.published ? { ...s, image: imageView(s, 'large', s.title) } : null;
 }

@@ -9,7 +9,9 @@ import { MAX_SLIDES } from '@/server/db/repositories/slides';
 import { requireStaffPage } from '@/ui/admin/guard';
 import '@/ui/cart/admin-orders.css';
 import { EmptyState } from '@/ui/states';
+import { isSectionHidden, type HideableSection } from '@/domain/content/queries';
 import { DeleteForm, EntityForm } from '../EntityForm';
+import { PageVisibilityControl, SectionVisibilityControl } from '../VisibilityControls';
 import '../content-admin.css';
 
 export const metadata: Metadata = { title: 'Контент и услуги' };
@@ -83,6 +85,7 @@ export default async function ContentEntityPage({ params, searchParams }: Props)
       <h2>{label.title}</h2>
       <p className="adm-hint">{label.hint}</p>
       {flash}
+      {entity === 'news' || entity === 'promotions' || entity === 'services' ? <SectionVisibilityControl section={entity as HideableSection} hidden={isSectionHidden(entity as HideableSection)} /> : null}
 
       {items.length === 0 ? (
         <EmptyState title="Пока ничего нет">
@@ -100,7 +103,7 @@ export default async function ContentEntityPage({ params, searchParams }: Props)
                 <Link className="button button--outline" href={`/admin/content/${entity}?edit=${i.id}`}>
                   Изменить
                 </Link>
-                {entity !== 'pages' ? <DeleteForm entity={entity} id={i.id} /> : null}
+                {entity === 'pages' ? <PageVisibilityControl id={i.id} hidden={i.hidden === true} locked={i.hideLocked === true} /> : <DeleteForm entity={entity} id={i.id} />}
               </span>
             </li>
           ))}

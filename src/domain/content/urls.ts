@@ -20,11 +20,13 @@ export type PublicUrl = { path: string; lastModified?: Date };
 export function listPublicUrls(opts: { db?: Db; now?: number } = {}): PublicUrl[] {
   const db = opts.db ?? getDb();
   const now = opts.now ?? Date.now();
-  const urls: PublicUrl[] = [{ path: '/' }, { path: '/contacts' }, { path: '/buyers' }, { path: '/services' }];
+  const urls: PublicUrl[] = [{ path: '/' }, { path: '/contacts' }, { path: '/buyers' }];
 
   for (const page of listPages({ db })) urls.push({ path: pagePath(page), lastModified: page.updatedAt > 0 ? new Date(page.updatedAt) : undefined });
 
-  for (const s of listPublishedServices({ db })) urls.push({ path: `/services/${s.slug}`, lastModified: new Date(s.updatedAt) });
+  const services = listPublishedServices({ db });
+  if (services.length > 0) urls.push({ path: '/services' });
+  for (const s of services) urls.push({ path: `/services/${s.slug}`, lastModified: new Date(s.updatedAt) });
 
   if (countPublishedNews({ db }) > 0) {
     urls.push({ path: '/news' });

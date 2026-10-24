@@ -49,7 +49,7 @@ export function descendantIds(rows: CategoryRow[], rootId: number): number[] {
 }
 
 export function categoryScope(db: Db, slug: string): { category: CategoryRow; ids: number[] } | null {
-  const category = categoriesRepo.findBySlug(db, slug);
+  const category = categoriesRepo.findVisibleBySlug(db, slug);
   if (!category) return null;
   return { category, ids: descendantIds(listCategoryRows(db), category.id) };
 }

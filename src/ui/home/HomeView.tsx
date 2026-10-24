@@ -188,28 +188,31 @@ export function HomeView({ data }: { data: HomeData }) {
         </Section>
       ) : null}
 
-      <section className="home-about" aria-labelledby="home-about">
-        <div className="home-about__art" aria-hidden="true">
-          {/* eslint-disable-next-line @next/next/no-img-element -- фирменный знак из public/brand */}
-          <img src="/brand/mark-128.png" alt="" width={96} height={96} loading="lazy" decoding="async" />
-        </div>
-        <div className="home-about__body">
-          <h2 id="home-about">О компании РемТехСад</h2>
-          <RichText text={data.about ? excerptText(data.about.body) : '[ТЕКСТ О КОМПАНИИ — впиши]'} />
-          <Link className="button button--outline" href="/about">
-            Подробнее о компании
-            <ArrowRightIcon size={18} />
-          </Link>
-        </div>
-        <ul className="home-about__points">
-          {ABOUT_POINTS.map((a) => (
-            <li key={a.text}>
-              <span className="home-about__icon">{a.icon}</span>
-              {a.text}
-            </li>
-          ))}
-        </ul>
-      </section>
+      {/* страница «О компании» скрыта администратором — блока со ссылкой на неё на главной нет */}
+      {data.about ? (
+        <section className="home-about" aria-labelledby="home-about">
+          <div className="home-about__art" aria-hidden="true">
+            {/* eslint-disable-next-line @next/next/no-img-element -- фирменный знак из public/brand */}
+            <img src="/brand/mark-128.png" alt="" width={96} height={96} loading="lazy" decoding="async" />
+          </div>
+          <div className="home-about__body">
+            <h2 id="home-about">О компании РемТехСад</h2>
+            <RichText text={excerptText(data.about.body)} />
+            <Link className="button button--outline" href="/about">
+              Подробнее о компании
+              <ArrowRightIcon size={18} />
+            </Link>
+          </div>
+          <ul className="home-about__points">
+            {ABOUT_POINTS.map((a) => (
+              <li key={a.text}>
+                <span className="home-about__icon">{a.icon}</span>
+                {a.text}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {data.news.length > 0 ? (
         <Section id="home-news" title="Новости" more={{ href: '/news', label: 'Все новости' }}>

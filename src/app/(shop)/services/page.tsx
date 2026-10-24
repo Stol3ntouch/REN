@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
-import { listPublishedServices } from '@/domain/content/queries';
+import { isSectionHidden, listPublishedServices } from '@/domain/content/queries';
 import { contentMetadata } from '@/domain/content/seo';
 import { ServiceCard } from '@/ui/home/cards';
 import { Placeholder } from '@/ui/placeholder';
@@ -12,6 +13,7 @@ export const metadata: Metadata = contentMetadata({ title: 'Ремонт и ус
 
 export default async function ServicesPage() {
   await connection();
+  if (isSectionHidden('services')) notFound(); // администратор скрыл раздел целиком
   const services = listPublishedServices();
   return (
     <>

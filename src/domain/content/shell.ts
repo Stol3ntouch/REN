@@ -1,11 +1,9 @@
 import { getDb, type Db } from '@/server/db/connection';
 import { companyReviewsRepo } from '@/server/db/repositories/company-reviews';
-import { newsRepo } from '@/server/db/repositories/news';
-import { promotionsRepo } from '@/server/db/repositories/promotions';
 import { listCategoryRows } from '@/domain/catalog/category-rows';
 import { MAIN_NAV } from '@/ui/nav';
 import type { ShellContext, ShellLink } from '@/ui/shell-context';
-import { getPageByKey, isPromotionActive, pagePath, type PageKey } from './queries';
+import { countPublishedNews, getPageByKey, listActivePromotions, listPublishedServices, pagePath, type PageKey } from './queries';
 import { DEFAULT_LOGO_DARK_URL, DEFAULT_LOGO_URL, getShopInfo } from './settings';
 
 /** Адрес страницы отзывов о компании. */
@@ -14,18 +12,22 @@ export const COMPANY_REVIEWS_PATH = '/about/reviews';
 type Opts = { db?: Db; now?: number };
 
 /**
- * Данные для шапки и подвала из настроек и контента. Пустые разделы не попадают в меню:
- * «Новости» — пока нет опубликованных новостей, «Акции» — пока нет действующих.
+ * Данные для шапки и подвала из настроек и контента. Пустые и скрытые администратором разделы не попадают в меню:
+ * «Новости» — пока нет опубликованных новостей, «Акции» — пока нет действующих, «Услуги» — пока нет опубликованных;
+ * скрытая страница («О компании», доставка, гарантия…) пропадает вместе со ссылкой на неё.
  */
 export function loadShellContext(opts: Opts = {}): ShellContext {
   const db = opts.db ?? getDb();
   const now = opts.now ?? Date.now();
   const shop = getShopInfo({ db });
-  const hasNews = newsRepo.count(db, 'published = 1') > 0;
-  const hasPromotions = promotionsRepo.list(db, 'published = 1').some((p) => isPromotionActive(p, now));
+  const hasNews = countPublishedNews({ db }) > 0;
+  const hasPromotions = listActivePromotions({ db, now }).length > 0;
+  const hasServices = listPublishedServices({ db }).length > 0;
+  const hasAbout = getPageByKey('about', { db }) !== null;
   const hasReviews = companyReviewsRepo.count(db, 'published = 1') > 0;
 
-  const nav = MAIN_NAV.filter((i) => (i.href === '/news' ? hasNews : i.href === '/promotions' ? hasPromotions : true));
+  const sectionShown: Record<string, boolean> = { '/news': hasNews, '/promotions': hasPromotions, '/services': hasServices, '/about': hasAbout };
+  const nav = MAIN_NAV.filter((i) => sectionShown[i.href] ?? true);
   const pageLink = (key: PageKey): ShellLink[] => {
     const page = getPageByKey(key, { db });
     return page ? [{ href: pagePath(page), label: page.title }] : [];
@@ -49,7 +51,7 @@ export function loadShellContext(opts: Opts = {}): ShellContext {
     buyerLinks: [
       ...pageLink('delivery'),
       ...pageLink('warranty'),
-      { href: '/services', label: 'Услуги' },
+      ...(hasServices ? [{ href: '/services', label: 'Услуги' }] : []),
       ...(hasPromotions ? [{ href: '/promotions', label: 'Акции' }] : []),
       { href: '/contacts', label: 'Контакты' },
     ],

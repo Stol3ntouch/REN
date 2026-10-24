@@ -12,6 +12,7 @@ import { MAX_SLIDES, slidesRepo, type SlideRow, type SlideWrite } from '@/server
 import { settingsRepo } from '@/server/db/repositories/settings';
 import { NotFoundError, ValidationError } from '@/server/http/errors';
 import { intakeImage, type ImageInput } from './images';
+import { HIDEABLE_SECTIONS, isPageHideLocked, isSectionHidden, sectionSettingKey, type HideableSection } from './queries';
 import { EDITABLE_SETTING_KEYS, type EditableSettingKey } from './settings';
 
 /**
@@ -366,6 +367,57 @@ const pages = {
     if (id === null) throw new ValidationError('Системные страницы создать нельзя — отредактируйте существующую');
     return pageOps.save(session, id, raw, ctx);
   },
+
+  /**
+   * Скрыть (hidden=true) или вернуть страницу на сайт. Право content.write (только admin). Страницу не удаляем:
+   * скрытая даёт 404 и пропадает из меню, подвала и sitemap. Страницы, на которые ссылаются формы (политика ПДн),
+   * скрыть нельзя — ValidationError. Повтор того же — { changed: false } без аудита. Аудит page.visibility.
+   */
+  async setHidden(session: Session, id: unknown, hidden: unknown, ctx: Ctx = {}): Promise<{ changed: boolean }> {
+    authorize(session);
+    const pageIdValue = parse(z.number({ error: 'Страница не найдена' }).int('Страница не найдена').min(1, 'Страница не найдена'), id);
+    const flag = parse(z.boolean({ error: 'Неверное действие' }), hidden);
+    const { db, now } = resolve(ctx);
+    return withTransaction(db, () => {
+      const page = pagesRepo.get(db, pageIdValue);
+      if (!page) throw new NotFoundError('Страница не найдена');
+      if (flag && isPageHideLocked(page)) {
+        throw new ValidationError('Эту страницу скрыть нельзя: на неё ссылаются формы сайта (согласие на обработку персональных данных).');
+      }
+      if (page.hiddenByAdmin === flag) return { changed: false };
+      pagesRepo.setHidden(db, page.id, flag);
+      audit.record(
+        { actorId: session.staffId, actorType: 'staff', action: 'page.visibility', entity: 'content_pages', entityId: page.id, before: { hidden: !flag }, after: { hidden: flag } },
+        { db, now },
+      );
+      return { changed: true };
+    });
+  },
+};
+
+// ---------- разделы целиком (новости, акции, услуги) ----------
+
+const sections = {
+  /**
+   * Скрыть (hidden=true) или показать раздел целиком: список, страницы записей, меню, подвал, sitemap и блок на главной.
+   * Записи не меняются и не удаляются. Хранится в shop_settings (section_hidden_<раздел>). Право content.write; аудит section.visibility.
+   */
+  async setHidden(session: Session, section: unknown, hidden: unknown, ctx: Ctx = {}): Promise<{ changed: boolean }> {
+    authorize(session);
+    const name: HideableSection = parse(z.enum(HIDEABLE_SECTIONS, { error: 'Такой раздел скрыть нельзя' }), section);
+    const flag = parse(z.boolean({ error: 'Неверное действие' }), hidden);
+    const { db, now } = resolve(ctx);
+    return withTransaction(db, () => {
+      if (isSectionHidden(name, { db }) === flag) return { changed: false };
+      if (flag) settingsRepo.set(db, sectionSettingKey(name), '1', now);
+      else settingsRepo.delete(db, sectionSettingKey(name));
+      audit.record(
+        { actorId: session.staffId, actorType: 'staff', action: 'section.visibility', entity: 'content_section', entityId: name, before: { hidden: !flag }, after: { hidden: flag } },
+        { db, now },
+      );
+      return { changed: true };
+    });
+  },
 };
 
 // ---------- настройки магазина ----------
@@ -456,4 +508,4 @@ const settings = {
   },
 };
 
-export const contentOps = { settings, pages, slides, news, services, promotions, reviews };
+export const contentOps = { settings, pages, sections, slides, news, services, promotions, reviews };

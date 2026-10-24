@@ -1,12 +1,14 @@
 import type { Db } from '../connection';
 
 /**
- * ЕДИНОЕ условие видимости товара на сайте: опубликован и не скрыт администратором (F3).
+ * ЕДИНОЕ условие видимости товара на сайте: опубликован, не скрыт администратором (F3) и его категория не скрыта
+ * (F6: ни сама, ни через родителя — categories.effective_hidden).
  * Любой SQL, отдающий товары покупателю, подставляет его (alias — псевдоним таблицы products), а не пишет published = 1 сам.
+ * Скрытые категории берутся некоррелированным подзапросом (один раз на запрос), а не коррелированным по строкам.
  * Строку собираем из константы, не из ввода.
  */
 export function visibleProductSql(alias = 'p'): string {
-  return `${alias}.published = 1 AND ${alias}.hidden_by_admin = 0`;
+  return `${alias}.published = 1 AND ${alias}.hidden_by_admin = 0 AND ${alias}.category_id NOT IN (SELECT id FROM categories WHERE effective_hidden = 1)`;
 }
 
 export type ProductRow = {

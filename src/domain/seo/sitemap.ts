@@ -22,7 +22,7 @@ export function listSitemapEntries(opts: { db?: Db; siteUrl: string; now?: numbe
   const direct = new Map(
     (db.prepare(`SELECT p.category_id AS id, COUNT(*) AS n FROM products p WHERE ${visibleProductSql('p')} GROUP BY p.category_id`).all() as { id: number; n: number }[]).map((r) => [r.id, r.n]),
   );
-  const rows = categoriesRepo.listAll(db);
+  const rows = categoriesRepo.listVisible(db);
   const children = new Map<number, number[]>();
   for (const r of rows) if (r.parentId !== null) children.set(r.parentId, [...(children.get(r.parentId) ?? []), r.id]);
   const total = (id: number, seen = new Set<number>()): number => {

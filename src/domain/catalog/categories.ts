@@ -71,7 +71,7 @@ export async function getCategoryBreadcrumbs(slug: string, opts: { db?: Db } = {
 }
 
 export async function getCategoryBySlug(slug: string, opts: { db?: Db } = {}): Promise<CategoryInfo | null> {
-  const c = categoriesRepo.findBySlug(opts.db ?? getDb(), slug);
+  const c = categoriesRepo.findVisibleBySlug(opts.db ?? getDb(), slug);
   return c ? toCategoryInfo(c) : null;
 }
 

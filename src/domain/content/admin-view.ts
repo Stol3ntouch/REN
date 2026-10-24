@@ -6,10 +6,20 @@ import { promotionsRepo } from '@/server/db/repositories/promotions';
 import { servicesRepo } from '@/server/db/repositories/services';
 import { slidesRepo } from '@/server/db/repositories/slides';
 import type { EntityKey } from './fields';
+import { isPageHideLocked } from './queries';
 import { getSettings } from './settings';
 
 /** Строка списка в админке: подпись, пометка и запись целиком (значения для формы правки; имена полей = поля формы). */
-export type AdminItem = { id: number; title: string; note: string; record: Record<string, unknown> };
+export type AdminItem = {
+  id: number;
+  title: string;
+  note: string;
+  record: Record<string, unknown>;
+  /** Страница скрыта администратором (только pages). */
+  hidden?: boolean;
+  /** Страницу скрыть нельзя: на неё ссылаются формы (только pages). */
+  hideLocked?: boolean;
+};
 
 const yn = (v: boolean, yes: string, no: string) => (v ? yes : no);
 
@@ -17,7 +27,14 @@ export function listAdminItems(entity: Exclude<EntityKey, 'settings'>, opts: { d
   const db = opts.db ?? getDb();
   switch (entity) {
     case 'pages':
-      return pagesRepo.list(db).map((r) => ({ id: r.id, title: r.title, note: `/${r.slug}${r.legalDraft ? ' · черновик, проверить юристом' : ''}`, record: { ...r } }));
+      return pagesRepo.list(db).map((r) => ({
+        id: r.id,
+        title: r.title,
+        note: `/${r.slug}${r.hiddenByAdmin ? ' · скрыта на сайте' : ''}${r.legalDraft ? ' · черновик, проверить юристом' : ''}`,
+        record: { ...r },
+        hidden: r.hiddenByAdmin,
+        hideLocked: isPageHideLocked(r),
+      }));
     case 'slides':
       return slidesRepo.list(db).map((r) => ({ id: r.id, title: r.title, note: yn(r.active, 'показывается', 'скрыт'), record: { ...r } }));
     case 'news':

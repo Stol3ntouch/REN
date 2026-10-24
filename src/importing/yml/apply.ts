@@ -93,6 +93,9 @@ export async function applyImport(plan: ImportPlan, db: Db, opts: ApplyOptions =
       else report.categories.unchanged++;
     }
 
+    // скрытие категорий администратором (F6) наследуется: новая подкатегория или перенос под скрытого родителя скрывают её
+    categoriesRepo.recomputeEffectiveHidden(db);
+
     // --- товары
     const takenProductSlugs = productsRepo.allSlugs(db);
     for (const pp of plan.products) {
