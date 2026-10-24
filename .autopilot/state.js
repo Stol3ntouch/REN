@@ -2,7 +2,7 @@ window.STATE =
 {
   "version": 2,
   "slug": "remtehsad-shop",
-  "dir": "2026-10-22-remtehsad-shop",
+  "dir": "2026-10-22-remtehsad-shop--wip",
   "title": "Интернет-магазин РемТехСад",
   "mode": "full",
   "depth": "normal",
@@ -13,8 +13,8 @@ window.STATE =
   "skillDir": "C:/Users/OxO/Desktop/RemTexSad/skills-2.2.0/skills/autopilot",
   "baseCommit": "2ee729c",
   "startedAt": "2026-10-22T21:26:04+03:00",
-  "updatedAt": "2026-10-24T14:21:26+03:00",
-  "finishedAt": "2026-10-24T14:21:26+03:00",
+  "updatedAt": "2026-10-24T22:13:49+03:00",
+  "finishedAt": null,
   "stages": [
     {
       "id": "preflight",
@@ -24,51 +24,38 @@ window.STATE =
     },
     {
       "id": "manifest",
-      "status": "done",
-      "startedAt": "2026-10-23T15:58:34+03:00",
-      "finishedAt": "2026-10-23T15:59:27+03:00"
+      "status": "active",
+      "startedAt": "2026-10-24T22:05:44+03:00"
     },
     {
       "id": "briefing",
-      "status": "skipped",
-      "note": "не понадобился",
-      "finishedAt": "2026-10-24T14:21:26+03:00"
+      "status": "pending"
     },
     {
       "id": "spec",
-      "status": "done",
-      "startedAt": "2026-10-23T15:59:27+03:00",
-      "finishedAt": "2026-10-23T15:59:27+03:00"
+      "status": "pending"
     },
     {
       "id": "plan",
-      "status": "done",
-      "startedAt": "2026-10-23T15:59:27+03:00",
-      "finishedAt": "2026-10-23T15:59:27+03:00"
+      "status": "pending"
     },
     {
       "id": "build",
-      "status": "done",
-      "startedAt": "2026-10-23T15:59:27+03:00",
-      "finishedAt": "2026-10-24T14:21:26+03:00"
+      "status": "pending"
     },
     {
       "id": "review",
-      "status": "skipped",
-      "note": "не понадобился",
-      "finishedAt": "2026-10-24T14:21:26+03:00"
+      "status": "pending"
     },
     {
       "id": "final",
-      "status": "done",
-      "finishedAt": "2026-10-24T14:21:26+03:00",
-      "startedAt": "2026-10-24T14:21:26+03:00"
+      "status": "pending"
     }
   ],
   "requirements": {
-    "total": 65,
+    "total": 111,
     "done": 63,
-    "inTicket": 0,
+    "inTicket": 46,
     "inSpec": 0,
     "placeholder": 2,
     "deferred": 0,
@@ -609,6 +596,440 @@ window.STATE =
       "commit": "26e834b"
     },
     {
+      "id": "C01",
+      "title": "Каркас админки и kit-компоненты",
+      "requirements": [
+        "G13",
+        "G14",
+        "G15",
+        "G53"
+      ],
+      "blockedBy": [],
+      "wave": 13,
+      "zone": [
+        "src/ui/admin/**",
+        "src/app/admin/layout.tsx",
+        "src/app/admin/(panel)/_lib/ui.tsx",
+        "src/app/admin/(panel)/loading.tsx",
+        "src/app/admin/(panel)/error.tsx",
+        "src/app/admin/(panel)/not-found.tsx",
+        "public/brand/**",
+        "tests/admin-kit/**"
+      ],
+      "review": "да — фундамент",
+      "model": "сильная",
+      "status": "pending",
+      "retries": 0,
+      "repairs": 0
+    },
+    {
+      "id": "C02",
+      "title": "RBAC в БД, пользователи и роли, журнал действий, уведомления (хранилище)",
+      "requirements": [
+        "G46",
+        "G47"
+      ],
+      "blockedBy": [
+        "01"
+      ],
+      "wave": 14,
+      "zone": [
+        "src/domain/admin/**",
+        "src/server/db/repositories/{staff,roles,audit,sessions,notifications}.ts",
+        "migrations/1100-1149",
+        "src/app/admin/(panel)/{staff,roles,audit}/**",
+        "src/app/admin/(auth)/**",
+        "scripts/admin-create.ts",
+        "tests/rbac/**",
+        "tests/admin/{staff,roles,audit}*.test.ts*"
+      ],
+      "review": "да — права, пароли, сессии",
+      "model": "сильная",
+      "status": "pending",
+      "retries": 0,
+      "repairs": 0
+    },
+    {
+      "id": "C03",
+      "title": "Бренды, характеристики, фильтры каталога",
+      "requirements": [
+        "G25",
+        "G26",
+        "G27"
+      ],
+      "blockedBy": [
+        "01"
+      ],
+      "wave": 14,
+      "zone": [
+        "src/domain/catalog/{brands,attributes,filters,facets}.ts",
+        "src/server/db/repositories/{brands,attributes,filters,facets-config}.ts",
+        "migrations/1150-1199",
+        "src/app/admin/(panel)/catalog/{brands,attributes,filters}/**",
+        "src/app/admin/(panel)/_lib/{brands,attributes,filters}-ops.ts",
+        "src/ui/catalog/FiltersPanel.tsx",
+        "src/ui/catalog/FilterDrawer.tsx",
+        "src/importing/yml/apply.ts",
+        "tests/catalog/**",
+        "tests/admin/{brands,attributes,filters}*.test.ts*"
+      ],
+      "review": "нет",
+      "model": "обычная",
+      "status": "pending",
+      "retries": 0,
+      "repairs": 0
+    },
+    {
+      "id": "C04",
+      "title": "Товар: модель данных, форма, CRUD, остатки",
+      "requirements": [
+        "G17",
+        "G19"
+      ],
+      "blockedBy": [
+        "01",
+        "02",
+        "03"
+      ],
+      "wave": 15,
+      "zone": [
+        "src/domain/catalog/{products-admin,stock}.ts",
+        "src/server/db/repositories/{products-admin,product-categories,stock,product-media}.ts",
+        "migrations/1200-1249",
+        "src/app/admin/(panel)/catalog/products/**",
+        "src/app/admin/(panel)/catalog/[id]/**",
+        "src/app/admin/(panel)/_lib/{product,stock}-ops.ts",
+        "src/domain/catalog/{store,product,search}.ts",
+        "src/ui/catalog/{PriceBlock,ProductCard,ProductGallery}.tsx",
+        "src/app/(shop)/product/**",
+        "src/importing/yml/apply.ts",
+        "tests/admin/product*.test.ts*",
+        "tests/catalog/**"
+      ],
+      "review": "нет",
+      "model": "сильная",
+      "status": "pending",
+      "retries": 0,
+      "repairs": 0
+    },
+    {
+      "id": "C05",
+      "title": "Таблица товаров: фильтры, массовые действия, дублирование, удаление, экспорт",
+      "requirements": [
+        "G18"
+      ],
+      "blockedBy": [
+        "04"
+      ],
+      "wave": 16,
+      "zone": [
+        "src/app/admin/(panel)/catalog/page.tsx",
+        "src/app/admin/(panel)/catalog/ProductTable.tsx",
+        "src/app/admin/(panel)/catalog/products/list/**",
+        "src/app/admin/api/products/**",
+        "src/app/admin/(panel)/_lib/product-list-ops.ts",
+        "src/server/db/repositories/{catalog-admin,products-admin}.ts",
+        "src/domain/catalog/products-list.ts",
+        "tests/admin/product-list*.test.ts*"
+      ],
+      "review": "нет",
+      "model": "обычная",
+      "status": "pending",
+      "retries": 0,
+      "repairs": 0
+    },
+    {
+      "id": "C06",
+      "title": "Категории: дерево, глаз, карточка, вкладки",
+      "requirements": [
+        "G20",
+        "G21",
+        "G22",
+        "G23",
+        "G24"
+      ],
+      "blockedBy": [
+        "03",
+        "04",
+        "05",
+        "08"
+      ],
+      "wave": 17,
+      "zone": [
+        "src/app/admin/(panel)/catalog/categories/**",
+        "src/app/admin/api/categories/**",
+        "src/app/admin/(panel)/_lib/{category,category-tree}-ops.ts",
+        "src/domain/catalog/{categories,category-rows,category-images}.ts",
+        "src/server/db/repositories/{categories,category-links}.ts",
+        "migrations/1250-1299",
+        "src/ui/catalog/{CategoryTiles,CategorySeoText}.tsx",
+        "src/app/(shop)/catalog/**",
+        "src/domain/seo/**",
+        "src/ui/layout/**",
+        "src/domain/content/home.ts",
+        "tests/admin/categor*.test.ts*",
+        "tests/catalog/**"
+      ],
+      "review": "нет",
+      "model": "сильная",
+      "status": "pending",
+      "retries": 0,
+      "repairs": 0
+    },
+    {
+      "id": "C07",
+      "title": "Единый модуль импорта и экспорта: CSV и YML",
+      "requirements": [
+        "G28"
+      ],
+      "blockedBy": [
+        "04",
+        "05"
+      ],
+      "wave": 17,
+      "zone": [
+        "src/importing/**",
+        "src/app/admin/(panel)/import/**",
+        "src/app/admin/api/import/**",
+        "src/app/admin/(panel)/_lib/import-ops.ts",
+        "src/server/db/repositories/{import-runs,import-mappings}.ts",
+        "migrations/1300-1349",
+        "scripts/import-yml.ts",
+        "tests/importing/**",
+        "tests/admin/import*.test.ts*",
+        "tests/fixtures/**"
+      ],
+      "review": "нет",
+      "model": "сильная",
+      "status": "pending",
+      "retries": 0,
+      "repairs": 0
+    },
+    {
+      "id": "C08",
+      "title": "Контент: страницы-CMS, баннеры, новости, акции и купоны, отзывы, услуги",
+      "requirements": [
+        "G32",
+        "G33",
+        "G34",
+        "G35",
+        "G36",
+        "G37"
+      ],
+      "blockedBy": [
+        "01"
+      ],
+      "wave": 14,
+      "zone": [
+        "src/domain/content/**",
+        "src/domain/pricing/promo*.ts",
+        "src/server/db/repositories/{pages,slides,banners,news,news-categories,promotions,promos,services,reviews,company-reviews}.ts",
+        "migrations/1350-1399",
+        "src/app/admin/(panel)/content/**",
+        "src/app/admin/(panel)/{reviews,promos}/**",
+        "src/app/admin/api/content/**",
+        "src/ui/home/**",
+        "src/ui/layout/**",
+        "src/app/(shop)/{pages,news,promotions,services,about,buyers,privacy,page.tsx}/**",
+        "tests/content/**",
+        "tests/admin/content*.test.ts*"
+      ],
+      "review": "нет",
+      "model": "обычная",
+      "status": "pending",
+      "retries": 0,
+      "repairs": 0
+    },
+    {
+      "id": "C09",
+      "title": "Продажи: заказы, клиенты, обращения, заявки на ремонт",
+      "requirements": [
+        "G29",
+        "G30",
+        "G31",
+        "G38"
+      ],
+      "blockedBy": [
+        "01",
+        "02"
+      ],
+      "wave": 15,
+      "zone": [
+        "src/domain/ordering/**",
+        "src/domain/customers/**",
+        "src/domain/requests/**",
+        "src/server/db/repositories/{orders,order-comments,customers-admin,customer-notes,requests,request-comments,repairs}.ts",
+        "migrations/1400-1449",
+        "src/app/admin/(panel)/{orders,customers,inquiries,repairs,requests,questions}/**",
+        "src/app/admin/api/{orders,customers,inquiries,repairs}/**",
+        "src/app/(shop)/order/**",
+        "src/integrations/mail/templates.ts",
+        "tests/ordering/**",
+        "tests/requests/**",
+        "tests/admin/{orders,customers,inquiries,repairs}*.test.ts*"
+      ],
+      "review": "да — заказы и деньги",
+      "model": "сильная",
+      "status": "pending",
+      "retries": 0,
+      "repairs": 0
+    },
+    {
+      "id": "C10",
+      "title": "Dashboard, статистика, глобальный поиск, центр уведомлений",
+      "requirements": [
+        "G16",
+        "G48",
+        "G51",
+        "G52",
+        "G14"
+      ],
+      "blockedBy": [
+        "04",
+        "09"
+      ],
+      "wave": 16,
+      "zone": [
+        "src/app/admin/(panel)/page.tsx",
+        "src/app/admin/(panel)/{analytics,notifications}/**",
+        "src/app/admin/api/{search,notifications,stats}/**",
+        "src/domain/analytics/**",
+        "src/domain/admin/{search,notifications-feed}.ts",
+        "src/server/db/repositories/{analytics,search-admin}.ts",
+        "migrations/1450-1499",
+        "src/ui/admin/{kit/SearchBox,kit/NotificationBell,topbar-config}.tsx",
+        "tests/analytics/**",
+        "tests/admin/{dashboard,search,notifications}*.test.ts*"
+      ],
+      "review": "нет",
+      "model": "обычная",
+      "status": "pending",
+      "retries": 0,
+      "repairs": 0
+    },
+    {
+      "id": "C11",
+      "title": "Настройки магазина, переключатели, SEO",
+      "requirements": [
+        "G39",
+        "G45"
+      ],
+      "blockedBy": [
+        "01",
+        "02"
+      ],
+      "wave": 15,
+      "zone": [
+        "src/domain/content/{settings,shell,fields,seo-settings}.ts",
+        "src/domain/seo/**",
+        "src/server/db/repositories/{settings,seo-settings,media}.ts",
+        "migrations/1500-1549",
+        "src/app/admin/(panel)/settings/**",
+        "src/app/admin/api/settings/**",
+        "src/proxy.ts",
+        "src/app/layout.tsx",
+        "src/app/(shop)/layout.tsx",
+        "src/ui/shell-context.ts",
+        "src/ui/layout/**",
+        "src/app/(shop)/{register,account}/**",
+        "src/app/sitemap.ts",
+        "src/app/robots.ts",
+        "tests/content/**",
+        "tests/seo/**",
+        "tests/admin/settings*.test.ts*"
+      ],
+      "review": "нет",
+      "model": "сильная",
+      "status": "pending",
+      "retries": 0,
+      "repairs": 0
+    },
+    {
+      "id": "C12",
+      "title": "Доставка и оплата, склады, налоги и цены, email-шаблоны, резервные копии, интеграции",
+      "requirements": [
+        "G40",
+        "G41",
+        "G42",
+        "G43",
+        "G44",
+        "G49",
+        "G50"
+      ],
+      "blockedBy": [
+        "04",
+        "09",
+        "11"
+      ],
+      "wave": 16,
+      "zone": [
+        "src/domain/ordering/{delivery,payment-methods,pricing-rules}.ts",
+        "src/domain/pricing/**",
+        "src/domain/admin/{backup,integrations}.ts",
+        "src/integrations/**",
+        "src/server/db/repositories/{methods,warehouses,stock,taxes,email-templates,backups,integration-settings}.ts",
+        "migrations/1550-1599",
+        "src/app/admin/(panel)/settings/{shipping,payments,warehouses,taxes,email,backup}/**",
+        "src/app/admin/(panel)/{warehouse,mail,integrations}/**",
+        "src/app/admin/api/{backup,email,integrations}/**",
+        "scripts/{backup,restore}.ts",
+        "src/server/config.ts",
+        "tests/ordering/**",
+        "tests/pricing/**",
+        "tests/mail/**",
+        "tests/backup/**",
+        "tests/admin/{shipping,payments,warehouses,taxes,email,backup,integrations}*.test.ts*"
+      ],
+      "review": "да — платёжные настройки и секреты",
+      "model": "сильная",
+      "status": "pending",
+      "retries": 0,
+      "repairs": 0
+    },
+    {
+      "id": "C13",
+      "title": "Безопасность, адаптив, производительность, E2E, документы",
+      "requirements": [
+        "G12",
+        "G54",
+        "G55",
+        "G56",
+        "G57"
+      ],
+      "blockedBy": [
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12"
+      ],
+      "wave": 18,
+      "zone": [
+        "tests/e2e/**",
+        "tests/a11y/**",
+        "tests/security/**",
+        "docs/**",
+        "README.md",
+        ".autopilot/PROGRESS.md",
+        "src/ui/admin/admin.css",
+        "src/ui/admin/nav.ts",
+        ".env.example",
+        "package.json",
+        "scripts/e2e-admin.ts"
+      ],
+      "review": "нет",
+      "model": "сильная",
+      "status": "pending",
+      "retries": 0,
+      "repairs": 0
+    },
+    {
       "id": "F1",
       "title": "Исправления по код-ревью ветки",
       "requirements": [
@@ -784,9 +1205,9 @@ window.STATE =
       "model": "обычная",
       "status": "done",
       "startedAt": "2026-10-24T13:51:27+03:00",
+      "finishedAt": "2026-10-24T14:10:10+03:00",
       "retries": 0,
       "repairs": 0,
-      "finishedAt": "2026-10-24T14:10:10+03:00",
       "tests": {
         "passed": 966,
         "failed": 0
@@ -821,10 +1242,10 @@ window.STATE =
       "review": "нет",
       "model": "обычная",
       "status": "done",
-      "retries": 0,
-      "repairs": 0,
       "startedAt": "2026-10-24T14:10:11+03:00",
       "finishedAt": "2026-10-24T14:20:55+03:00",
+      "retries": 0,
+      "repairs": 0,
       "tests": {
         "passed": 1001,
         "failed": 0
@@ -984,9 +1405,14 @@ window.STATE =
     "2026-10-24T14:10:11+03:00",
     "2026-10-24T14:20:55+03:00",
     "2026-10-24T14:21:25+03:00",
-    "2026-10-24T14:21:26+03:00"
+    "2026-10-24T14:21:26+03:00",
+    "2026-10-24T22:05:44+03:00",
+    "2026-10-24T22:13:39+03:00",
+    "2026-10-24T22:13:40+03:00",
+    "2026-10-24T22:13:48+03:00",
+    "2026-10-24T22:13:49+03:00"
   ],
-  "rev": 104,
+  "rev": 109,
   "waiting": null,
   "waits": [
     {
@@ -1774,6 +2200,34 @@ window.STATE =
       "t": "2026-10-24T14:21:26+03:00",
       "k": "finish",
       "result": "Магазин РемТехСад: каталог 1214 товаров, заказы, кабинет, заявки, админка со скрытием товаров, категорий и страниц, карта и контент; 1001 тест зелёный"
+    },
+    {
+      "t": "2026-10-24T22:05:44+03:00",
+      "k": "reopen"
+    },
+    {
+      "t": "2026-10-24T22:13:39+03:00",
+      "k": "tickets",
+      "n": 31
+    },
+    {
+      "t": "2026-10-24T22:13:40+03:00",
+      "k": "gate",
+      "g": "G3",
+      "ok": false,
+      "problems": 13
+    },
+    {
+      "t": "2026-10-24T22:13:48+03:00",
+      "k": "tickets",
+      "n": 31
+    },
+    {
+      "t": "2026-10-24T22:13:49+03:00",
+      "k": "gate",
+      "g": "G3",
+      "ok": true,
+      "problems": 0
     }
   ],
   "reqList": [
@@ -2103,16 +2557,246 @@ window.STATE =
       "id": "G11",
       "text": "«Добавь в админку функции скрытия … страниц на сайте»",
       "status": "done"
+    },
+    {
+      "id": "G12",
+      "text": "«Не ограничивайся созданием статических макетов. Нужен работающий продукт с реальными действиями, связью интерфейса с backend, сохранением данных в базе, проверкой прав доступа, обработкой ошибок и тестированием»",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G13",
+      "text": "«Все страницы должны образовывать единую систему дизайна»",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G14",
+      "text": "«Создай общую верхнюю панель, которая используется на всех вкладках» (название, подпись, глобальный поиск, «Перейти на сайт», центр уведомлений, индикатор, аватар, имя и роль, меню профиля)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G15",
+      "text": "«Создай фиксированную или закрепляемую слева навигационную панель» (сворачивание, активный пункт, группы, подразделы, иконки, адаптив; структура Главная/Каталог/Продажи/Контент/Услуги/Настройки)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G16",
+      "text": "«Создай рабочий Dashboard» (заказы, выручка, товары, нет в наличии, новые клиенты, обращения, заявки на ремонт, последние заказы и события, статистика продаж, популярные товары, заказы, требующие внимания; период и фильтры; реальные данные)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G17",
+      "text": "«Реализуй полный CRUD для товаров» (название, slug, SKU, штрихкод, краткое и полное описание, цена, старая цена, закупочная с ограничением доступа, остаток, статус наличия, бренд, категории, характеристики, изображения, публикация, видимос…",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G18",
+      "text": "«Таблица товаров» (поиск, сортировка, пагинация, строки, фильтры по категории/бренду/наличию/публикации/цене, массовые действия, перемещение, дублирование, удаление с подтверждением, экспорт отфильтрованных; на уровне API и БД)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G19",
+      "text": "«Остатки: Разделяй наличие товара и его публикацию… Изменения остатков должны записываться в историю операций»",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G20",
+      "text": "«Дерево категорий» (поиск, уровни, сворачивание, счётчик, активная, иконки, перетаскивание, создание дочерних, смена родителя, скрытие; без циклов)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G21",
+      "text": "«Добавь справа от названия каждой категории кнопку с иконкой глаза» (открытый/перечёркнутый, сохранение на сервере, возврат при ошибке, родитель скрыт — дети недоступны, товары не удаляются)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G22",
+      "text": "«Карточка выбранной категории» (изображение, название, slug/URL, ID, описание, статус, позиция в меню, родитель, загрузка изображения, редактирование; JPG/PNG/WebP с проверкой содержимого)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G23",
+      "text": "«Вкладки категории: Товары, Подкатегории, SEO, Фильтры, Баннеры, Дополнительно» (в URL; SEO: title, description, slug, canonical, индексация, SEO-текст; Фильтры; Баннеры — выбор, порядок, статус, удаление связи)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G24",
+      "text": "«Вкладка «Дополнительно»: настройки отображения (меню, главная, каталог), сортировка (позиция, приоритет), связанные категории (теги), код категории, внешний ID, комментарий; кнопки «Сохранить изменения» и «Отмена»»",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G25",
+      "text": "«Бренды» (название, slug, логотип, описание, сайт, публикация, сортировка, SEO, товары; CRUD, поиск, архив/удаление)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G26",
+      "text": "«Характеристики товаров» (типы строка/число/логическое/список/дата, единица, код, допустимые значения, фильтр, сравнение, обязательность, порядок, ограничение на категорию; нормализованно)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G27",
+      "text": "«Фильтры каталога» (цена, бренд, наличие, характеристики, категории; создание, тип, значения, порядок, включение; реально меняют выдачу на публичной стороне)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G28",
+      "text": "«Импорт и экспорт» (CSV и YML, проверка структуры, предпросмотр, сопоставление колонок, обязательные поля, дубликаты, режимы добавления/обновления, отчёт по строкам, история, экспорт по фильтрам, атомарность, лимиты)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G29",
+      "text": "«Заказы» (поля, статусы Новый/Подтверждён/Собирается/Передан в доставку/Выполнен/Отменён, возврат к предыдущему без потери истории, редактирование, комментарии, история, печать, экспорт, уведомления; оплата не имитируется)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G30",
+      "text": "«Клиенты» (имя, телефон, email, дата регистрации, история заказов, сумма, количество, комментарий менеджера, статус клиента, согласия; поиск, фильтры, страница; ПДн по ролям)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G31",
+      "text": "«Обращения» (тема, имя, контакты, текст, канал, статус новое/в работе/ожидает ответа/закрыто, ответственный, история, комментарии, фильтры, поиск, уведомления)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G32",
+      "text": "«Страницы: CMS-редактор» (заголовок, slug, содержимое, изображения, публикация, дата публикации, SEO, превью, черновик, редактирование опубликованной; без XSS)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G33",
+      "text": "«Баннеры» (название, изображение, мобильное, alt, заголовок, подзаголовок, кнопка, URL, даты, позиция, порядок, статус; тексты админа)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G34",
+      "text": "«Новости» (заголовок, содержание, превью, изображение, дата публикации, автор, статус, категории новостей, SEO)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G35",
+      "text": "«Акции» (условия, период, скидки, участвующие товары, ограничения, статус, приоритет; без несовместимых скидок) и «Маркетинг: купоны, скидки, правила акций»",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G36",
+      "text": "«Отзывы» (оценка, текст, автор, товар, модерация, публикация, ответ администратора, дата; без фиктивных)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G37",
+      "text": "«Создай раздел «Услуги и ремонт»» (название, описание, изображение, цена/стоимость, категория услуги, статус, порядок, SEO)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G38",
+      "text": "«Заявки на ремонт» (номер, клиент, телефон, email, тип техники, бренд, модель, неисправность, фото, дата, ответственный, статус из списка, комментарии, история; поиск, фильтры, назначение)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G39",
+      "text": "«Основные настройки» и «Переключатели магазина» (название, слоган, описание, логотип, favicon, телефон, email, адрес, график работы, соцсети, страна, регион, валюта, часовой пояс; включить магазин, показывать цены, регистрация, подтвержден…",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G40",
+      "text": "«Доставка» (название способа, описание, стоимость, бесплатная доставка, география, сроки, минимальная сумма, активность)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G41",
+      "text": "«Оплата» (название, описание, доступность, комиссия, ограничения, параметры интеграции, тестовый/рабочий режим; ключи безопасно; без фиктивных шлюзов)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G42",
+      "text": "«Склады и остатки» (склады, расположение, остатки по складам, движение, резервы, история)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G43",
+      "text": "«Налоги и цены» (валюта, округление, налоги, видимость цен; деньги без float)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G44",
+      "text": "«Email и уведомления» (события, SMTP/почтовый сервис, шаблоны, тестовая отправка, журнал, ошибки без ложного успеха)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G45",
+      "text": "«SEO и метаданные» (название сайта, description, Open Graph, canonical, robots, sitemap, правила индексации, шаблоны для товаров и категорий; влияют на публичные страницы)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G46",
+      "text": "«Пользователи и роли» (RBAC; суперадминистратор, администратор, менеджер, контент-менеджер, сотрудник склада, специалист сервиса; свои роли; права на backend; создание, изменение, блокировка, смена и восстановление пароля, завершение сесси…",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G47",
+      "text": "«Журнал действий» (пользователь, действие, объект, id, время, результат, IP, безопасный контекст; фильтры по пользователю, периоду, типу, объекту; без секретов)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G48",
+      "text": "«Статистика» (продажи, заказы, товары, остатки, клиенты)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G49",
+      "text": "«Резервное копирование» (создание, статус, история, проверка, восстановление с подтверждением и правами; не называть экспорт товаров резервной копией)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G50",
+      "text": "«Интеграции» (расширяемая архитектура, настройки, состояние соединения, безопасные ключи, не показывать «Подключено» без проверки)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G51",
+      "text": "«Создай рабочий глобальный поиск» (товары, категории, заказы, клиенты, обращения; подсказки, типы, переход; права; ограничения)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G52",
+      "text": "«Реализуй систему административных уведомлений» (заказы, обращения, заявки на ремонт, ошибки импорта и интеграций; дата, тип, прочтение, ссылка; без ложных)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G53",
+      "text": "«Сделай переиспользуемые компоненты» (AdminLayout, Sidebar, Topbar, Breadcrumbs, PageHeader, DataTable, Pagination, SearchInput, FilterPanel, StatusBadge, Toggle, ConfirmDialog, FormField, SelectField, FileUploader, ImagePreview, Tabs, Emp…",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G54",
+      "text": "«Проведи базовую проверку безопасности всего административного интерфейса»",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G55",
+      "text": "«Адаптивность» (ноутбуки, планшеты, телефоны: выдвижное меню, формы в одну колонку, таблицы) и «Производительность» (пагинация, индексы, без N+1)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G56",
+      "text": "«Тестирование» (unit, API, интеграционные, E2E ключевых сценариев в изолированном окружении; не утверждать непроведённое)",
+      "status": "in-ticket"
+    },
+    {
+      "id": "G57",
+      "text": "«Сделай изменение в админке и обнови песочницу»",
+      "status": "in-ticket"
     }
   ],
   "gates": {
     "G3": {
       "ok": true,
-      "at": "2026-10-24T13:55:55+03:00",
+      "at": "2026-10-24T22:13:49+03:00",
       "problems": 0
     }
   },
-  "result": "Магазин РемТехСад: каталог 1214 товаров, заказы, кабинет, заявки, админка со скрытием товаров, категорий и страниц, карта и контент; 1001 тест зелёный",
+  "result": null,
   "report": [
     "В выгрузке 4 товара без цены (id 217943, 217944, 217946, 217947) — не импортированы, нужна цена от владельца",
     "Фото скачиваются командой import:yml --images; по сети на реальном champion.ru не проверялось",
