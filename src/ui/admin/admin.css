@@ -1,72 +1,1695 @@
-.admin-shell {
+/*
+ * Админка: единый набор токенов и стили kit (src/ui/admin/kit/*). Классы kit — с префиксом `ak-`.
+ * Образец: тёмно-зелёная боковая панель, светлый фон рабочей области, белые карточки, зелёные основные кнопки,
+ * светло-зелёное выделение выбранного. Контраст текста к фону >= 4.5:1 (пары проверены, значения в комментариях).
+ * Менять цвета и размеры — только переменными в `.ak-app`.
+ */
+
+/* ───────────── токены ───────────── */
+.ak-app {
+  /* поверхности */
+  --ak-bg: #f3f6f4; /* фон рабочей области */
+  --ak-surface: #ffffff; /* карточки, панели */
+  --ak-surface-alt: #f7faf8; /* шапки таблиц, подложки */
+  --ak-border: #dce5df;
+  --ak-border-strong: #aebfb3; /* границы полей: к фону ≥ 3:1 */
+  /* текст */
+  --ak-text: #14201a; /* на белом 16.8:1 */
+  --ak-muted: #55645b; /* на белом 6.1:1, на фоне 5.6:1 */
+  /* основной зелёный */
+  --ak-primary: #166534; /* белый текст на нём 7.1:1 */
+  --ak-primary-hover: #14532d; /* 8.6:1 */
+  --ak-primary-soft: #e4f3e8; /* светло-зелёное выделение */
+  --ak-on-primary-soft: #0f4a25; /* на soft 9.4:1 */
+  /* боковая панель */
+  --ak-sidebar-bg: #0f3d2b;
+  --ak-sidebar-bg-end: #0b3322;
+  --ak-sidebar-text: #dcebe1; /* на панели 9.7:1 */
+  --ak-sidebar-muted: #a9cbb8; /* на панели 6.2:1 */
+  --ak-sidebar-hover: rgba(255, 255, 255, 0.08);
+  --ak-sidebar-active: rgba(255, 255, 255, 0.15);
+  /* статусы */
+  --ak-danger: #b3261e; /* на белом 6.5:1 */
+  --ak-danger-soft: #fdecea;
+  --ak-warning-soft: #fff3c4;
+  --ak-warning-text: #5c4300; /* на soft 8.1:1 */
+  --ak-info: #1d4f91; /* на белом 8.4:1 */
+  --ak-info-soft: #e6f0fb;
+  --ak-success: #166534;
+  --ak-success-soft: #e4f3e8;
+  --ak-focus: #0b57d0;
+  /* геометрия */
+  --ak-radius: 8px;
+  --ak-radius-sm: 6px;
+  --ak-shadow: 0 1px 2px rgba(16, 40, 28, 0.06), 0 1px 3px rgba(16, 40, 28, 0.05);
+  --ak-shadow-lg: 0 10px 30px rgba(10, 30, 20, 0.22);
+  --ak-gap: 1rem;
+  --ak-gap-sm: 0.5rem;
+  --ak-sidebar-w: 15rem;
+  --ak-sidebar-w-rail: 4.25rem;
+  --ak-topbar-h: 3.75rem;
+  --ak-control-h: 2.25rem;
+  --ak-font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  /* Переопределение переменных публичной темы: старые страницы админки (adm-*, ops-*, .button) выглядят как новый каркас. */
+  --color-bg: var(--ak-surface);
+  --color-surface: var(--ak-surface-alt);
+  --color-border: var(--ak-border);
+  --color-text: var(--ak-text);
+  --color-muted: var(--ak-muted);
+  --color-primary: var(--ak-primary);
+  --color-primary-hover: var(--ak-primary-hover);
+  --color-focus: var(--ak-focus);
+  --color-error: var(--ak-danger);
+  --color-success: var(--ak-success);
+  --radius: var(--ak-radius-sm);
+  --tap-size: var(--ak-control-h);
+}
+
+@media (max-width: 63.999rem) {
+  .ak-app {
+    --ak-control-h: 2.75rem; /* цель касания 44px */
+  }
+}
+
+/* ───────────── каркас ───────────── */
+.ak-shell {
   display: grid;
-  grid-template-columns: 1fr;
-  min-height: 100vh;
+  grid-template-columns: var(--ak-sidebar-w) minmax(0, 1fr);
   flex: 1;
+  min-height: 100vh;
+  background: var(--ak-bg);
+  color: var(--ak-text);
+  font-family: var(--ak-font);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  overflow-wrap: break-word; /* длинные слова переносятся, но не ломают ширину столбцов таблиц */
 }
 
-.admin-aside {
-  display: grid;
-  gap: var(--space-3);
-  align-content: start;
-  padding: var(--space-3);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+.ak-shell[data-collapsed='true'] {
+  grid-template-columns: var(--ak-sidebar-w-rail) minmax(0, 1fr);
 }
 
-.admin-brand {
-  margin: 0;
-  font-weight: 700;
-}
-
-.admin-nav__list {
+.ak-body {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ak-main {
+  flex: 1;
+  min-width: 0;
+  padding: 1rem 1.5rem 2.5rem;
+}
+
+.ak-main:focus {
+  outline: none;
+}
+
+.ak-main h1 {
+  margin: 0 0 var(--ak-gap);
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+.ak-main h2 {
+  font-size: 1.0625rem;
+}
+
+.ak-app a {
+  color: var(--ak-primary);
+}
+
+.ak-app a:hover {
+  color: var(--ak-primary-hover);
+}
+
+.ak-app :focus-visible {
+  outline: 3px solid var(--ak-focus);
+  outline-offset: 2px;
+}
+
+/* ───────────── боковая панель ───────────── */
+.ak-sidebar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: linear-gradient(180deg, var(--ak-sidebar-bg), var(--ak-sidebar-bg-end));
+  color: var(--ak-sidebar-text);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.ak-sidebar:focus {
+  outline: none;
+}
+
+.ak-sidebar a,
+.ak-sidebar a:hover {
+  color: inherit;
+  text-decoration: none;
+}
+
+.ak-sidebar__brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: var(--ak-topbar-h);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ak-logo {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.ak-logo__full {
+  display: block;
+  width: 11.5rem;
+  max-width: 100%;
+  height: auto;
+}
+
+.ak-logo__mark {
+  display: none;
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+}
+
+.ak-iconbtn.ak-sidebar__close {
+  display: none;
+}
+
+.ak-nav {
+  flex: 1;
+  padding: 0.5rem 0.625rem 1rem;
+}
+
+.ak-nav__group {
+  margin-top: 0.5rem;
+}
+
+.ak-nav__label {
+  margin: 0.875rem 0.5rem 0.375rem;
+  color: var(--ak-sidebar-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ak-nav__list,
+.ak-nav__sub {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.admin-nav__link {
-  display: inline-flex;
+.ak-nav__row {
+  display: flex;
   align-items: center;
-  min-height: var(--tap-size);
-  padding: 0 var(--space-3);
-  border-radius: var(--radius);
-  color: var(--color-text);
-  text-decoration: none;
+  gap: 0.125rem;
 }
 
-.admin-nav__link:hover {
-  background: var(--color-border);
+.ak-nav__link {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  min-height: 2.5rem;
+  padding: 0 0.75rem;
+  border-radius: var(--ak-radius);
+  font-weight: 500;
 }
 
-.admin-nav__link[aria-current='page'] {
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+.ak-nav__link:hover {
+  background: var(--ak-sidebar-hover);
 }
 
-.admin-user__name,
-.admin-user__role {
-  margin: 0;
+.ak-nav__link[data-active='true'] {
+  background: var(--ak-sidebar-active);
+  color: #ffffff;
+  font-weight: 700;
 }
 
-.admin-user__role {
-  color: var(--color-muted);
-  font-size: 0.875rem;
-  margin-bottom: var(--space-2);
+.ak-nav__link svg {
+  flex: none;
 }
 
-.admin-main {
-  padding: var(--space-4) var(--space-3);
+.ak-nav__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ak-nav__toggle {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ak-radius-sm);
+  background: transparent;
+  color: var(--ak-sidebar-muted);
+  cursor: pointer;
+}
+
+.ak-nav__toggle:hover {
+  background: var(--ak-sidebar-hover);
+  color: #ffffff;
+}
+
+.ak-nav__sub {
+  margin: 0.125rem 0 0.25rem 1.5rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.ak-nav__sub[hidden] {
+  display: none;
+}
+
+.ak-nav__link--sub {
+  min-height: 2.125rem;
+  font-weight: 400;
+}
+
+.ak-sidebar__footer {
+  padding: 0.75rem 0.625rem 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ak-collapse {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: var(--ak-radius);
+  background: transparent;
+  color: var(--ak-sidebar-text);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ak-collapse:hover {
+  background: var(--ak-sidebar-hover);
+}
+
+.ak-sidebar :focus-visible {
+  outline-color: #ffffff;
+}
+
+.ak-overlay {
+  display: none;
+}
+
+/* свёрнутая панель (только на широком экране) */
+@media (min-width: 64rem) {
+  .ak-shell[data-collapsed='true'] .ak-sidebar__brand {
+    justify-content: center;
+    padding-inline: 0.5rem;
+  }
+
+  .ak-shell[data-collapsed='true'] .ak-logo__full {
+    display: none;
+  }
+
+  .ak-shell[data-collapsed='true'] .ak-logo__mark {
+    display: block;
+  }
+
+  .ak-shell[data-collapsed='true'] .ak-nav__text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .ak-shell[data-collapsed='true'] .ak-nav__label {
+    height: 1px;
+    margin: 0.625rem 0.5rem;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.14);
+    color: transparent;
+    font-size: 0;
+  }
+
+  .ak-shell[data-collapsed='true'] .ak-nav__link,
+  .ak-shell[data-collapsed='true'] .ak-collapse {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .ak-shell[data-collapsed='true'] .ak-nav__toggle,
+  .ak-shell[data-collapsed='true'] .ak-nav__sub {
+    display: none;
+  }
+}
+
+/* выдвижное меню (< 1024 px) */
+@media (max-width: 63.999rem) {
+  .ak-shell,
+  .ak-shell[data-collapsed='true'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ak-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(20rem, 86vw);
+    transform: translateX(-102%);
+    visibility: hidden;
+    transition:
+      transform 0.2s ease,
+      visibility 0s linear 0.2s;
+    box-shadow: var(--ak-shadow-lg);
+  }
+
+  .ak-sidebar[data-open='true'] {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.2s ease;
+  }
+
+  .ak-iconbtn.ak-sidebar__close {
+    display: inline-grid;
+    color: var(--ak-sidebar-text);
+  }
+
+  .ak-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background: rgba(8, 20, 14, 0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .ak-overlay[data-open='true'] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .ak-main {
+    padding: 0.875rem 1rem 2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ak-sidebar,
+  .ak-overlay {
+    transition: none !important;
+  }
+}
+
+/* ───────────── верхняя панель ───────────── */
+.ak-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: var(--ak-topbar-h);
+  padding: 0.5rem 1.5rem;
+  background: var(--ak-surface);
+  border-bottom: 1px solid var(--ak-border);
+}
+
+.ak-topbar__title {
+  flex: none;
   min-width: 0;
 }
 
-.admin-main:focus {
+.ak-topbar__name,
+.ak-topbar__sub {
+  margin: 0;
+}
+
+.ak-topbar__name {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.ak-topbar__sub {
+  color: var(--ak-muted);
+  font-size: 0.75rem;
+}
+
+.ak-topbar__slot {
+  flex: 1;
+  min-width: 0;
+}
+
+.ak-topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.ak-iconbtn.ak-burger {
+  display: none;
+}
+
+@media (max-width: 63.999rem) {
+  .ak-topbar {
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .ak-iconbtn.ak-burger {
+    display: inline-grid;
+  }
+
+  .ak-topbar__sub,
+  .ak-site-link__text,
+  .ak-user .ak-user__text {
+    display: none;
+  }
+
+  .ak-site-link {
+    padding-inline: 0.625rem;
+  }
+}
+
+@media (max-width: 29.999rem) {
+  .ak-topbar__name {
+    font-size: 0.9375rem;
+  }
+}
+
+/* ───────────── кнопки ───────────── */
+.ak-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--ak-control-h);
+  padding: 0 0.875rem;
+  border: 1px solid var(--ak-border-strong);
+  border-radius: var(--ak-radius-sm);
+  background: var(--ak-surface);
+  color: var(--ak-text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ak-app a.ak-btn {
+  color: var(--ak-text);
+}
+
+.ak-btn:hover {
+  background: var(--ak-surface-alt);
+  border-color: var(--ak-primary);
+}
+
+.ak-btn:disabled,
+.ak-btn[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.ak-btn--primary,
+.ak-app a.ak-btn--primary {
+  border-color: var(--ak-primary);
+  background: var(--ak-primary);
+  color: #ffffff;
+}
+
+.ak-btn--primary:hover,
+.ak-app a.ak-btn--primary:hover {
+  border-color: var(--ak-primary-hover);
+  background: var(--ak-primary-hover);
+  color: #ffffff;
+}
+
+.ak-btn--danger {
+  border-color: var(--ak-danger);
+  background: var(--ak-danger);
+  color: #ffffff;
+}
+
+.ak-btn--danger:hover {
+  border-color: #8f1e18;
+  background: #8f1e18;
+}
+
+.ak-btn--danger-outline,
+.ak-app a.ak-btn--danger-outline {
+  border-color: #e3b1ad;
+  background: var(--ak-surface);
+  color: var(--ak-danger);
+}
+
+.ak-btn--danger-outline:hover {
+  border-color: var(--ak-danger);
+  background: var(--ak-danger-soft);
+}
+
+.ak-btn--sm {
+  min-height: 1.875rem;
+  padding: 0 0.625rem;
+  font-size: 0.8125rem;
+}
+
+.ak-iconbtn {
+  display: inline-grid;
+  place-items: center;
+  position: relative;
+  width: var(--ak-control-h);
+  height: var(--ak-control-h);
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--ak-radius-sm);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.ak-iconbtn:hover {
+  background: rgba(20, 83, 45, 0.1);
+}
+
+.ak-sidebar .ak-iconbtn:hover {
+  background: var(--ak-sidebar-hover);
+}
+
+.ak-bell__dot {
+  position: absolute;
+  top: 0.125rem;
+  right: 0.125rem;
+  min-width: 1.0625rem;
+  height: 1.0625rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: var(--ak-danger);
+  color: #ffffff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.0625rem;
+  text-align: center;
+}
+
+/* профиль */
+.ak-user {
+  position: relative;
+}
+
+.ak-user__button {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: var(--ak-control-h);
+  padding: 0.125rem 0.375rem;
+  border: 0;
+  border-radius: var(--ak-radius);
+  background: transparent;
+  color: var(--ak-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.ak-user__button:hover {
+  background: var(--ak-surface-alt);
+}
+
+.ak-avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 50%;
+  background: var(--ak-primary);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.ak-user__text {
+  display: grid;
+  text-align: left;
+  line-height: 1.2;
+}
+
+.ak-user__name {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.ak-user__role {
+  color: var(--ak-muted);
+  font-size: 0.75rem;
+}
+
+.ak-menu {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  right: 0;
+  z-index: 60;
+  display: grid;
+  min-width: 12.5rem;
+  padding: 0.25rem;
+  border: 1px solid var(--ak-border);
+  border-radius: var(--ak-radius);
+  background: var(--ak-surface);
+  box-shadow: var(--ak-shadow-lg);
+}
+
+.ak-menu form {
+  display: contents;
+}
+
+.ak-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  min-height: var(--ak-control-h);
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: var(--ak-radius-sm);
+  background: transparent;
+  color: var(--ak-text);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ak-app a.ak-menu__item {
+  color: var(--ak-text);
+}
+
+.ak-menu__item:hover {
+  background: var(--ak-primary-soft);
+}
+
+/* глобальный поиск */
+.ak-searchbox {
+  position: relative;
+  max-width: 32rem;
+  margin-inline: auto;
+}
+
+.ak-searchbox input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.ak-searchbox__submit {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-grid;
+  place-items: center;
+  width: var(--ak-control-h);
+  height: var(--ak-control-h);
+  border: 0;
+  background: transparent;
+  color: var(--ak-muted);
+  cursor: pointer;
+}
+
+/* ───────────── хлебные крошки и заголовок ───────────── */
+.ak-crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0 0 0.375rem;
+  padding: 0;
+  color: var(--ak-muted);
+  font-size: 0.8125rem;
+  list-style: none;
+}
+
+.ak-crumbs li {
+  display: inline-flex;
+  align-items: center;
+}
+
+.ak-crumbs a {
+  color: var(--ak-muted);
+  text-decoration: none;
+}
+
+.ak-crumbs a:hover {
+  color: var(--ak-primary-hover);
+  text-decoration: underline;
+}
+
+.ak-crumbs [aria-current='page'] {
+  color: var(--ak-text);
+  font-weight: 600;
+}
+
+.ak-pagehead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: var(--ak-gap);
+}
+
+.ak-pagehead__text {
+  min-width: 0;
+}
+
+.ak-pagehead h1 {
+  margin: 0;
+}
+
+.ak-pagehead__desc {
+  margin: 0.25rem 0 0;
+  color: var(--ak-muted);
+}
+
+.ak-pagehead__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ───────────── карточки, поля ───────────── */
+.ak-card {
+  margin-bottom: var(--ak-gap);
+  padding: 1rem;
+  border: 1px solid var(--ak-border);
+  border-radius: var(--ak-radius);
+  background: var(--ak-surface);
+  box-shadow: var(--ak-shadow);
+}
+
+.ak-card--flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.ak-card > h2:first-child {
+  margin-top: 0;
+}
+
+.ak-field {
+  display: grid;
+  align-content: start;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.ak-field__label {
+  font-weight: 600;
+}
+
+.ak-field__hint,
+.ak-field__error {
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+.ak-field__hint {
+  color: var(--ak-muted);
+}
+
+.ak-field__error {
+  color: var(--ak-danger);
+}
+
+.ak-field--invalid input,
+.ak-field--invalid select,
+.ak-field--invalid textarea {
+  border-color: var(--ak-danger);
+}
+
+.ak-app input:not([type='checkbox'], [type='radio'], [type='hidden'], [type='file']),
+.ak-app select,
+.ak-app textarea {
+  min-height: var(--ak-control-h);
+  padding: 0 0.625rem;
+  border: 1px solid var(--ak-border-strong);
+  border-radius: var(--ak-radius-sm);
+  background: #ffffff;
+  color: var(--ak-text);
+  font: inherit;
+  max-width: 100%;
+}
+
+.ak-app textarea {
+  padding-block: 0.5rem;
+}
+
+.ak-app input[type='checkbox'],
+.ak-app input[type='radio'] {
+  width: 1.0625rem;
+  height: 1.0625rem;
+  accent-color: var(--ak-primary);
+}
+
+.ak-form-grid {
+  display: grid;
+  align-items: start;
+  gap: var(--ak-gap);
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+/* ───────────── таблица ───────────── */
+.ak-tablewrap {
+  overflow-x: auto;
+}
+
+.ak-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ak-table th,
+.ak-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--ak-border);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.ak-table th {
+  background: var(--ak-surface-alt);
+  color: var(--ak-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ak-table tbody tr:hover {
+  background: #f8fbf9;
+}
+
+.ak-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.ak-table__check {
+  width: 2.25rem;
+  padding-right: 0;
+}
+
+.ak-align-right {
+  text-align: right !important;
+}
+
+.ak-align-center {
+  text-align: center !important;
+}
+
+.ak-sortlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: inherit !important;
+  text-decoration: none;
+}
+
+.ak-sortlink:hover {
+  color: var(--ak-primary-hover) !important;
+}
+
+th[aria-sort='ascending'] .ak-sortlink,
+th[aria-sort='descending'] .ak-sortlink {
+  color: var(--ak-on-primary-soft) !important;
+}
+
+@media (max-width: 63.999rem) {
+  .ak-hide-narrow {
+    display: none;
+  }
+}
+
+.ak-bulk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--ak-border);
+  background: var(--ak-primary-soft);
+  color: var(--ak-on-primary-soft);
+}
+
+.ak-bulk[hidden] {
+  display: none;
+}
+
+.ak-bulk__count {
+  margin: 0;
+  font-weight: 700;
+}
+
+.ak-bulk__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ───────────── пагинация ───────────── */
+.ak-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.75rem;
+  border-top: 1px solid var(--ak-border);
+  color: var(--ak-muted);
+}
+
+.ak-pager__info {
+  margin: 0;
+}
+
+.ak-pager__nav ul {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ak-pager__btn,
+.ak-app a.ak-pager__btn {
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--ak-control-h);
+  height: var(--ak-control-h);
+  padding: 0 0.5rem;
+  border: 1px solid var(--ak-border);
+  border-radius: var(--ak-radius-sm);
+  background: var(--ak-surface);
+  color: var(--ak-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ak-app a.ak-pager__btn:hover {
+  border-color: var(--ak-primary);
+  color: var(--ak-primary-hover);
+}
+
+.ak-pager__btn[aria-current='page'],
+.ak-app a.ak-pager__btn[aria-current='page'] {
+  border-color: var(--ak-primary);
+  background: var(--ak-primary);
+  color: #ffffff;
+}
+
+.ak-pager__btn[aria-disabled='true'] {
+  opacity: 0.5;
+}
+
+.ak-pager__gap {
+  padding: 0 0.25rem;
+}
+
+.ak-pager__size {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ───────────── поиск, фильтры ───────────── */
+.ak-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 12rem;
+  color: var(--ak-muted);
+}
+
+.ak-search svg {
+  position: absolute;
+  left: 0.625rem;
+  pointer-events: none;
+}
+
+.ak-search input {
+  width: 100%;
+  padding-left: 2.125rem !important;
+}
+
+.ak-filters {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: var(--ak-gap);
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--ak-border);
+  border-radius: var(--ak-radius);
+  background: var(--ak-surface);
+  box-shadow: var(--ak-shadow);
+}
+
+.ak-filters__fields {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+
+.ak-filters__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ak-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: var(--ak-gap);
+}
+
+/* ───────────── вкладки ───────────── */
+.ak-tabs {
+  margin-bottom: var(--ak-gap);
+  border-bottom: 1px solid var(--ak-border);
+  overflow-x: auto;
+}
+
+.ak-tabs ul {
+  display: flex;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ak-tabs__tab,
+.ak-app a.ak-tabs__tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0 0.875rem;
+  border-bottom: 2px solid transparent;
+  color: var(--ak-muted);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ak-app a.ak-tabs__tab:hover {
+  color: var(--ak-primary-hover);
+}
+
+.ak-app a.ak-tabs__tab[aria-current='page'] {
+  border-bottom-color: var(--ak-primary);
+  color: var(--ak-primary);
+}
+
+.ak-tabs__tab[aria-disabled='true'] {
+  opacity: 0.5;
+}
+
+/* ───────────── статусы ───────────── */
+.ak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  background: #eef1ef;
+  color: #34413a; /* на подложке 8.5:1 */
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ak-badge__dot {
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.ak-badge--success {
+  background: var(--ak-success-soft);
+  color: var(--ak-on-primary-soft);
+}
+
+.ak-badge--warning {
+  background: var(--ak-warning-soft);
+  color: var(--ak-warning-text);
+}
+
+.ak-badge--danger {
+  background: var(--ak-danger-soft);
+  color: #8f1e18; /* на подложке 6.9:1 */
+}
+
+.ak-badge--info {
+  background: var(--ak-info-soft);
+  color: var(--ak-info);
+}
+
+/* ───────────── переключатель ───────────── */
+.ak-toggle {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ak-switch {
+  position: relative;
+  flex: none;
+  width: 2.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 1px solid #8a9b90;
+  border-radius: 999px;
+  background: #c3cfc7;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+/* зона касания 44px на узком экране без увеличения самого переключателя */
+.ak-switch::after {
+  content: '';
+  position: absolute;
+  inset: -0.5rem -0.25rem;
+}
+
+.ak-switch__thumb {
+  position: absolute;
+  top: 0.125rem;
+  left: 0.125rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s ease;
+}
+
+.ak-switch[aria-checked='true'] {
+  border-color: var(--ak-primary);
+  background: var(--ak-primary);
+}
+
+.ak-switch[aria-checked='true'] .ak-switch__thumb {
+  transform: translateX(1rem);
+}
+
+.ak-switch:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ak-switch[aria-busy='true'] {
+  cursor: progress;
+}
+
+.ak-toggle__label {
+  font-weight: 600;
+}
+
+.ak-toggle__desc {
+  flex-basis: 100%;
+  color: var(--ak-muted);
+  font-size: 0.8125rem;
+}
+
+.ak-toggle__error {
+  flex-basis: 100%;
+  color: var(--ak-danger);
+  font-size: 0.8125rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ak-switch,
+  .ak-switch__thumb {
+    transition: none;
+  }
+}
+
+/* ───────────── диалог ───────────── */
+.ak-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(8, 20, 14, 0.55);
+}
+
+.ak-dialog {
+  width: min(28rem, 100%);
+  max-height: 100%;
+  overflow: auto;
+  padding: 1.25rem;
+  border-radius: var(--ak-radius);
+  background: var(--ak-surface);
+  color: var(--ak-text);
+  font-family: var(--ak-font);
+  box-shadow: var(--ak-shadow-lg);
+}
+
+.ak-dialog:focus {
   outline: none;
 }
 
+.ak-dialog__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+}
+
+.ak-dialog__body {
+  margin-bottom: 1rem;
+  color: var(--ak-muted);
+}
+
+.ak-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+/* ───────────── панель сохранения ───────────── */
+.ak-savebar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-top: var(--ak-gap);
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--ak-border);
+  border-radius: var(--ak-radius);
+  background: var(--ak-surface);
+  box-shadow: var(--ak-shadow);
+}
+
+/* панель сохранения внутри карточки формы — без второй рамки */
+.ak-card > .ak-savebar:not(.ak-savebar--sticky) {
+  margin-top: 0.75rem;
+  padding: 0.75rem 0 0;
+  border: 0;
+  border-top: 1px solid var(--ak-border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ak-savebar--sticky {
+  position: sticky;
+  bottom: 0.75rem;
+  z-index: 20;
+}
+
+.ak-savebar__note {
+  margin: 0;
+  min-height: 1.25rem;
+  color: var(--ak-muted);
+}
+
+.ak-savebar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+/* ───────────── загрузка файла, превью ───────────── */
+.ak-uploader {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.ak-uploader__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ak-uploader__drop {
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 12rem;
+  padding: 1rem;
+  border: 1px dashed var(--ak-border-strong);
+  border-radius: var(--ak-radius);
+  background: var(--ak-surface-alt);
+  text-align: center;
+  cursor: pointer;
+}
+
+.ak-uploader__drop:hover {
+  border-color: var(--ak-primary);
+  background: var(--ak-primary-soft);
+}
+
+.ak-uploader:has(input:focus-visible) .ak-uploader__drop {
+  outline: 3px solid var(--ak-focus);
+  outline-offset: 2px;
+}
+
+.ak-uploader__title {
+  font-weight: 700;
+}
+
+.ak-uploader__hint {
+  color: var(--ak-muted);
+  font-size: 0.8125rem;
+}
+
+.ak-preview {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+}
+
+.ak-preview__frame {
+  overflow: hidden;
+  border: 1px solid var(--ak-border);
+  border-radius: var(--ak-radius);
+  background: #ffffff;
+}
+
+.ak-preview__frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ak-preview__caption {
+  color: var(--ak-muted);
+  font-size: 0.8125rem;
+}
+
+/* ───────────── состояния ───────────── */
+.ak-state {
+  display: grid;
+  justify-items: center;
+  gap: 0.375rem;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--ak-muted);
+}
+
+.ak-state__title {
+  margin: 0;
+  color: var(--ak-text);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.ak-state__body p {
+  margin: 0;
+}
+
+.ak-state__action {
+  margin-top: 0.5rem;
+}
+
+.ak-state--error {
+  color: #8f1e18;
+}
+
+.ak-state--error .ak-state__title {
+  color: var(--ak-danger);
+}
+
+.ak-skeletons {
+  display: grid;
+  gap: 0.625rem;
+  width: min(36rem, 100%);
+}
+
+.ak-skeleton {
+  display: block;
+  width: 100%;
+  height: 0.875rem;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e6ece8 25%, #f1f5f2 50%, #e6ece8 75%);
+  background-size: 200% 100%;
+  animation: ak-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes ak-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ak-skeleton {
+    animation: none;
+  }
+}
+
+/* ───────────── уведомления ───────────── */
+.ak-toasts {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 90;
+  display: grid;
+  gap: 0.5rem;
+  width: min(24rem, calc(100vw - 2rem));
+  font-family: var(--ak-font);
+  font-size: 0.875rem;
+  pointer-events: none;
+}
+
+.ak-toasts__list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.ak-toast {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: 0.625rem;
+  padding: 0.75rem;
+  border: 1px solid var(--ak-border);
+  border-left-width: 4px;
+  border-radius: var(--ak-radius);
+  background: var(--ak-surface);
+  color: var(--ak-text);
+  box-shadow: var(--ak-shadow-lg);
+  pointer-events: auto;
+}
+
+.ak-toast p {
+  margin: 0.125rem 0 0;
+}
+
+.ak-toast--success {
+  border-left-color: var(--ak-primary);
+}
+
+.ak-toast--success > svg {
+  color: var(--ak-primary);
+}
+
+.ak-toast--error {
+  border-left-color: var(--ak-danger);
+}
+
+.ak-toast--error > svg {
+  color: var(--ak-danger);
+}
+
+.ak-toast--info {
+  border-left-color: var(--ak-info);
+}
+
+.ak-toast--info > svg {
+  color: var(--ak-info);
+}
+
+/* ───────────── сетки и заглушка раздела ───────────── */
+.ak-grid-2 {
+  display: grid;
+  gap: var(--ak-gap);
+}
+
+@media (min-width: 64rem) {
+  .ak-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.ak-soon {
+  max-width: 40rem;
+}
+
+/* ───────────── страницы админки, написанные до kit: приводим к новому виду ───────────── */
+.ak-app .button {
+  min-height: var(--ak-control-h);
+  padding: 0 0.875rem;
+  border: 1px solid var(--ak-primary);
+  border-radius: var(--ak-radius-sm);
+  background: var(--ak-primary);
+  color: #ffffff;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.ak-app .button:hover {
+  border-color: var(--ak-primary-hover);
+  background: var(--ak-primary-hover);
+  color: #ffffff;
+}
+
+.ak-app .button--outline {
+  border-color: var(--ak-border-strong);
+  background: var(--ak-surface);
+  color: var(--ak-text);
+}
+
+.ak-app .button--outline:hover {
+  border-color: var(--ak-primary);
+  background: var(--ak-surface-alt);
+  color: var(--ak-text);
+}
+
+.ak-app .button--small {
+  min-height: 1.875rem;
+  font-size: 0.8125rem;
+}
+
+.ak-main .adm-card,
+.ak-main .ops-stat,
+.ak-main .adm-list li {
+  border-color: var(--ak-border);
+  border-radius: var(--ak-radius);
+  background: var(--ak-surface);
+  box-shadow: var(--ak-shadow);
+}
+
+.ak-main .adm-table th {
+  background: var(--ak-surface-alt);
+  color: var(--ak-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.ak-main .adm-table td,
+.ak-main .adm-table th {
+  padding: 0.5rem 0.75rem;
+}
+
+.ak-main .adm-table tbody tr:hover {
+  background: #f8fbf9;
+}
+
+.ak-main .adm-table-wrap {
+  border: 1px solid var(--ak-border);
+  border-radius: var(--ak-radius);
+  background: var(--ak-surface);
+}
+
+.ak-main .ops-subnav,
+.ak-main .adm-tabs {
+  gap: 0.25rem;
+  margin-bottom: var(--ak-gap);
+  border-bottom: 1px solid var(--ak-border);
+}
+
+.ak-main .ops-subnav a,
+.ak-main .adm-tabs a {
+  min-height: 2.5rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ak-muted);
+  font-weight: 600;
+}
+
+.ak-main .ops-subnav a:hover,
+.ak-main .adm-tabs a:hover {
+  color: var(--ak-primary-hover);
+}
+
+.ak-main .ops-subnav a[aria-current='page'],
+.ak-main .adm-tabs a[aria-current='page'] {
+  border-bottom-color: var(--ak-primary);
+  background: transparent;
+  color: var(--ak-primary);
+}
+
+.ak-main .adm-flash {
+  border-radius: var(--ak-radius);
+  background: var(--ak-success-soft);
+}
+
+.ak-main .adm-flash--error {
+  background: var(--ak-danger-soft);
+}
+
+.ak-main .state {
+  border-radius: var(--ak-radius);
+  background: var(--ak-surface);
+}
+
+.ak-main .state--error {
+  background: var(--ak-danger-soft);
+}
+
+.ak-main .admin-cards {
+  margin: 0;
+}
+
+.ak-main .admin-card a {
+  border-color: var(--ak-border);
+  border-radius: var(--ak-radius);
+  background: var(--ak-surface);
+  box-shadow: var(--ak-shadow);
+}
+
+.ak-main .admin-card a:hover {
+  border-color: var(--ak-primary);
+  background: var(--ak-primary-soft);
+}
+
+/* ───────────── вход (вне каркаса) ───────────── */
 .admin-login {
   max-width: 24rem;
   margin: var(--space-5) auto;
@@ -115,23 +1738,4 @@
 
 .admin-card a:hover {
   border-color: var(--color-primary);
-}
-
-@media (min-width: 60rem) {
-  .admin-shell {
-    grid-template-columns: 16rem 1fr;
-  }
-
-  .admin-aside {
-    border-bottom: 0;
-    border-right: 1px solid var(--color-border);
-  }
-
-  .admin-nav__list {
-    flex-direction: column;
-  }
-
-  .admin-main {
-    padding: var(--space-5);
-  }
 }

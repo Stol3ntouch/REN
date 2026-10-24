@@ -44,8 +44,8 @@ describe('способы получения и оплаты после мигр�
 });
 
 describe('навигация админки', () => {
-  it('«Заказы» и «Цены и акции» есть и ведут на существующие страницы', () => {
-    for (const key of ['orders', 'pricing']) {
+  it('«Заказы» и «Купоны» есть и ведут на существующие страницы', () => {
+    for (const key of ['orders', 'promos']) {
       const item = ADMIN_NAV.find((i) => i.key === key);
       expect(item, key).toBeDefined();
       expect(existsSync(join(process.cwd(), 'src', 'app', 'admin', '(panel)', ...item!.href.split('/').slice(2), 'page.tsx')), item!.href).toBe(true);

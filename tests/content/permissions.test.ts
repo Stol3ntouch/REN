@@ -73,8 +73,8 @@ describe('права на контент: только admin', () => {
     await expect(contentOps.news.save(ADMIN, null, { title: 'x' }, { db })).resolves.toBeDefined();
   });
 
-  it('раздел «Контент и услуги» виден в меню только администратору', () => {
-    expect(visibleNav('admin').map((i) => i.label)).toContain('Контент и услуги');
-    expect(visibleNav('manager').map((i) => i.label)).not.toContain('Контент и услуги');
+  it('раздел «Страницы» (контент) виден в меню только администратору', () => {
+    expect(visibleNav('admin').map((i) => i.label)).toContain('Страницы');
+    expect(visibleNav('manager').map((i) => i.label)).not.toContain('Страницы');
   });
 });
