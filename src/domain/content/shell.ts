@@ -5,11 +5,12 @@ import { MAIN_NAV } from '@/ui/nav';
 import type { ShellContext, ShellLink } from '@/ui/shell-context';
 import { countPublishedNews, getPageByKey, listActivePromotions, listBanners, listPublishedServices, pagePath, type PageKey } from './queries';
 import { DEFAULT_LOGO_DARK_URL, DEFAULT_LOGO_URL, getShopInfo } from './settings';
+import { getStoreFlags } from './store-flags';
 
 /** Адрес страницы отзывов о компании. */
 export const COMPANY_REVIEWS_PATH = '/about/reviews';
 
-type Opts = { db?: Db; now?: number };
+type Opts = { db?: Db; now?: number; /** Смотрит сотрудник с активной сессией (для плашки режима обслуживания). */ staff?: boolean };
 
 /**
  * Данные для шапки и подвала из настроек и контента. Пустые и скрытые администратором разделы не попадают в меню:
@@ -20,6 +21,7 @@ export function loadShellContext(opts: Opts = {}): ShellContext {
   const db = opts.db ?? getDb();
   const now = opts.now ?? Date.now();
   const shop = getShopInfo({ db });
+  const flags = getStoreFlags({ db, now });
   const hasNews = countPublishedNews({ db, now }) > 0;
   const hasPromotions = listActivePromotions({ db, now }).length > 0;
   const hasServices = listPublishedServices({ db }).length > 0;
@@ -36,6 +38,9 @@ export function loadShellContext(opts: Opts = {}): ShellContext {
   const strip = listBanners('top_strip', { db, now })[0];
   return {
     siteName: shop.siteName,
+    tagline: shop.tagline,
+    showPrices: flags.showPrices,
+    maintenanceBanner: flags.maintenance && opts.staff === true,
     topStrip: strip && strip.heading ? { text: strip.heading, href: strip.url ?? undefined } : undefined,
     address: shop.address ?? undefined,
     phone: shop.phone ?? undefined,

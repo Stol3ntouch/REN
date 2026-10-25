@@ -100,7 +100,7 @@ describe('активный пункт и хлебные крошки', () => {
     ]);
     expect(buildBreadcrumbs('/admin/settings/taxes')).toEqual([
       { label: 'Главная', href: '/admin' },
-      { label: 'Настройки магазина', href: '/admin/content/settings' },
+      { label: 'Настройки магазина', href: '/admin/settings/store' },
       { label: 'Налоги и цены' },
     ]);
     expect(buildBreadcrumbs('/admin/profile')).toEqual([{ label: 'Главная', href: '/admin' }, { label: 'Профиль' }]);

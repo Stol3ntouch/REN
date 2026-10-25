@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { ProductCard as ProductCardData } from '@/domain/catalog/types';
+import { PricesOnly } from '@/ui/layout/prices-context';
 import { AddToCartButton } from './AddToCartButton';
 import { PriceBlock } from './PriceBlock';
 import { ProductImage } from './ProductImage';
@@ -18,6 +19,12 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
         <Link href={href} tabIndex={-1} aria-hidden="true" className="product-card__image-link">
           <ProductImage image={product.image} name={product.name} priority={priority} sizes="(min-width: 64rem) 16rem, 50vw" />
         </Link>
+        {product.isNew || product.isPromo ? (
+          <ul className="product-badges" aria-label="Метки товара">
+            {product.isNew ? <li className="product-badge product-badge--new">Новинка</li> : null}
+            {product.isPromo ? <li className="product-badge product-badge--promo">Акция</li> : null}
+          </ul>
+        ) : null}
         <div className="product-card__actions">
           <CardActionsSlot product={product} />
         </div>
@@ -32,7 +39,9 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
       </p>
       <div className="product-card__buy">
         <PriceBlock unitKopecks={product.unitKopecks} originalKopecks={product.originalKopecks} />
-        <AddToCartButton productId={product.id} inStock={product.inStock} name={product.name} compact />
+        <PricesOnly>
+          <AddToCartButton productId={product.id} inStock={product.inStock} name={product.name} compact />
+        </PricesOnly>
       </div>
     </article>
   );

@@ -2,7 +2,7 @@
 
 import '@/domain/hooks'; // регистрирует слияние гостевой корзины при входе/регистрации
 import { redirect } from 'next/navigation';
-import { login, logout, register, requestPasswordReset, resetPassword, safeRedirectPath } from '@/domain/customers/auth';
+import { confirmEmail, login, logout, register, requestPasswordReset, resetPassword, safeRedirectPath } from '@/domain/customers/auth';
 import type { FormState } from './form-state';
 import { errorState, isHoneypotTripped, prepareAction, str } from './server-context';
 
@@ -15,11 +15,26 @@ export async function registerAction(_prev: FormState, form: FormData): Promise<
   try {
     const ctx = await prepareAction('register');
     if (isHoneypotTripped(form)) return { status: 'success', message: 'Готово.' };
-    await register({ email: str(form, 'email'), password: str(form, 'password'), consent: form.get('consent') === 'on' }, ctx);
+    const res = await register({ email: str(form, 'email'), password: str(form, 'password'), consent: form.get('consent') === 'on' }, ctx);
+    // «Требовать подтверждение email»: сессии нет, пока адрес не подтверждён.
+    if (res.confirmationRequired) {
+      return { status: 'success', message: 'Мы отправили письмо со ссылкой. Подтвердите адрес электронной почты, затем войдите.' };
+    }
   } catch (e) {
     return errorState(e);
   }
   redirect(safeRedirectPath(str(form, 'next')));
+}
+
+export async function confirmEmailAction(_prev: FormState, form: FormData): Promise<FormState> {
+  try {
+    await prepareAction('confirm');
+    if (isHoneypotTripped(form)) return { status: 'success', message: 'Готово.' };
+    confirmEmail(str(form, 'token'));
+  } catch (e) {
+    return errorState(e);
+  }
+  redirect('/account/login?confirmed=1');
 }
 
 export async function loginAction(_prev: FormState, form: FormData): Promise<FormState> {

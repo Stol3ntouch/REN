@@ -4,6 +4,7 @@ import type { Db } from '@/server/db/connection';
 import { AppError, NotFoundError, toErrorResponse, ValidationError } from '@/server/http/errors';
 import { assertOrigin } from '@/server/http/origin';
 import { clientIp } from '@/server/http/rate-limit';
+import { repairPhotoToken } from './repair-photos';
 import { submitCallback, submitContact, submitQuestion, submitRepair, submitReview, type SubmitCtx, type SubmitResult } from './service';
 
 const HANDLERS: Record<string, (input: unknown, ctx: SubmitCtx) => Promise<SubmitResult>> = {
@@ -39,7 +40,9 @@ export async function handleFormRequest(kind: string, req: Request, deps: { db?:
 
     const owner = resolveOwner(parseCookieHeader(req.headers.get('cookie')), { db: deps.db, now: deps.now });
     const res = await submit(body, { db: deps.db, now: deps.now, ip: clientIp(req.headers, deps.trustProxy), owner });
-    return Response.json({ ok: true, number: res.number }, { status: 201, headers: { 'cache-control': 'no-store' } });
+    // Для ремонта клиент получает подпись, по которой может догрузить фото (POST /api/forms/repair/photos).
+    const photoToken = kind === 'repair' && res.number ? repairPhotoToken(res.number) : undefined;
+    return Response.json({ ok: true, number: res.number, ...(photoToken ? { photoToken } : {}) }, { status: 201, headers: { 'cache-control': 'no-store' } });
   } catch (e) {
     return toErrorResponse(e);
   }

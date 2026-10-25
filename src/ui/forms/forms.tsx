@@ -32,9 +32,12 @@ export function RepairForm() {
         PHONE,
         { name: 'email', label: 'Электронная почта', type: 'email', autoComplete: 'email', hint: 'Необязательно, если удобнее звонок' },
         { name: 'equipmentType', label: 'Тип техники', type: 'text', required: true, hint: 'Например: бензопила, триммер, культиватор' },
+        { name: 'brand', label: 'Бренд', type: 'text', hint: 'Необязательно, например: Champion, Stihl' },
+        { name: 'model', label: 'Модель', type: 'text', hint: 'Необязательно' },
         { name: 'description', label: 'Что случилось', type: 'textarea', required: true, rows: 5, hint: 'Опишите неисправность — чем подробнее, тем быстрее ответим' },
         { name: 'preferredContact', label: 'Как с вами связаться', type: 'select', options: CONTACT_METHODS, defaultValue: 'phone' },
       ]}
+      photos
       submitLabel="Отправить заявку"
       successTitle="Заявка на ремонт принята"
       successText="Менеджер свяжется с вами выбранным способом."

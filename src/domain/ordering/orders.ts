@@ -1,5 +1,6 @@
 import { enqueueMail } from '@/domain/admin/mail-enqueue';
 import { audit } from '@/domain/admin/audit';
+import { stock } from '@/domain/catalog/stock';
 import { hasPermission } from '@/domain/admin/permissions';
 import { getConfig } from '@/server/config';
 import { getDb, withTransaction, type Db } from '@/server/db/connection';
@@ -8,52 +9,17 @@ import { ordersRepo, type OrderRow } from '@/server/db/repositories/orders';
 import { staffRepo } from '@/server/db/repositories/staff';
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/server/http/errors';
 import type { OwnerRef } from '@/server/http/owner';
+import { addInternalComment } from './order-edit';
 import { orderAccessPath, verifyOrderAccessToken } from './access-token';
 import { getPaymentRefunder } from './payment-flow';
-import { STATUS_LABELS, TRANSITIONS } from './status';
+import { PRIVILEGED_REVERT_FROM, REVERSE_TRANSITIONS, STATUS_LABELS, TRANSITIONS } from './status';
 import { actorEventType, type Actor, type Opts, type Order, type OrderEvent, type OrderStatus } from './types';
 
 const NOTE_MAX = 500;
 
-export function toOrder(db: Db, row: OrderRow): Order {
-  const items = ordersRepo.listItems(db, row.id);
-  const deliveryKopecks = row.deliveryKopecks ?? 0;
-  return {
-    id: row.id,
-    number: row.number,
-    status: row.status,
-    isPaid: row.isPaid,
-    owner: row.userId !== null ? { kind: 'user', userId: row.userId } : { kind: 'guest', guestId: row.guestId ?? '' },
-    contact: { name: row.contactName, email: row.contactEmail, phone: row.contactPhone, comment: row.comment, address: row.address },
-    delivery: {
-      code: row.deliveryCode,
-      name: row.deliveryName,
-      kind: row.deliveryKind,
-      priceKopecks: row.deliveryKopecks,
-      pending: row.deliveryKopecks === null,
-    },
-    payment: { code: row.paymentCode, name: row.paymentName, kind: row.paymentKind },
-    items: items.map((i) => ({
-      id: i.id,
-      productId: i.productId,
-      name: i.name,
-      sku: i.sku,
-      priceKopecks: i.priceKopecks,
-      discountPriceKopecks: i.discountPriceKopecks,
-      unitKopecks: i.unitKopecks,
-      qty: i.qty,
-      lineKopecks: i.lineKopecks,
-    })),
-    subtotalKopecks: row.subtotalKopecks,
-    discountKopecks: row.discountKopecks,
-    deliveryKopecks,
-    totalKopecks: row.totalKopecks,
-    promoCode: row.promoCode,
-    assignedStaffId: row.assignedStaffId,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-  };
-}
+import { toOrder } from './order-view';
+
+export { toOrder };
 
 function sameOwner(row: OrderRow, owner: OwnerRef): boolean {
   return owner.kind === 'user' ? row.userId === owner.userId : row.guestId !== null && row.guestId === owner.guestId;
@@ -90,20 +56,20 @@ function cleanNote(note: string | undefined): string | null {
 }
 
 /** Права по роли, которые не выражены таблицей переходов. Бросает ForbiddenError. */
-function assertActorMayMove(actor: Actor, to: OrderStatus, viaRefund = false): void {
+function assertActorMayMove(actor: Actor, to: OrderStatus, viaRefund = false, revert = false): void {
   if (actor.type === 'staff' && !hasPermission(actor, 'orders.write')) {
     throw new ForbiddenError('Недостаточно прав для смены статуса заказа');
   }
   // R41.1: «оплачен» / «ошибка оплаты» — только по проверенному webhook (система), не руками и не возвратом браузера.
-  if ((to === 'paid' || to === 'payment_failed') && actor.type !== 'system') {
+  if ((to === 'paid' || to === 'payment_failed') && actor.type !== 'system' && !revert) {
     throw new ForbiddenError('Статус оплаты ставится только по подтверждению платёжной системы');
   }
-  // Возврат — администратор (R16.2) или система.
-  if (to === 'refunded' && !(actor.type === 'system' || (actor.type === 'staff' && actor.role === 'admin'))) {
+  // Возврат средств — право orders.refund (администратор) или система.
+  if (!revert && to === 'refunded' && !(actor.type === 'system' || (actor.type === 'staff' && hasPermission(actor, 'orders.refund')))) {
     throw new ForbiddenError('Возврат средств доступен только администратору');
   }
   // Сотрудник ставит «возвращён» только через orders.refund (после успешного возврата платежа), не обычной сменой статуса.
-  if (to === 'refunded' && actor.type === 'staff' && !viaRefund) {
+  if (!revert && to === 'refunded' && actor.type === 'staff' && !viaRefund) {
     throw new ForbiddenError('Возврат оформляется действием «Вернуть деньги», а не сменой статуса');
   }
   if (actor.type === 'customer') throw new ForbiddenError('Покупатель не может менять статус заказа');
@@ -135,12 +101,22 @@ export const orders = {
     const db = opts.db ?? getDb();
     const now = opts.now ?? Date.now();
     const text = cleanNote(note);
+    const revert = opts.revert === true;
 
     const result = withTransaction(db, () => {
       const row = ordersRepo.findById(db, orderId);
       if (!row) throw new NotFoundError('Заказ не найден');
-      assertActorMayMove(actor, to, opts.viaRefund === true);
-      if (!TRANSITIONS[row.status].includes(to)) {
+      assertActorMayMove(actor, to, opts.viaRefund === true, revert);
+      if (revert) {
+        // Возврат на шаг — только по явной таблице, с причиной; «Выполнен»/«Отменён» возвращает лишь orders.refund.
+        if (!text) throw new ValidationError('Укажите причину возврата на предыдущий шаг');
+        if (!REVERSE_TRANSITIONS[row.status].includes(to)) {
+          throw new ConflictError(`Нельзя вернуть заказ из статуса «${STATUS_LABELS[row.status]}» в «${STATUS_LABELS[to]}»`);
+        }
+        if (PRIVILEGED_REVERT_FROM.includes(row.status) && !(actor.type === 'system' || (actor.type === 'staff' && hasPermission(actor, 'orders.refund')))) {
+          throw new ForbiddenError(`Из статуса «${STATUS_LABELS[row.status]}» заказ возвращает только администратор`);
+        }
+      } else if (!TRANSITIONS[row.status].includes(to)) {
         throw new ConflictError(`Нельзя перевести заказ из статуса «${STATUS_LABELS[row.status]}» в «${STATUS_LABELS[to]}»`);
       }
       if (to === 'cancelled' && row.isPaid) {
@@ -151,11 +127,18 @@ export const orders = {
       }
       const paidFlag = to === 'paid' ? true : to === 'refunded' ? false : undefined;
       ordersRepo.setStatus(db, row.id, to, now, paidFlag);
-      const promoReleased = releasesPromo(row.status, to) ? releasePromo(db, row.id) : false;
+      stock.onOrderStatus(row.id, to, { db, now }); // C04: списание / возврат резерва
+      let promoReleased = revert ? false : releasesPromo(row.status, to) ? releasePromo(db, row.id) : false;
+      if (revert && row.status === 'cancelled' && row.promoId !== null && row.promoReleased) {
+        // Отмена была ошибкой: заказ снова занимает использование промокода.
+        if (!promosRepo.tryConsume(db, row.promoId)) throw new ConflictError('Нельзя вернуть заказ: лимит использований промокода исчерпан');
+        ordersRepo.clearPromoReleased(db, row.id);
+        promoReleased = false;
+      }
       ordersRepo.insertEvent(db, {
         orderId: row.id,
         at: now,
-        kind: 'status',
+        kind: revert ? 'revert' : 'status',
         fromStatus: row.status,
         toStatus: to,
         actorType: actorEventType(actor),
@@ -165,7 +148,7 @@ export const orders = {
       audit.record(
         {
           ...auditActor(actor),
-          action: 'order.status',
+          action: revert ? 'order.revert' : 'order.status',
           entity: 'order',
           entityId: row.id,
           before: { status: row.status },
@@ -293,16 +276,8 @@ export const orders = {
     });
   },
 
-  /** Внутренняя заметка сотрудника в истории заказа. */
+  /** Внутренний комментарий сотрудника: отдельная запись order_comments (автор, время) и след в истории. */
   addNote(orderId: number, text: string, actor: Actor, opts: Opts = {}): void {
-    const db = opts.db ?? getDb();
-    const now = opts.now ?? Date.now();
-    if (actor.type !== 'staff' || !hasPermission(actor, 'orders.write')) throw new ForbiddenError('Недостаточно прав');
-    const note = cleanNote(text);
-    if (!note) throw new ValidationError('Введите текст заметки');
-    withTransaction(db, () => {
-      if (!ordersRepo.findById(db, orderId)) throw new NotFoundError('Заказ не найден');
-      ordersRepo.insertEvent(db, { orderId, at: now, kind: 'note', actorType: 'staff', actorId: String(actor.staffId), note });
-    });
+    addInternalComment(orderId, text, actor, opts);
   },
 };

@@ -10,11 +10,11 @@ import { parseForm, requestUpdateSchema } from './schemas';
 type Opts = { db?: Db; now?: number };
 
 export const REQUEST_KINDS: readonly RequestKind[] = ['repair', 'callback', 'contact', 'question'];
-export const REQUEST_STATUSES: readonly RequestStatus[] = ['new', 'in_work', 'done', 'cancelled'];
+export const REQUEST_STATUSES: readonly RequestStatus[] = ['new', 'in_work', 'waiting', 'closed', 'diagnostics', 'awaiting_approval', 'in_repair', 'awaiting_parts', 'ready', 'completed', 'cancelled'];
 
 const listFilter = z.object({
   kind: z.enum(['repair', 'callback', 'contact', 'question']).optional().catch(undefined),
-  status: z.enum(['new', 'in_work', 'done', 'cancelled']).optional().catch(undefined),
+  status: z.enum(['new', 'in_work', 'waiting', 'closed', 'diagnostics', 'awaiting_approval', 'in_repair', 'awaiting_parts', 'ready', 'completed', 'cancelled']).optional().catch(undefined),
 });
 
 /** Заявки и вопросы. Право requests.write: manager и admin. Каждый метод проверяет право сам. */
@@ -33,7 +33,9 @@ export const requestsAdmin = {
     return withTransaction(db, () => {
       const before = requestsRepo.findById(db, id);
       if (!before) throw new NotFoundError('Заявка не найдена');
-      requestsRepo.update(db, id, { status: patch.status, note: patch.note === undefined ? undefined : patch.note || null, handledBy: session.staffId, now });
+      // прежнее «done» → «закрыто» (обращения) / «завершена» (ремонт)
+      const status = (patch.status === 'done' ? (before.kind === 'repair' ? 'completed' : 'closed') : patch.status) as RequestStatus | undefined;
+      requestsRepo.update(db, id, { status, note: patch.note === undefined ? undefined : patch.note || null, handledBy: session.staffId, now });
       const after = requestsRepo.findById(db, id)!;
       audit.record(
         {

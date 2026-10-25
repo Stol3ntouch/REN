@@ -29,6 +29,12 @@ export type ProductRow = {
   /** Скрыт администратором (F3); импорт не трогает. */
   hiddenByAdmin: boolean;
   featured: boolean;
+  /** Поля карточки (C04). */
+  oldPriceKopecks: number | null;
+  availability: string;
+  isNew: boolean;
+  isPromo: boolean;
+  shortDescription: string | null;
   firstSeenAt: string;
   updatedAt: string;
   lockedFields: string[];
@@ -50,6 +56,11 @@ type Raw = {
   published: number;
   hidden_by_admin: number;
   featured: number;
+  old_price_kopecks: number | null;
+  availability: string;
+  is_new: number;
+  is_promo: number;
+  short_description: string | null;
   first_seen_at: string;
   updated_at: string;
   locked_fields: string;
@@ -57,7 +68,7 @@ type Raw = {
 
 const SELECT = `SELECT p.id, p.source, p.external_id, p.sku, p.name, p.slug, p.description, p.category_id,
   c.external_id AS category_external_id, p.price_kopecks, p.discount_price_kopecks, p.in_stock, p.published, p.hidden_by_admin,
-  p.featured, p.first_seen_at, p.updated_at, p.locked_fields
+  p.featured, p.old_price_kopecks, p.availability, p.is_new, p.is_promo, p.short_description, p.first_seen_at, p.updated_at, p.locked_fields
   FROM products p JOIN categories c ON c.id = p.category_id`;
 
 function parseLocked(json: string): string[] {
@@ -86,6 +97,11 @@ function map(r: Raw): ProductRow {
     published: r.published === 1,
     hiddenByAdmin: r.hidden_by_admin === 1,
     featured: r.featured === 1,
+    oldPriceKopecks: r.old_price_kopecks,
+    availability: r.availability,
+    isNew: r.is_new === 1,
+    isPromo: r.is_promo === 1,
+    shortDescription: r.short_description,
     firstSeenAt: r.first_seen_at,
     updatedAt: r.updated_at,
     lockedFields: parseLocked(r.locked_fields),
@@ -156,7 +172,13 @@ export const productsRepo = {
     if (patch.description !== undefined) add('description', patch.description);
     if (patch.categoryId !== undefined) add('category_id', patch.categoryId);
     if (patch.priceKopecks !== undefined) add('price_kopecks', patch.priceKopecks);
-    if (patch.inStock !== undefined) add('in_stock', patch.inStock ? 1 : 0);
+    if (patch.inStock !== undefined) {
+      // наличие из файла/1С — зеркало availability, пока статус не закреплён вручную и учёт остатка не включён (C04)
+      sets.push('in_stock = CASE WHEN availability_manual = 0 AND stock_tracked = 0 THEN ? ELSE in_stock END');
+      values.push(patch.inStock ? 1 : 0);
+      sets.push("availability = CASE WHEN availability_manual = 0 AND stock_tracked = 0 THEN ? ELSE availability END");
+      values.push(patch.inStock ? 'in_stock' : 'out_of_stock');
+    }
     if (sets.length === 0) return;
     add('updated_at', now);
     db.prepare(`UPDATE products SET ${sets.join(', ')} WHERE id = ?`).run(...values, id);

@@ -11,12 +11,13 @@ const SYSTEM: Actor = { type: 'system', reason: 'test' };
 const ADMIN: Actor = { type: 'staff', staffId: 1, role: 'admin' };
 const MANAGER: Actor = { type: 'staff', staffId: 2, role: 'manager' };
 
-/** Ожидаемая таблица записана независимо от кода: из spec.md (истории 28, 28a). */
+/** Ожидаемая таблица записана независимо от кода: из spec.md (истории 28, 28a) + статус «Подтверждён» (C09). */
 const EXPECTED: Record<OrderStatus, OrderStatus[]> = {
-  new: ['awaiting_payment', 'processing', 'cancelled'],
+  new: ['confirmed', 'awaiting_payment', 'processing', 'cancelled'],
+  confirmed: ['processing', 'cancelled', 'refunded'],
   awaiting_payment: ['paid', 'payment_failed', 'cancelled'],
   payment_failed: ['awaiting_payment', 'cancelled'],
-  paid: ['processing', 'refunded'],
+  paid: ['confirmed', 'processing', 'refunded'],
   processing: ['shipped', 'ready_for_pickup', 'cancelled', 'refunded'],
   shipped: ['delivered', 'refunded'],
   ready_for_pickup: ['delivered', 'cancelled', 'refunded'],
@@ -29,9 +30,9 @@ const EXPECTED: Record<OrderStatus, OrderStatus[]> = {
 const PAID_STATUSES = new Set<OrderStatus>(['paid', 'processing', 'shipped', 'ready_for_pickup', 'delivered']);
 
 describe('orders.transition: таблица статусов', () => {
-  it('в системе ровно десять статусов из спецификации', () => {
+  it('в системе ровно одиннадцать статусов (десять из спецификации + «Подтверждён», C09)', () => {
     expect([...ORDER_STATUSES].sort()).toEqual(
-      ['new', 'awaiting_payment', 'paid', 'processing', 'shipped', 'ready_for_pickup', 'delivered', 'cancelled', 'payment_failed', 'refunded'].sort(),
+      ['new', 'confirmed', 'awaiting_payment', 'paid', 'processing', 'shipped', 'ready_for_pickup', 'delivered', 'cancelled', 'payment_failed', 'refunded'].sort(),
     );
   });
 

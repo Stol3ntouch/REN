@@ -6,7 +6,7 @@ import type { OwnerRef } from '@/server/http/owner';
 export type { OrderStatus, OwnerRef };
 
 /** Общие опции доменных функций: БД и время подменяются в тестах. */
-export type Opts = { db?: Db; now?: number; secret?: string; /** Только orders.refund: возврат у провайдера уже проведён. */ viaRefund?: boolean; /** Только orders.refund: другой возвратчик вместо зарегистрированного (подбор зависших возвратов). */ refunder?: (order: Order, ctx: { idempotencyKey: string }) => Promise<void> };
+export type Opts = { db?: Db; now?: number; secret?: string; /** Только orders.refund: возврат у провайдера уже проведён. */ viaRefund?: boolean; /** Возврат на предыдущий шаг (таблица REVERSE_TRANSITIONS): нужна причина, пишется событие revert. */ revert?: boolean; /** Только orders.refund: другой возвратчик вместо зарегистрированного (подбор зависших возвратов). */ refunder?: (order: Order, ctx: { idempotencyKey: string }) => Promise<void> };
 
 /** Кто меняет заказ. system — проверенный webhook, импорт; staff — сотрудник; customer — сам покупатель. */
 export type Actor =
@@ -34,7 +34,7 @@ export type OrderItem = {
 export type OrderEvent = {
   id: number;
   at: number;
-  kind: 'created' | 'status' | 'note' | 'assigned';
+  kind: 'created' | 'status' | 'note' | 'assigned' | 'revert' | 'edit' | 'items' | 'payment.manual';
   fromStatus: OrderStatus | null;
   toStatus: OrderStatus | null;
   actorType: EventActorType;

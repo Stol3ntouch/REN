@@ -62,7 +62,7 @@ export function SiteHeader({ shell = DEFAULT_SHELL }: { shell?: ShellContext }) 
             <span className="visually-hidden">Найти</span>
           </button>
         </form>
-        <HeaderCounters />
+        <HeaderCounters showCart={shell.showPrices !== false} />
       </div>
       <div className="site-header__nav container">
         <SiteNav nav={shell.nav} />

@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getShopInfo } from '@/domain/content/settings';
+import { getStoreFlags } from '@/domain/content/store-flags';
 import { getDeliveryPaymentText } from '@/domain/catalog/shop-text';
 import { getProductBySlug, getRelatedProducts } from '@/domain/catalog/product';
 import { breadcrumbJsonLd, productJsonLd } from '@/domain/seo/jsonld';
-import { productMetadata } from '@/domain/seo/metadata';
+import { loadProductSeoContext, productMetadata } from '@/domain/seo/metadata';
 import { resolveSiteUrl } from '@/domain/seo/site-url';
 import { getProductSeo } from '@/domain/seo/store';
 import { getProductRating } from '@/domain/requests/public';
@@ -24,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) return { title: 'Товар не найден', robots: { index: false } };
-  return productMetadata(product, getProductSeo(product.id));
+  return productMetadata(product, getProductSeo(product.id), loadProductSeoContext(product.id));
 }
 
 export default async function ProductPage({ params }: Props) {
@@ -35,10 +37,11 @@ export default async function ProductPage({ params }: Props) {
   const related = await getRelatedProducts(product.id);
   const deliveryText = getDeliveryPaymentText();
   const siteUrl = resolveSiteUrl();
+  const showPrices = getStoreFlags().showPrices;
 
   return (
     <article className="product-page">
-      <JsonLd data={productJsonLd(product, getProductRating(product.id), siteUrl)} />
+      <JsonLd data={productJsonLd(product, getProductRating(product.id), siteUrl, { withOffers: showPrices, currency: getShopInfo().currency })} />
       <JsonLd data={breadcrumbJsonLd([{ name: 'Каталог', href: '/catalog' }, ...product.breadcrumbs, { name: product.name, href: `/product/${product.slug}` }], siteUrl)} />
       <Breadcrumbs items={[{ name: 'Каталог', href: '/catalog' }, ...product.breadcrumbs]} current={product.name} />
 
@@ -49,10 +52,19 @@ export default async function ProductPage({ params }: Props) {
           <h1 className="product-info__title">{product.name}</h1>
           {product.sku ? <p className="product-info__sku">Артикул: {product.sku}</p> : null}
           <RatingBadge productId={product.id} />
-          <p className={`stock stock--${product.inStock ? 'yes' : 'no'}`}>{product.inStock ? 'В наличии' : 'Нет в наличии'}</p>
+          {product.isNew || product.isPromo ? (
+            <ul className="product-badges product-badges--inline" aria-label="Метки товара">
+              {product.isNew ? <li className="product-badge product-badge--new">Новинка</li> : null}
+              {product.isPromo ? <li className="product-badge product-badge--promo">Акция</li> : null}
+            </ul>
+          ) : null}
+          <p className={`stock stock--${product.availability === 'preorder' ? 'preorder' : product.inStock ? 'yes' : 'no'}`}>
+            {product.availability === 'preorder' ? 'Под заказ' : product.availability === 'discontinued' ? 'Снят с продажи' : product.inStock ? 'В наличии' : 'Нет в наличии'}
+          </p>
+          {product.shortDescription ? <p className="product-info__short">{product.shortDescription}</p> : null}
           <PriceBlock unitKopecks={product.unitKopecks} originalKopecks={product.originalKopecks} size="lg" />
           <div className="product-info__buy">
-            <AddToCartButton productId={product.id} inStock={product.inStock} name={product.name} withQuantity />
+            {showPrices ? <AddToCartButton productId={product.id} inStock={product.inStock} name={product.name} withQuantity /> : null}
             <div className="product-info__actions">
               <ProductActionsSlot product={{ id: product.id, name: product.name }} />
             </div>

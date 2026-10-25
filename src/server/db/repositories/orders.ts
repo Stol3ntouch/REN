@@ -3,6 +3,7 @@ import type { Db } from '../connection';
 
 export const ORDER_STATUSES = [
   'new',
+  'confirmed',
   'awaiting_payment',
   'paid',
   'processing',
@@ -41,6 +42,8 @@ export type OrderRow = {
   totalKopecks: number;
   promoId: number | null;
   promoCode: string | null;
+  /** Использование промокода уже возвращено (заказ отменён). */
+  promoReleased: boolean;
   isPaid: boolean;
   assignedStaffId: number | null;
   idempotencyKey: string;
@@ -61,7 +64,7 @@ export type OrderItemRow = {
   lineKopecks: number;
 };
 
-export type OrderEventKind = 'created' | 'status' | 'note' | 'assigned';
+export type OrderEventKind = 'created' | 'status' | 'note' | 'assigned' | 'revert' | 'edit' | 'items' | 'payment.manual';
 export type EventActorType = 'customer' | 'staff' | 'system';
 export type OrderEventRow = {
   id: number;
@@ -100,6 +103,7 @@ type Raw = Record<string, unknown> & {
   total_kopecks: number;
   promo_id: number | null;
   promo_code: string | null;
+  promo_released: number;
   is_paid: number;
   assigned_staff_id: number | null;
   idempotency_key: string;
@@ -134,6 +138,7 @@ const mapOrder = (r: Raw | undefined): OrderRow | null =>
         totalKopecks: r.total_kopecks,
         promoId: r.promo_id,
         promoCode: r.promo_code,
+        promoReleased: r.promo_released === 1,
         isPaid: r.is_paid === 1,
         assignedStaffId: r.assigned_staff_id,
         idempotencyKey: r.idempotency_key,
@@ -180,9 +185,26 @@ export type OrderListFilter = {
   from?: number;
   to?: number;
   assignedStaffId?: number | 'none';
+  /** paid — is_paid = 1, unpaid — is_paid = 0. */
+  paymentState?: 'paid' | 'unpaid';
+  /** Код способа получения (pickup, manual …) и способа оплаты (cod, test …). */
+  deliveryCode?: string;
+  paymentCode?: string;
+  /** Границы суммы заказа, копейки (включительно). */
+  minTotalKopecks?: number;
+  maxTotalKopecks?: number;
+  sort?: OrderSortKey;
+  dir?: 'asc' | 'desc';
   limit?: number;
   offset?: number;
 };
+
+export const ORDER_SORT_KEYS = ['created', 'number', 'total', 'status', 'name'] as const;
+export type OrderSortKey = (typeof ORDER_SORT_KEYS)[number];
+const SORT_SQL: Record<OrderSortKey, string> = { created: 'created_at', number: 'id', total: 'total_kopecks', status: 'status', name: 'contact_name_lc' };
+
+export type OrderCommentRow = { id: number; orderId: number; staffId: number | null; authorName: string | null; body: string; createdAt: number };
+export type StockEffectKey = 'reserve' | 'commit' | 'release';
 
 export const formatOrderNumber = (id: number): string => `RTS-${String(id).padStart(6, '0')}`;
 
@@ -354,6 +376,23 @@ export const ordersRepo = {
       where.push('created_at < ?');
       args.push(f.to);
     }
+    if (f.paymentState) where.push(f.paymentState === 'paid' ? 'is_paid = 1' : 'is_paid = 0');
+    if (f.deliveryCode) {
+      where.push('delivery_code = ?');
+      args.push(f.deliveryCode);
+    }
+    if (f.paymentCode) {
+      where.push('payment_code = ?');
+      args.push(f.paymentCode);
+    }
+    if (f.minTotalKopecks !== undefined) {
+      where.push('total_kopecks >= ?');
+      args.push(f.minTotalKopecks);
+    }
+    if (f.maxTotalKopecks !== undefined) {
+      where.push('total_kopecks <= ?');
+      args.push(f.maxTotalKopecks);
+    }
     if (f.assignedStaffId === 'none') where.push('assigned_staff_id IS NULL');
     else if (typeof f.assignedStaffId === 'number') {
       where.push('assigned_staff_id = ?');
@@ -362,10 +401,87 @@ export const ordersRepo = {
     const w = where.length ? `WHERE ${where.join(' AND ')}` : '';
     const total = (db.prepare(`SELECT COUNT(*) AS c FROM orders ${w}`).get(...args) as { c: number }).c;
     const limit = Math.min(Math.max(f.limit ?? 50, 1), 200);
+    const sortCol = SORT_SQL[f.sort ?? 'created'] ?? 'created_at';
+    const dir = f.dir === 'asc' ? 'ASC' : 'DESC';
     const rows = db
-      .prepare(`SELECT * FROM orders ${w} ORDER BY id DESC LIMIT ? OFFSET ?`)
+      .prepare(`SELECT * FROM orders ${w} ORDER BY ${sortCol} ${dir}, id ${dir} LIMIT ? OFFSET ?`)
       .all(...args, limit, Math.max(f.offset ?? 0, 0)) as Raw[];
     return { rows: rows.map((r) => mapOrder(r)!), total };
+  },
+  /** Правка контактов/адреса/комментария клиента (не трогает статус и суммы). */
+  updateContact(
+    db: Db,
+    id: number,
+    v: { name: string; email: string; phone: string; phoneDigits: string; address: string | null; comment: string | null },
+    now: number,
+  ): void {
+    db.prepare(
+      'UPDATE orders SET contact_name = ?, contact_name_lc = ?, contact_email = ?, contact_phone = ?, phone_digits = ?, address = ?, comment = ?, updated_at = ? WHERE id = ?',
+    ).run(v.name, v.name.toLowerCase(), v.email, v.phone, v.phoneDigits, v.address, v.comment, now, id);
+  },
+  /** Новые суммы после правки состава (доставка и способы остаются). */
+  setTotals(db: Db, id: number, v: { subtotalKopecks: number; discountKopecks: number; totalKopecks: number }, now: number): void {
+    db.prepare('UPDATE orders SET subtotal_kopecks = ?, discount_kopecks = ?, total_kopecks = ?, updated_at = ? WHERE id = ?').run(
+      v.subtotalKopecks,
+      v.discountKopecks,
+      v.totalKopecks,
+      now,
+      id,
+    );
+  },
+  updateItem(db: Db, itemId: number, qty: number, lineKopecks: number): void {
+    db.prepare('UPDATE order_items SET qty = ?, line_kopecks = ? WHERE id = ?').run(qty, lineKopecks, itemId);
+  },
+  deleteItem(db: Db, itemId: number): void {
+    db.prepare('DELETE FROM order_items WHERE id = ?').run(itemId);
+  },
+  /** Флаг оплаты без смены статуса (ручная отметка «оплата при получении / вне системы»). */
+  setPaidFlag(db: Db, id: number, now: number): void {
+    db.prepare('UPDATE orders SET is_paid = 1, updated_at = ? WHERE id = ?').run(now, id);
+  },
+  /** Есть ли у заказа платёж в работе или завершённый (тогда состав и суммы менять нельзя). */
+  hasLivePayment(db: Db, orderId: number): boolean {
+    const r = db.prepare("SELECT 1 AS x FROM payments WHERE order_id = ? AND status IN ('pending', 'succeeded', 'refund_pending', 'refunded') LIMIT 1").get(orderId);
+    return r !== undefined;
+  },
+  /** Снимает признак «промокод возвращён» (заказ снова занимает использование). */
+  clearPromoReleased(db: Db, id: number): void {
+    db.prepare('UPDATE orders SET promo_released = 0 WHERE id = ?').run(id);
+  },
+  findProductForOrder(db: Db, productId: number): { id: number; name: string; sku: string | null; priceKopecks: number; discountPriceKopecks: number | null; published: boolean; inStock: boolean } | null {
+    const r = db
+      .prepare('SELECT id, name, sku, price_kopecks, discount_price_kopecks, published, in_stock FROM products WHERE id = ?')
+      .get(productId) as { id: number; name: string; sku: string | null; price_kopecks: number; discount_price_kopecks: number | null; published: number; in_stock: number } | undefined;
+    return r
+      ? { id: r.id, name: r.name, sku: r.sku, priceKopecks: r.price_kopecks, discountPriceKopecks: r.discount_price_kopecks, published: r.published === 1, inStock: r.in_stock === 1 }
+      : null;
+  },
+
+  // --- внутренние комментарии ---
+  insertComment(db: Db, orderId: number, staffId: number, body: string, now: number): number {
+    const r = db.prepare('INSERT INTO order_comments (order_id, staff_id, body, created_at) VALUES (?, ?, ?, ?)').run(orderId, staffId, body, now);
+    return Number(r.lastInsertRowid);
+  },
+  listComments(db: Db, orderId: number): OrderCommentRow[] {
+    const rows = db
+      .prepare(
+        `SELECT c.id, c.order_id, c.staff_id, COALESCE(s.name, s.email) AS author, c.body, c.created_at
+         FROM order_comments c LEFT JOIN staff s ON s.id = c.staff_id WHERE c.order_id = ? ORDER BY c.id`,
+      )
+      .all(orderId) as Array<{ id: number; order_id: number; staff_id: number | null; author: string | null; body: string; created_at: number }>;
+    return rows.map((r) => ({ id: r.id, orderId: r.order_id, staffId: r.staff_id, authorName: r.author, body: r.body, createdAt: r.created_at }));
+  },
+
+  // --- складские эффекты (идемпотентность) ---
+  /** true — запись добавлена сейчас (эффект ещё не применялся). */
+  insertStockEffect(db: Db, orderId: number, effect: StockEffectKey, now: number): boolean {
+    return Number(db.prepare('INSERT OR IGNORE INTO order_stock_effects (order_id, effect, at) VALUES (?, ?, ?)').run(orderId, effect, now).changes) > 0;
+  },
+  hasStockEffect(db: Db, orderId: number, effect: StockEffectKey): boolean {
+    return db.prepare('SELECT 1 AS x FROM order_stock_effects WHERE order_id = ? AND effect = ?').get(orderId, effect) !== undefined;
+  },
+  deleteStockEffect(db: Db, orderId: number, effect: StockEffectKey): void {
+    db.prepare('DELETE FROM order_stock_effects WHERE order_id = ? AND effect = ?').run(orderId, effect);
   },
   count(db: Db): number {
     return (db.prepare('SELECT COUNT(*) AS c FROM orders').get() as { c: number }).c;

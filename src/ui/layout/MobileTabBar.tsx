@@ -6,7 +6,7 @@ import { CartIcon, GridIcon, HeartIcon, HomeIcon, UserIcon } from './icons';
 import { useCounters } from './counters-store';
 
 /** Нижняя панель на телефоне (< 48rem; на широком экране скрыта CSS): Главная / Каталог / Избранное / Корзина / Профиль. */
-export function MobileTabBar() {
+export function MobileTabBar({ showCart = true }: { showCart?: boolean }) {
   const pathname = usePathname() ?? '/';
   const c = useCounters();
   const tabs = [
@@ -15,7 +15,7 @@ export function MobileTabBar() {
     { href: '/favorites', label: 'Избранное', icon: <HeartIcon />, count: c.favorites },
     { href: '/cart', label: 'Корзина', icon: <CartIcon />, count: c.cart },
     { href: '/account', label: 'Профиль', icon: <UserIcon />, count: 0 },
-  ];
+  ].filter((t) => showCart || t.href !== '/cart');
   const isCurrent = (href: string) => (href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`));
   return (
     <nav className="mobile-tabbar" aria-label="Быстрая навигация">

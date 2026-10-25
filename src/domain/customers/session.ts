@@ -54,7 +54,7 @@ export function getSession(cookies: CookieReader, opts: Opts = {}): UserSession 
   const userId = sessionsRepo.findOwnerId(db, 'user', hashToken(token), opts.now ?? Date.now());
   if (userId === null) return null;
   const user = usersRepo.findById(db, userId);
-  return user ? { userId: user.id, email: user.email } : null;
+  return user && user.status !== 'blocked' ? { userId: user.id, email: user.email } : null;
 }
 
 export function destroyUserSession(cookies: CookieStore, opts: Opts = {}): void {

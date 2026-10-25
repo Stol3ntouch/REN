@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { assertPricesShown } from '@/domain/content/store-flags';
 import { z } from 'zod';
 import { resolveOrCreateOwner, resolveOwner } from '@/domain/customers/session';
 import type { CartView } from '@/domain/ordering';
@@ -40,6 +41,7 @@ export async function handleCart<S extends z.ZodType>(
   run: (owner: OwnerRef | null, body: S extends z.ZodType ? z.infer<S> : undefined) => CartView | Record<string, unknown>,
 ): Promise<Response> {
   try {
+    assertPricesShown(); // «Показывать цены» выключен → API корзины отвечает отказом
     const unsafe = !['GET', 'HEAD'].includes(req.method.toUpperCase());
     if (unsafe) assertOrigin(req);
     enforceRateLimitByIp('cart', clientIp(req.headers), 300, 600);

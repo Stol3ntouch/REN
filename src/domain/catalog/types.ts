@@ -1,5 +1,10 @@
 /** Типы витрины каталога. Деньги — целые копейки. */
 
+export const AVAILABILITIES = ['in_stock', 'out_of_stock', 'preorder', 'discontinued'] as const;
+/** Статус наличия товара: продаются «в наличии» и «под заказ». */
+export type Availability = (typeof AVAILABILITIES)[number];
+export const asAvailability = (v: string): Availability => ((AVAILABILITIES as readonly string[]).includes(v) ? (v as Availability) : 'in_stock');
+
 export type SortKey = 'name' | 'popular' | 'price_asc' | 'price_desc' | 'relevance';
 
 export const SORT_LABELS: Record<Exclude<SortKey, 'relevance'>, string> = {
@@ -57,6 +62,10 @@ export type ProductCard = {
   /** Обычная цена, только если действует реальная скидочная. */
   originalKopecks?: number;
   inStock: boolean;
+  availability: Availability;
+  /** Бейджи по флагам из карточки. */
+  isNew: boolean;
+  isPromo: boolean;
   image: CatalogImage | null;
 };
 
@@ -121,6 +130,10 @@ export type ProductPage = {
   unitKopecks: number;
   originalKopecks?: number;
   inStock: boolean;
+  availability: Availability;
+  isNew: boolean;
+  isPromo: boolean;
+  shortDescription: string | null;
   category: CategoryInfo;
   breadcrumbs: Breadcrumb[];
   images: CatalogImage[];

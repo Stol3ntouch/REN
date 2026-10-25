@@ -1,10 +1,12 @@
 import { z } from 'zod';
 import { enqueueMail } from '@/domain/admin/mail-enqueue';
+import { assertRegistrationOpen, getStoreFlags } from '@/domain/content/store-flags';
 import { getConfig } from '@/server/config';
 import { getDb, withTransaction } from '@/server/db/connection';
+import { emailVerificationsRepo } from '@/server/db/repositories/email-verifications';
 import { sessionsRepo } from '@/server/db/repositories/sessions';
 import { usersRepo } from '@/server/db/repositories/users';
-import { ConflictError, UnauthorizedError, ValidationError, type FieldErrors } from '@/server/http/errors';
+import { AppError, ConflictError, ForbiddenError, UnauthorizedError, ValidationError, type FieldErrors } from '@/server/http/errors';
 import { getOwnerRef, type CookieStore } from '@/server/http/owner';
 import { enforceRateLimit, enforceRateLimitByIp } from '@/server/http/rate-limit';
 import { assertNotLocked, clearFailures, recordFailure } from './auth-throttle';
@@ -17,6 +19,25 @@ export type AuthCtx = Opts & { cookies: CookieStore; ip: string };
 export type OnLoginHook = (guestId: string | null, userId: number) => void | Promise<void>;
 
 export const RESET_TTL_MS = 60 * 60 * 1000;
+/** Ссылка подтверждения email действует сутки. */
+export const CONFIRM_TTL_MS = 24 * 60 * 60 * 1000;
+
+/** 403: вход закрыт, пока не подтверждён email («Требовать подтверждение email»). */
+export class EmailNotConfirmedError extends AppError {
+  constructor() {
+    super('Подтвердите email: мы отправили письмо со ссылкой. Проверьте почту', 403, 'email_not_confirmed');
+  }
+}
+
+function sendConfirmation(db: ReturnType<typeof getDb>, user: { id: number; email: string }, now: number, siteUrl?: string): void {
+  const token = generateToken();
+  withTransaction(db, () => {
+    emailVerificationsRepo.expireOpen(db, user.id, now);
+    emailVerificationsRepo.insert(db, { userId: user.id, tokenHash: hashToken(token), now, expiresAt: now + CONFIRM_TTL_MS });
+  });
+  const base = (siteUrl ?? getConfig().siteUrl ?? '').replace(/\/+$/, '');
+  enqueueMail('auth.email_confirm', { to: user.email, confirmUrl: `${base}/account/confirm/${token}`, expiresAt: now + CONFIRM_TTL_MS }, { db, now });
+}
 
 const hooks: OnLoginHook[] = [];
 export function registerOnLoginHook(hook: OnLoginHook): void {
@@ -67,10 +88,11 @@ const registerSchema = z.object({
   consent: z.literal(true, { error: 'Нужно согласие на обработку персональных данных' }),
 });
 
-export async function register(input: unknown, ctx: AuthCtx): Promise<{ userId: number }> {
+export async function register(input: unknown, ctx: AuthCtx & { siteUrl?: string }): Promise<{ userId: number; confirmationRequired?: boolean }> {
   const data = parse(registerSchema, input);
   const db = ctx.db ?? getDb();
   const now = ctx.now ?? Date.now();
+  assertRegistrationOpen({ db, now }); // переключатель «Разрешить регистрацию» — проверка на сервере
   const passwordHash = await hashPassword(data.password);
 
   const userId = withTransaction(db, () => {
@@ -85,6 +107,12 @@ export async function register(input: unknown, ctx: AuthCtx): Promise<{ userId: 
     consent.record({ kind: 'privacy', source: 'register', userId: id }, { db, now });
     return id;
   });
+
+  // «Требовать подтверждение email»: аккаунт создан, но сессии нет — вход после перехода по ссылке из письма.
+  if (getStoreFlags({ db, now }).emailConfirm) {
+    sendConfirmation(db, { id: userId, email: data.email }, now, ctx.siteUrl);
+    return { userId, confirmationRequired: true };
+  }
 
   destroyUserSession(ctx.cookies, { db });
   createUserSession(ctx.cookies, userId, { db, now });
@@ -113,8 +141,20 @@ export async function login(input: unknown, ctx: AuthCtx): Promise<{ userId: num
     recordFailure(db, 'user', email, ctx.ip, now);
     throw new UnauthorizedError(INVALID_CREDENTIALS);
   }
+  // C09: заблокированный менеджером клиент не входит (пароль верен — причину можно назвать)
+  if (user.status === 'blocked') throw new ForbiddenError('Вход закрыт: аккаунт заблокирован. Свяжитесь с магазином');
 
   clearFailures(db, 'user', email, ctx.ip);
+  if (getStoreFlags({ db, now }).emailConfirm && !emailVerificationsRepo.isVerified(db, user.id)) {
+    // Пароль верный, но почта не подтверждена: высылаем новую ссылку (не чаще 3 раз в час) и не пускаем.
+    try {
+      enforceRateLimit(`confirm:email:${email}`, 3, 3600, { db, now });
+      sendConfirmation(db, user, now);
+    } catch {
+      // лимит исчерпан — письмо не дублируем
+    }
+    throw new EmailNotConfirmedError();
+  }
   usersRepo.touchLogin(db, user.id, now);
   destroyUserSession(ctx.cookies, { db }); // новая сессия вместо старой (защита от фиксации)
   createUserSession(ctx.cookies, user.id, { db, now });
@@ -166,6 +206,21 @@ export async function resetPassword(input: unknown, ctx: Opts = {}): Promise<voi
     if (userId === null) throw new ValidationError(RESET_LINK_INVALID);
     usersRepo.setPasswordHash(db, userId, passwordHash);
     sessionsRepo.deleteAllForOwner(db, 'user', userId);
+  });
+}
+
+export const CONFIRM_LINK_INVALID = 'Ссылка недействительна или устарела. Войдите — мы вышлем новую';
+
+/** Подтверждает email по одноразовой ссылке. Сессию не создаёт: после подтверждения нужно войти. */
+export function confirmEmail(token: unknown, ctx: Opts = {}): { userId: number } {
+  const db = ctx.db ?? getDb();
+  const now = ctx.now ?? Date.now();
+  if (typeof token !== 'string' || token.length === 0 || token.length > 200) throw new ValidationError(CONFIRM_LINK_INVALID);
+  return withTransaction(db, () => {
+    const userId = emailVerificationsRepo.consume(db, hashToken(token), now);
+    if (userId === null) throw new ValidationError(CONFIRM_LINK_INVALID);
+    emailVerificationsRepo.markVerified(db, userId, now);
+    return { userId };
   });
 }
 

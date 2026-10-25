@@ -1,3 +1,4 @@
+import { currencySymbol } from '@/domain/pricing/format';
 const NBSP = ' ';
 
 /** Копейки → «32 990 ₽» (неразрывные пробелы); копейки показываются, только если они есть. */
@@ -5,7 +6,7 @@ export function formatPrice(kopecks: number): string {
   const rubles = Math.trunc(kopecks / 100);
   const cents = Math.abs(kopecks % 100);
   const grouped = String(rubles).replace(/\B(?=(\d{3})+(?!\d))/g, NBSP);
-  return `${grouped}${cents > 0 ? `,${String(cents).padStart(2, '0')}` : ''}${NBSP}₽`;
+  return `${grouped}${cents > 0 ? `,${String(cents).padStart(2, '0')}` : ''}${NBSP}${currencySymbol()}`;
 }
 
 /** Русское склонение: pluralize(2, ['товар', 'товара', 'товаров']) → «товара». */

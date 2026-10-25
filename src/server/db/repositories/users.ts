@@ -1,10 +1,11 @@
 import type { Db } from '../connection';
 
-export type UserRow = { id: number; email: string; passwordHash: string; createdAt: number; lastLoginAt: number | null };
+export type UserStatus = 'active' | 'vip' | 'blocked';
+export type UserRow = { id: number; email: string; passwordHash: string; createdAt: number; lastLoginAt: number | null; status: UserStatus };
 
-type Raw = { id: number; email: string; password_hash: string; created_at: number; last_login_at: number | null };
+type Raw = { id: number; email: string; password_hash: string; created_at: number; last_login_at: number | null; status?: UserStatus };
 const map = (r: Raw | undefined): UserRow | null =>
-  r ? { id: r.id, email: r.email, passwordHash: r.password_hash, createdAt: r.created_at, lastLoginAt: r.last_login_at } : null;
+  r ? { id: r.id, email: r.email, passwordHash: r.password_hash, createdAt: r.created_at, lastLoginAt: r.last_login_at, status: r.status ?? 'active' } : null;
 
 export const usersRepo = {
   findByEmail(db: Db, email: string): UserRow | null {
@@ -23,5 +24,8 @@ export const usersRepo = {
   },
   touchLogin(db: Db, id: number, now: number): void {
     db.prepare('UPDATE users SET last_login_at = ? WHERE id = ?').run(now, id);
+  },
+  setStatus(db: Db, id: number, status: UserStatus): void {
+    db.prepare('UPDATE users SET status = ? WHERE id = ?').run(status, id);
   },
 };

@@ -107,6 +107,8 @@ describe('гостевая ссылка с подписанным токеном
   it('история для покупателя не содержит служебных заметок сотрудников', async () => {
     const db = setupDb();
     const o = await place(db, GUEST_A);
+    // комментарий хранится с автором (staff_id → staff), поэтому сотрудник должен существовать
+    db.prepare("INSERT INTO staff (id, email, name, role_id, password_hash, created_at) VALUES (1, 'm@x.test', 'Менеджер', (SELECT id FROM roles WHERE code = 'manager'), 'x', 1)").run();
     orders.addNote(o.id, 'клиент грубил', { type: 'staff', staffId: 1, role: 'manager' }, { db, now: T0 });
     await orders.transition(o.id, 'processing', { type: 'staff', staffId: 1, role: 'manager' }, 'взяли в работу', { db, now: T0 });
     const forCustomer = orders.events(o.id, { db, forCustomer: true });

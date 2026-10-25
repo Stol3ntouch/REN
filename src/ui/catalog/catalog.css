@@ -916,3 +916,45 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+/* C04: цена со скидкой и метки товара */
+.price__discount {
+  margin-inline-start: 0.5rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.25rem;
+  background: var(--color-danger, #b3261e);
+  color: #fff;
+  font-size: 0.8em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.product-badges {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  z-index: 1;
+}
+.product-badge {
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--color-primary, #1f6b3a);
+  color: #fff;
+}
+.product-badge--promo {
+  background: var(--color-danger, #b3261e);
+}
+.stock--preorder {
+  color: var(--color-warning, #8a5a00);
+}
+.product-badges--inline {
+  position: static;
+  margin-bottom: 0.5rem;
+}

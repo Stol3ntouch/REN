@@ -1,7 +1,7 @@
 import { readFile, realpath } from 'node:fs/promises';
 import { join, sep } from 'node:path';
 
-const TYPES: Record<string, string> = { webp: 'image/webp', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png' };
+const TYPES: Record<string, string> = { webp: 'image/webp', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', ico: 'image/x-icon' };
 /** Каталог загрузок: DATA_DIR/uploads (как в media/store-image; не импортируем sharp ради одного пути). */
 const uploadsDir = () => join(/*turbopackIgnore: true*/ process.env.DATA_DIR?.trim() || 'data', 'uploads');
 const SEGMENT = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;

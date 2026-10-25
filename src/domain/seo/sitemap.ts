@@ -1,11 +1,19 @@
 import { visibleProductSql } from '@/server/db/repositories/products';
+import { getSeoSettings, type ChangeFrequency, type SeoSection, type SeoSettings } from '@/domain/content/seo-settings';
 import { listPublicUrls } from '@/domain/content/urls';
 import { getDb, type Db } from '@/server/db/connection';
 import { categoriesRepo } from '@/server/db/repositories/categories';
 import { absoluteUrl } from './site-url';
 import { listPublishedProductStamps } from './store';
 
-export type SitemapEntry = { url: string; lastModified?: Date };
+export type SitemapEntry = { url: string; lastModified?: Date; changeFrequency?: ChangeFrequency; priority?: number };
+
+/** К какому разделу настроек «Sitemap» относится путь контента. */
+export function sitemapSectionOf(path: string): SeoSection {
+  if (path === '/news' || path.startsWith('/news/')) return 'news';
+  if (path === '/services' || path.startsWith('/services/')) return 'services';
+  return 'pages';
+}
 
 /** Предел протокола sitemaps.org на один файл. */
 export const SITEMAP_LIMIT = 50000;
@@ -14,13 +22,15 @@ export const SITEMAP_LIMIT = 50000;
  * Все публичные URL: страницы контента (T08), каталог, категории с товарами (с учётом подкатегорий) и опубликованные товары.
  * Кабинета, корзины, оформления, поиска и админки здесь нет по построению: источники — только перечисленные выше.
  */
-export function listSitemapEntries(opts: { db?: Db; siteUrl: string; now?: number }): SitemapEntry[] {
+export function listSitemapEntries(opts: { db?: Db; siteUrl: string; now?: number; seo?: SeoSettings }): SitemapEntry[] {
   const db = opts.db ?? getDb();
-  const paths: { path: string; lastModified?: Date }[] = [...listPublicUrls({ db, now: opts.now })];
-  paths.push({ path: '/catalog' });
+  const seo = opts.seo ?? getSeoSettings({ db });
+  const on = seo.sitemapSections;
+  const paths: { path: string; lastModified?: Date }[] = listPublicUrls({ db, now: opts.now }).filter((u) => on[sitemapSectionOf(u.path)]);
+  if (on.categories) paths.push({ path: '/catalog' });
 
   const direct = new Map(
-    (db.prepare(`SELECT p.category_id AS id, COUNT(*) AS n FROM products p WHERE ${visibleProductSql('p')} GROUP BY p.category_id`).all() as { id: number; n: number }[]).map((r) => [r.id, r.n]),
+    (db.prepare(`SELECT pc.category_id AS id, COUNT(*) AS n FROM product_categories pc JOIN products p ON p.id = pc.product_id WHERE ${visibleProductSql('p')} GROUP BY pc.category_id`).all() as { id: number; n: number }[]).map((r) => [r.id, r.n]),
   );
   const rows = categoriesRepo.listVisible(db);
   const children = new Map<number, number[]>();
@@ -30,9 +40,9 @@ export function listSitemapEntries(opts: { db?: Db; siteUrl: string; now?: numbe
     seen.add(id);
     return (direct.get(id) ?? 0) + (children.get(id) ?? []).reduce((s, c) => s + total(c, seen), 0);
   };
-  for (const c of rows) if (total(c.id) > 0) paths.push({ path: `/catalog/${c.slug}` });
+  if (on.categories) for (const c of rows) if (total(c.id) > 0) paths.push({ path: `/catalog/${c.slug}` });
 
-  for (const p of listPublishedProductStamps(db)) {
+  for (const p of on.products ? listPublishedProductStamps(db) : []) {
     const t = Date.parse(p.updatedAt);
     paths.push({ path: `/product/${p.slug}`, lastModified: Number.isNaN(t) ? undefined : new Date(t) });
   }
@@ -43,7 +53,7 @@ export function listSitemapEntries(opts: { db?: Db; siteUrl: string; now?: numbe
     const url = absoluteUrl(opts.siteUrl, p.path);
     if (seen.has(url)) continue;
     seen.add(url);
-    out.push(p.lastModified ? { url, lastModified: p.lastModified } : { url });
+    out.push({ url, ...(p.lastModified ? { lastModified: p.lastModified } : {}), ...(seo.changeFrequency ? { changeFrequency: seo.changeFrequency } : {}), ...(seo.priority !== null ? { priority: seo.priority } : {}) });
   }
   return out;
 }

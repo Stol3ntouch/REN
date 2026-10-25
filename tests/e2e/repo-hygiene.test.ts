@@ -67,6 +67,11 @@ describe('в коде и сидах нет секретов и выдуманн�
   it('нет остатков числом и тарифов доставки в миграциях и сидах', () => {
     for (const f of [...files(join(root, 'scripts'), ['.ts']), ...files(join(root, 'migrations'), ['.sql'])]) {
       const text = read(f);
+      // C04: колонки остатка заводит схема (1200_product_model.sql); значений в ней нет — все остатки по умолчанию 0 и «неизвестны» (stock_tracked = 0)
+      if (rel(f).endsWith('1200_product_model.sql')) {
+        expect(text, rel(f)).not.toMatch(/INSERT\s+INTO\s+products|quantity_in_stock|остаток\s*[:=]\s*\d/i);
+        continue;
+      }
       expect(text, rel(f)).not.toMatch(/stock_qty|quantity_in_stock|остаток\s*[:=]\s*\d/i);
     }
     // способы получения заведены миграцией без цены доставки: «стоимость рассчитает менеджер»

@@ -5,13 +5,13 @@ import { CartIcon, CompareIcon, HeartIcon } from './icons';
 import { useCounters } from './counters-store';
 
 /** Избранное, сравнение, корзина со счётчиками (читаются с сервера; нули не показываются). */
-export function HeaderCounters() {
+export function HeaderCounters({ showCart = true }: { showCart?: boolean }) {
   const c = useCounters();
   const items = [
     { href: '/favorites', label: 'Избранное', count: c.favorites, icon: <HeartIcon /> },
     { href: '/compare', label: 'Сравнение', count: c.compare, icon: <CompareIcon /> },
     { href: '/cart', label: 'Корзина', count: c.cart, icon: <CartIcon /> },
-  ];
+  ].filter((i) => showCart || i.href !== '/cart');
   return (
     <ul className="header-counters">
       {items.map((i) => (

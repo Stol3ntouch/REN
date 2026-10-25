@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getStoreFlags } from '@/domain/content/store-flags';
 import { safeRedirectPath } from '@/domain/customers/auth';
 import { getSession } from '@/domain/customers/session';
 import { registerAction } from '../actions';
@@ -12,6 +13,19 @@ export const metadata: Metadata = { title: 'Регистрация', robots: { i
 export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const next = safeRedirectPath((await searchParams).next);
   if (getSession(await cookies())) redirect(next);
+
+  // «Разрешить регистрацию» выключен: формы нет (а сервер всё равно отклонит запрос).
+  if (!getStoreFlags().registration) {
+    return (
+      <section className="auth-card" aria-labelledby="register-title">
+        <h1 id="register-title">Регистрация</h1>
+        <p>Регистрация сейчас закрыта.</p>
+        <div className="auth-links">
+          <Link href="/account/login">Войти</Link>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="auth-card" aria-labelledby="register-title">

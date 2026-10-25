@@ -1,4 +1,5 @@
 import { cookies, headers } from 'next/headers';
+import { isSpamProtectionOn } from '@/domain/content/store-flags';
 import { AppError, RateLimitError, ValidationError } from '@/server/http/errors';
 import { assertOrigin } from '@/server/http/origin';
 import type { CookieStore } from '@/server/http/owner';
@@ -17,8 +18,9 @@ export async function prepareAction(scope: string): Promise<{ cookies: CookieSto
   return { cookies: (await cookies()) as unknown as CookieStore, ip };
 }
 
-/** Скрытое поле `website`: человек его не видит и не заполняет, бот — заполняет. */
+/** Скрытое поле `website`: человек его не видит и не заполняет, бот — заполняет. Проверка — по переключателю «Защита форм от спама». */
 export function isHoneypotTripped(form: FormData): boolean {
+  if (!isSpamProtectionOn()) return false;
   const v = form.get('website');
   return typeof v === 'string' && v.trim() !== '';
 }

@@ -30,9 +30,9 @@ describe('обработка заявок в админке', () => {
     const id = await repair();
     for (const [who, status] of [[manager, 'in_work'], [admin, 'done']] as const) {
       const row = requestsAdmin.update(who, id, { status, note: 'Позвонил, клиент ждёт: ivan@example.com' }, { db, now: T0 + 1000 });
-      expect(row.status).toBe(status);
+      expect(row.status).toBe(status === 'done' ? 'completed' : status); // прежнее «done» у ремонта = «завершена» (C09)
     }
-    expect(requestsAdmin.list(manager, { kind: 'repair' }, { db })[0]).toMatchObject({ status: 'done', note: 'Позвонил, клиент ждёт: ivan@example.com' });
+    expect(requestsAdmin.list(manager, { kind: 'repair' }, { db })[0]).toMatchObject({ status: 'completed', note: 'Позвонил, клиент ждёт: ivan@example.com' });
     const log = audit.list({ entity: 'request' }, { db });
     expect(log).toHaveLength(2);
     expect(JSON.stringify(log)).not.toContain('ivan@example.com');

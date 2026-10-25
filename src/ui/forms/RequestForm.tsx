@@ -26,7 +26,12 @@ type Props = {
   successText: string;
   /** Скрытые служебные значения (например, productId). */
   hidden?: Record<string, string | number>;
+  /** Поле «Фото» (до 5 файлов): после создания заявки файлы уходят на /api/forms/repair/photos. */
+  photos?: boolean;
 };
+
+const MAX_PHOTOS = 5;
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 
 type State = { status: 'idle' | 'sending' | 'error' | 'success'; message?: string; fields?: Record<string, string[]>; number?: string | null };
 
@@ -41,7 +46,7 @@ const MESSAGES: Record<number, string> = {
  * Общая клиентская форма обращений: состояния sending / error / success, ошибки по полям,
  * honeypot «website», обязательное согласие на обработку персональных данных.
  */
-export function RequestForm({ kind, fields, submitLabel, successTitle, successText, hidden = {} }: Props) {
+export function RequestForm({ kind, fields, submitLabel, successTitle, successText, hidden = {}, photos = false }: Props) {
   const uid = useId();
   const [state, setState] = useState<State>({ status: 'idle' });
   const formRef = useRef<HTMLFormElement>(null);
@@ -53,14 +58,29 @@ export function RequestForm({ kind, fields, submitLabel, successTitle, successTe
     const form = new FormData(e.currentTarget);
     const body: Record<string, unknown> = { ...hidden, website: String(form.get('website') ?? ''), consent: form.get('consent') === 'on' };
     for (const f of fields) body[f.name] = String(form.get(f.name) ?? '');
+    const files = photos ? form.getAll('photo').filter((f): f is File => f instanceof File && f.size > 0) : [];
+    if (files.length > MAX_PHOTOS || files.some((f) => f.size > MAX_PHOTO_BYTES)) {
+      setState({ status: 'error', message: `Приложите не больше ${MAX_PHOTOS} фото, каждое до 5 МБ (JPG, PNG или WebP).` });
+      return;
+    }
 
     setState({ status: 'sending' });
     try {
       const res = await fetch(`/api/forms/${kind}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
-      const data = (await res.json().catch(() => ({}))) as { number?: string | null; error?: { message?: string; fields?: Record<string, string[]> } };
+      const data = (await res.json().catch(() => ({}))) as { number?: string | null; photoToken?: string; error?: { message?: string; fields?: Record<string, string[]> } };
       if (res.ok) {
+        let note: string | undefined;
+        if (files.length > 0 && data.number && data.photoToken) {
+          // заявка уже принята; фото — отдельным запросом, их сбой не отменяет заявку
+          const upload = new FormData();
+          upload.set('number', data.number);
+          upload.set('token', data.photoToken);
+          for (const f of files) upload.append('photo', f);
+          const up = await fetch('/api/forms/repair/photos', { method: 'POST', body: upload }).catch(() => null);
+          if (!up || !up.ok) note = 'Заявка принята, но фото загрузить не удалось. Назовите номер заявки менеджеру или пришлите фото ему.';
+        }
         formRef.current?.reset();
-        setState({ status: 'success', number: data.number ?? null });
+        setState({ status: 'success', number: data.number ?? null, message: note });
         return;
       }
       setState({
@@ -82,6 +102,7 @@ export function RequestForm({ kind, fields, submitLabel, successTitle, successTe
             Номер обращения: <strong>{state.number}</strong>
           </p>
         ) : null}
+        {state.message ? <p role="status">{state.message}</p> : null}
       </SuccessState>
     );
   }
@@ -153,6 +174,16 @@ export function RequestForm({ kind, fields, submitLabel, successTitle, successTe
           </div>
         );
       })}
+
+      {photos ? (
+        <div className="req-field">
+          <label htmlFor={id('photo')}>Фото неисправности</label>
+          <input id={id('photo')} name="photo" type="file" accept="image/jpeg,image/png,image/webp" multiple aria-describedby={`${id('photo')}-hint`} />
+          <p className="req-field__hint" id={`${id('photo')}-hint`}>
+            Необязательно. До {MAX_PHOTOS} фото JPG, PNG или WebP, каждое до 5 МБ.
+          </p>
+        </div>
+      ) : null}
 
       {/* Honeypot: человек не видит и не заполняет; бот заполнит — заявка тихо отбрасывается на сервере. */}
       <div className="req-trap" aria-hidden="true">

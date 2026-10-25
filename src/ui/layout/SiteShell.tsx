@@ -16,13 +16,18 @@ export function SiteShell({ children, shell = DEFAULT_SHELL }: { children: React
   return (
     <>
       <SkipLink />
+      {shell.maintenanceBanner ? (
+        <div className="maintenance-banner" role="status">
+          Включён режим технического обслуживания: посетители видят страницу «Технические работы», а вы — сайт, потому что вошли в админку.
+        </div>
+      ) : null}
       {shell.topStrip ? <TopStrip text={shell.topStrip.text} href={shell.topStrip.href} /> : null}
       <SiteHeader shell={shell} />
       <main id="main" className="site-main container" tabIndex={-1}>
         {children}
       </main>
       <SiteFooter shell={shell} />
-      <MobileTabBar />
+      <MobileTabBar showCart={shell.showPrices !== false} />
     </>
   );
 }

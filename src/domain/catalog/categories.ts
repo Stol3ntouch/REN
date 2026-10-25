@@ -32,9 +32,16 @@ export function categoryHeading(c: { name: string; h1: string | null }): string 
 export async function getCategoryTree(opts: { db?: Db } = {}): Promise<CategoryNode[]> {
   const db = opts.db ?? getDb();
   const rows = listCategoryRows(db);
-  const direct = new Map<number, number>(
-    (db.prepare(`SELECT p.category_id AS id, COUNT(*) AS n FROM products p WHERE ${visibleProductSql('p')} GROUP BY p.category_id`).all() as { id: number; n: number }[]).map((r) => [r.id, r.n]),
-  );
+  // Товар считается в основной и дополнительных категориях; в поддереве — один раз (множества id, а не суммы).
+  const sets = new Map<number, Set<number>>();
+  for (const r of db
+    .prepare(`SELECT pc.category_id AS cid, p.id AS pid FROM product_categories pc JOIN products p ON p.id = pc.product_id WHERE ${visibleProductSql('p')}`)
+    .all() as { cid: number; pid: number }[]) {
+    let s = sets.get(r.cid);
+    if (!s) sets.set(r.cid, (s = new Set()));
+    s.add(r.pid);
+  }
+  const direct = new Map<number, number>([...sets].map(([k, v]) => [k, v.size]));
 
   const nodes = new Map<number, CategoryNode>(
     rows.map((r) => [r.id, { id: r.id, slug: r.slug, name: r.name, parentId: r.parentId, productCount: direct.get(r.id) ?? 0, children: [] }]),
@@ -46,11 +53,13 @@ export async function getCategoryTree(opts: { db?: Db } = {}): Promise<CategoryN
     if (parent) parent.children.push(node);
     else roots.push(node);
   }
-  const total = (n: CategoryNode): number => {
-    n.productCount += n.children.reduce((sum, c) => sum + total(c), 0);
-    return n.productCount;
+  const union = (n: CategoryNode): Set<number> => {
+    const acc = new Set(sets.get(n.id) ?? []);
+    for (const c of n.children) for (const id of union(c)) acc.add(id);
+    n.productCount = acc.size;
+    return acc;
   };
-  roots.forEach(total);
+  roots.forEach(union);
   return roots;
 }
 

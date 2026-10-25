@@ -1,4 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { getStaffSession } from '@/domain/admin/staff-session';
+import { decideStoreGate, gatePageFor } from '@/domain/content/store-gate';
 import { buildCsp, HSTS_VALUE } from '@/domain/seo/headers';
 import { isNoindexPath } from '@/domain/seo/paths';
 import { isProductionEnv } from '@/server/config';
@@ -51,6 +53,30 @@ export function proxy(request: NextRequest): NextResponse {
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const secure = request.nextUrl.protocol === 'https:' || request.headers.get('x-forwarded-proto') === 'https';
   const csp = buildCsp({ nonce, development: process.env.NODE_ENV === 'development', upgradeInsecure: production && secure });
+
+  // Переключатели магазина («Включить магазин», «Режим обслуживания», «Показывать цены») действуют на сервере.
+  const gate = decideStoreGate({
+    pathname,
+    isStaff: () => {
+      try {
+        return getStaffSession(request.cookies) !== null;
+      } catch {
+        return false;
+      }
+    },
+  });
+  if (gate.kind === 'page') {
+    const { html, headers } = gatePageFor(gate, nonce);
+    const blocked = new NextResponse(html, { status: gate.status, headers });
+    blocked.headers.set('Content-Security-Policy', csp);
+    if (production && secure) blocked.headers.set('Strict-Transport-Security', HSTS_VALUE);
+    return blocked;
+  }
+  if (gate.kind === 'json') {
+    const blocked = NextResponse.json({ error: { code: gate.code, message: gate.message } }, { status: gate.status, headers: { 'cache-control': 'no-store' } });
+    blocked.headers.set('Content-Security-Policy', csp);
+    return blocked;
+  }
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-nonce', nonce);

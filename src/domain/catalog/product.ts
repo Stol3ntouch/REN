@@ -7,7 +7,7 @@ import { listCategoryRows } from './category-rows';
 import { getCategoryBreadcrumbs, toCategoryInfo } from './categories';
 import { toCatalogImage } from './images';
 import { CARD_COLUMNS, CARD_JOIN, ensureFold, mapCard, unitPrice, type CardRow } from './store';
-import type { ProductCard, ProductPage } from './types';
+import { asAvailability, type ProductCard, type ProductPage } from './types';
 
 export const RELATED_LIMIT = 8;
 /** Блок «сопутствующие» показывается, только если есть хотя бы столько товаров. */
@@ -29,8 +29,12 @@ export async function getProductBySlug(slug: string, opts: { db?: Db } = {}): Pr
     sku: p.sku,
     // Описание в БД может прийти не только из импорта: очищаем на выводе (белый список тегов без атрибутов).
     descriptionHtml: p.description && p.description.trim() !== '' ? sanitizeDescription(p.description) : null,
-    ...unitPrice(p.priceKopecks, p.discountPriceKopecks),
+    ...unitPrice(p.priceKopecks, p.discountPriceKopecks, p.oldPriceKopecks),
     inStock: p.inStock,
+    availability: asAvailability(p.availability),
+    isNew: p.isNew,
+    isPromo: p.isPromo,
+    shortDescription: p.shortDescription,
     category: toCategoryInfo(category),
     breadcrumbs: await getCategoryBreadcrumbs(category.slug, { db }),
     images: rows.map((r) => toCatalogImage(r, 'large', p.name)),

@@ -1,5 +1,7 @@
+import { assertPricesShown } from '@/domain/content/store-flags';
 import { audit } from '@/domain/admin/audit';
 import { enqueueMail } from '@/domain/admin/mail-enqueue';
+import { stock } from '@/domain/catalog/stock';
 import { consent } from '@/domain/customers/consent';
 import type { PricedCart } from '@/domain/pricing';
 import { getPaymentPort, isProductionEnv } from '@/integrations/payment/select';
@@ -8,7 +10,8 @@ import { cartsRepo, type CartRow } from '@/server/db/repositories/carts';
 import { methodsRepo, type DeliveryMethodRow, type PaymentMethodRow } from '@/server/db/repositories/methods';
 import { ordersRepo } from '@/server/db/repositories/orders';
 import { promosRepo } from '@/server/db/repositories/promos';
-import { ConflictError, NotFoundError, ValidationError } from '@/server/http/errors';
+import { usersRepo } from '@/server/db/repositories/users';
+import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/server/http/errors';
 import type { OwnerRef } from '@/server/http/owner';
 import { cart as cartApi, computeCart } from './cart';
 import { parsePlaceInput, phoneDigits } from './contact';
@@ -97,8 +100,12 @@ export const checkout = {
   async place(rawInput: unknown, opts: CheckoutOpts = {}): Promise<Order> {
     const db = opts.db ?? getDb();
     const now = opts.now ?? Date.now();
+    assertPricesShown({ db, now }); // «Показывать цены» выключен: оформление недоступно на сервере
     const owner = (rawInput as { owner?: OwnerRef } | null)?.owner;
     if (!owner || (owner.kind !== 'user' && owner.kind !== 'guest')) throw new ValidationError('Не определён владелец корзины');
+    if (owner.kind === 'user' && usersRepo.findById(db, owner.userId)?.status === 'blocked') {
+      throw new ForbiddenError('Оформление заказа недоступно: аккаунт заблокирован. Свяжитесь с магазином');
+    }
     const input = parsePlaceInput(rawInput);
     const prod = isProduction(opts);
 
@@ -170,6 +177,12 @@ export const checkout = {
           lineKopecks: i.unit * i.row.qty,
         });
       }
+      // C04 (ADR-014): резерв остатка для товаров с включённым учётом; не хватает — оформление отклоняется
+      stock.reserveForOrder(
+        id,
+        computed.items.map((i) => ({ productId: i.row.productId, qty: i.row.qty })),
+        { db, now },
+      );
       ordersRepo.insertEvent(db, {
         orderId: id,
         at: now,

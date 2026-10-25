@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getStoreFlags } from '@/domain/content/store-flags';
 import { safeRedirectPath } from '@/domain/customers/auth';
 import { getSession } from '@/domain/customers/session';
 import { SuccessState } from '@/ui/states';
@@ -10,10 +11,11 @@ import { AuthForm } from '../AuthForm';
 
 export const metadata: Metadata = { title: 'Вход', robots: { index: false, follow: false } };
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; reset?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; reset?: string; confirmed?: string }> }) {
   const sp = await searchParams;
   const next = safeRedirectPath(sp.next);
   if (getSession(await cookies())) redirect(next);
+  const registrationOpen = getStoreFlags().registration;
 
   return (
     <section className="auth-card" aria-labelledby="login-title">
@@ -21,6 +23,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       {sp.reset ? (
         <SuccessState title="Пароль изменён">
           <p>Войдите с новым паролем.</p>
+        </SuccessState>
+      ) : null}
+      {sp.confirmed ? (
+        <SuccessState title="Email подтверждён">
+          <p>Теперь можно войти.</p>
         </SuccessState>
       ) : null}
       <AuthForm
@@ -34,7 +41,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       />
       <div className="auth-links">
         <Link href="/account/forgot">Забыли пароль?</Link>
-        <Link href="/account/register">Создать аккаунт</Link>
+        {registrationOpen ? <Link href="/account/register">Создать аккаунт</Link> : null}
       </div>
     </section>
   );

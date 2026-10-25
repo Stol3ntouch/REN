@@ -5,7 +5,7 @@ import { ancestorsOf } from './attributes';
 import { listCategoryRows } from './category-rows';
 import { DEFAULT_MAX_VALUES, DEFAULT_MIN_PRODUCTS, filterAppliesToCategory } from './filters';
 import { buildMatchQuery } from './fts';
-import { buildScope, descendantIds, EFFECTIVE_PRICE, resolveSubcategories, type Scope } from './store';
+import { buildScope, descendantIds, EFFECTIVE_PRICE, IN_CATEGORIES, resolveSubcategories, type Scope } from './store';
 import type { CatalogQuery, Facet, FacetContext, FacetValue } from './types';
 
 /** Контекст фасетов из запроса каталога (все активные фильтры, кроме страницы и сортировки). */
@@ -66,7 +66,7 @@ export async function getFacets(categoryId: number | null, ctx: FacetContext = {
   };
 
   const idsJson = categoryIds ? JSON.stringify(categoryIds) : null;
-  const catWhere = idsJson ? 'AND p.category_id IN (SELECT value FROM json_each(?))' : '';
+  const catWhere = idsJson ? `AND ${IN_CATEGORIES}` : '';
   const catParams: SqlValue[] = idsJson ? [idsJson] : [];
   const visible = visibleProductSql('p');
 
@@ -79,7 +79,7 @@ export async function getFacets(categoryId: number | null, ctx: FacetContext = {
         `SELECT pa.attribute_id AS id, COUNT(DISTINCT p.id) AS products, COUNT(DISTINCT pa.value) AS vals,
                 COUNT(DISTINCT CASE WHEN pa.value_num IS NOT NULL THEN p.id END) AS numeric_products
          FROM product_attributes pa JOIN products p ON p.id = pa.product_id
-         WHERE ${visible} AND p.category_id IN (SELECT value FROM json_each(?)) AND pa.attribute_id IN (SELECT value FROM json_each(?))
+         WHERE ${visible} AND ${IN_CATEGORIES} AND pa.attribute_id IN (SELECT value FROM json_each(?))
          GROUP BY pa.attribute_id`,
       )
       .all(idsJson, JSON.stringify(attrFilters.map((f) => (f.attribute as { id: number }).id))) as { id: number; products: number; vals: number; numeric_products: number }[];
@@ -148,7 +148,7 @@ function buildFacet(db: Db, f: StorefrontFilter, env: Env): Facet | null {
       const children = env.rows.filter((r) => r.parentId === env.categoryId).sort((x, y) => x.sort - y.sort || collator.compare(x.name, y.name) || x.id - y.id);
       if (children.length === 0) return null;
       const b = buildScope(env.base, 'sub');
-      const per = db.prepare(`SELECT p.category_id AS cid, COUNT(*) AS n FROM products p ${b.joins} WHERE ${b.where} GROUP BY p.category_id`).all(...b.params) as { cid: number; n: number }[];
+      const per = db.prepare(`SELECT pc.category_id AS cid, COUNT(DISTINCT p.id) AS n FROM products p JOIN product_categories pc ON pc.product_id = p.id ${b.joins} WHERE ${b.where} GROUP BY pc.category_id`).all(...b.params) as { cid: number; n: number }[];
       const byCategory = new Map(per.map((r) => [r.cid, r.n]));
       const values = children.map((c): FacetValue => ({
         value: c.slug,

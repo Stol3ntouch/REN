@@ -7,7 +7,22 @@ export const MAX_IMPORT_BYTES = 20 * 1024 * 1024;
 export const MAX_IMAGES_PER_PRODUCT = 25;
 
 /** Поля товара, которые можно закрепить в `locked_fields`, чтобы импорт их не перезаписывал. */
-export const LOCKABLE_FIELDS = ['name', 'sku', 'description', 'category', 'price', 'in_stock', 'attributes', 'images'] as const;
+export const LOCKABLE_FIELDS = [
+  'name',
+  'sku',
+  'description',
+  'category',
+  'price',
+  'in_stock',
+  'attributes',
+  'images',
+  // C04: поля карточки, которые импорт сам не пишет, но не должен затирать (бренд из <vendor>) или менять, если они правлены вручную
+  'brand',
+  'barcode',
+  'old_price',
+  'short_description',
+  'flags',
+] as const;
 export type LockableField = (typeof LOCKABLE_FIELDS)[number];
 
 export type ParsedCategory = {

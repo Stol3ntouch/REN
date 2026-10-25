@@ -3,20 +3,39 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { hasPermission } from '@/domain/admin/permissions';
 import { orderOps, REFUND_PERMISSION } from '@/domain/ordering/admin-ops';
-import { STATUS_LABELS, TRANSITIONS, type OrderStatus } from '@/domain/ordering/status';
+import { ITEMS_EDITABLE_STATUSES, CONTACT_EDITABLE_STATUSES, PRIVILEGED_REVERT_FROM, REVERSE_TRANSITIONS, STATUS_LABELS, TRANSITIONS, type OrderStatus } from '@/domain/ordering/status';
 import { formatRub } from '@/domain/pricing/format';
-import '@/ui/cart/admin-orders.css';
 import { requireStaffPage } from '@/ui/admin/guard';
-import { addNoteAction, assignOrderAction, cancelOrderAction, changeStatusAction, refundOrderAction } from '../actions';
+import { FlashToast, FormField, PageHeader, SelectField, TextAreaField } from '@/ui/admin/kit';
+import { fmtTime } from '../../_lib/ui';
+import '@/ui/cart/admin-orders.css';
+import {
+  addNoteAction,
+  assignOrderAction,
+  cancelOrderAction,
+  changeStatusAction,
+  editItemsAction,
+  markPaidAction,
+  refundOrderAction,
+  revertStatusAction,
+  updateDetailsAction,
+} from '../actions';
 
 export const metadata: Metadata = { title: 'Заказ' };
 export const dynamic = 'force-dynamic';
 
-const fmtTime = (ms: number) =>
-  new Intl.DateTimeFormat('ru-RU', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Moscow' }).format(new Date(ms));
-
-// Эти статусы руками не ставятся: «оплачен»/«ошибка оплаты» — по webhook, возврат — отдельной кнопкой администратора, отмена — отдельной кнопкой.
+// «Оплачен»/«ошибка оплаты» ставит только webhook, возврат и отмена — отдельными кнопками.
 const MANUAL_BLOCKED: readonly OrderStatus[] = ['paid', 'payment_failed', 'refunded', 'cancelled'];
+
+const EVENT_TEXT: Record<string, string> = {
+  created: 'заказ оформлен',
+  note: 'добавлен внутренний комментарий',
+  assigned: 'ответственный',
+  edit: 'правка данных',
+  items: 'изменён состав',
+  'payment.manual': 'оплата отмечена вручную',
+  revert: 'возврат на шаг',
+};
 
 type Props = { params: Promise<{ number: string }>; searchParams: Promise<{ ok?: string; error?: string }> };
 
@@ -27,47 +46,37 @@ export default async function AdminOrderPage({ params, searchParams }: Props) {
   if (!order) notFound();
 
   const events = orderOps.history(session, order.id);
+  const comments = orderOps.comments(session, order.id);
+  const pay = orderOps.paymentInfo(session, order.id);
   const staff = orderOps.staffForAssignment(session);
+  const staffName = new Map(staff.map((s) => [String(s.id), s.label]));
   const canWrite = hasPermission(session, 'orders.write');
-  const canRefund = hasPermission(session, REFUND_PERMISSION) && order.isPaid;
+  const canRefund = hasPermission(session, REFUND_PERMISSION);
   const nextStatuses = TRANSITIONS[order.status].filter((s) => !MANUAL_BLOCKED.includes(s));
+  const revertTo = REVERSE_TRANSITIONS[order.status].filter(() => !PRIVILEGED_REVERT_FROM.includes(order.status) || canRefund);
   const canCancel = TRANSITIONS[order.status].includes('cancelled') && !order.isPaid;
-  const staffName = new Map(staff.map((s) => [s.id, s.label]));
+  const itemsEditable = ITEMS_EDITABLE_STATUSES.includes(order.status) && !order.isPaid;
+  const contactEditable = CONTACT_EDITABLE_STATUSES.includes(order.status);
   const hidden = (
     <>
       <input type="hidden" name="orderId" value={order.id} />
       <input type="hidden" name="number" value={order.number} />
     </>
   );
+  const actor = (type: string, id: string | null) => (type === 'staff' ? (staffName.get(id ?? '') ?? `сотрудник №${id}`) : type === 'system' ? 'система' : 'покупатель');
 
   return (
     <>
+      <FlashToast ok={sp.ok} error={sp.error} />
       <p>
         <Link href="/admin/orders">← Все заказы</Link>
       </p>
-      <h1>Заказ {order.number}</h1>
-      {sp.ok ? (
-        <p className="adm-flash" role="status">
-          Готово.
-        </p>
-      ) : null}
-      {sp.error ? (
-        <p className="adm-flash adm-flash--error" role="alert">
-          {sp.error}
-        </p>
-      ) : null}
+      <PageHeader title={`Заказ ${order.number}`} description={`${STATUS_LABELS[order.status]}${order.isPaid ? ' · оплачен' : ''} · создан ${fmtTime(order.createdAt)}`} actions={<a className="ak-btn" href={`/admin/orders/${order.number}/print`} target="_blank" rel="noopener">Печать</a>} />
 
-      <div className="adm-grid adm-grid--two">
-        <div className="adm-grid">
-          <section className="adm-card" aria-labelledby="o-main">
-            <h2 id="o-main">Заказ</h2>
-            <p>
-              Статус: <strong>{STATUS_LABELS[order.status]}</strong>
-              {order.isPaid ? ' · оплачен' : ''} · создан {fmtTime(order.createdAt)}
-            </p>
-            <p>
-              Ответственный: {order.assignedStaffId ? (staffName.get(order.assignedStaffId) ?? `сотрудник №${order.assignedStaffId}`) : 'не назначен'}
-            </p>
+      <div className="ak-grid-2">
+        <div className="ak-stack">
+          <section className="ak-card" aria-labelledby="o-items">
+            <h2 id="o-items">Состав заказа</h2>
             <div className="adm-table-wrap">
               <table className="adm-table">
                 <caption className="visually-hidden">Состав заказа</caption>
@@ -75,15 +84,10 @@ export default async function AdminOrderPage({ params, searchParams }: Props) {
                   <tr>
                     <th scope="col">Товар</th>
                     <th scope="col">Артикул</th>
-                    <th scope="col" className="num">
-                      Цена
-                    </th>
-                    <th scope="col" className="num">
-                      Кол-во
-                    </th>
-                    <th scope="col" className="num">
-                      Сумма
-                    </th>
+                    <th scope="col" className="num">Цена</th>
+                    <th scope="col" className="num">Скидка</th>
+                    <th scope="col" className="num">Кол-во</th>
+                    <th scope="col" className="num">Сумма</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -91,10 +95,8 @@ export default async function AdminOrderPage({ params, searchParams }: Props) {
                     <tr key={i.id}>
                       <td>{i.name}</td>
                       <td>{i.sku ?? '—'}</td>
-                      <td className="num">
-                        {formatRub(i.unitKopecks)}
-                        {i.discountPriceKopecks !== null ? ` (розн. ${formatRub(i.priceKopecks)})` : ''}
-                      </td>
+                      <td className="num">{formatRub(i.priceKopecks)}</td>
+                      <td className="num">{i.discountPriceKopecks !== null ? `−${formatRub(i.priceKopecks - i.unitKopecks)}` : '—'}</td>
                       <td className="num">{i.qty}</td>
                       <td className="num">{formatRub(i.lineKopecks)}</td>
                     </tr>
@@ -103,132 +105,162 @@ export default async function AdminOrderPage({ params, searchParams }: Props) {
               </table>
             </div>
             <p>
-              Товары: {formatRub(order.subtotalKopecks)}
-              {order.discountKopecks > 0 ? ` · скидка${order.promoCode ? ` (${order.promoCode})` : ''}: −${formatRub(order.discountKopecks)}` : ''} ·
-              доставка: {order.delivery.pending ? 'рассчитать менеджеру' : formatRub(order.deliveryKopecks)} · <strong>итого {formatRub(order.totalKopecks)}</strong>
+              Товары: {formatRub(order.subtotalKopecks)} · скидка{order.promoCode ? ` (купон ${order.promoCode})` : ''}: {order.discountKopecks > 0 ? `−${formatRub(order.discountKopecks)}` : '0'} · доставка:{' '}
+              {order.delivery.pending ? 'рассчитает менеджер' : formatRub(order.deliveryKopecks)} · <strong>итого {formatRub(order.totalKopecks)}</strong>
             </p>
           </section>
 
-          <section className="adm-card" aria-labelledby="o-contact">
-            <h2 id="o-contact">Покупатель</h2>
-            <p>{order.contact.name}</p>
-            <p>{order.contact.phone}</p>
-            <p>{order.contact.email}</p>
-            <p>
-              Получение: {order.delivery.name}
-              {order.contact.address ? ` — ${order.contact.address}` : ''}
-            </p>
+          <section className="ak-card" aria-labelledby="o-contact">
+            <h2 id="o-contact">Покупатель и получение</h2>
+            <p>{order.contact.name} · {order.contact.phone} · {order.contact.email}</p>
+            <p>Получение: {order.delivery.name}{order.contact.address ? ` — ${order.contact.address}` : ''}</p>
             <p>Оплата: {order.payment.name}</p>
             {order.contact.comment ? <p>Комментарий покупателя: {order.contact.comment}</p> : null}
+            {canWrite && contactEditable ? (
+              <form action={updateDetailsAction}>
+                {hidden}
+                <h3>Изменить данные</h3>
+                <div className="ak-form-grid">
+                  <FormField name="name" label="Имя" defaultValue={order.contact.name} maxLength={100} required />
+                  <FormField name="phone" label="Телефон" defaultValue={order.contact.phone} maxLength={30} required />
+                  <FormField name="email" label="Email" type="email" defaultValue={order.contact.email} maxLength={254} required />
+                  <FormField name="address" label="Адрес доставки" defaultValue={order.contact.address ?? ''} maxLength={300} />
+                </div>
+                <TextAreaField name="comment" label="Комментарий покупателя" defaultValue={order.contact.comment ?? ''} rows={2} maxLength={1000} />
+                <button type="submit" className="ak-btn">Сохранить данные</button>
+              </form>
+            ) : null}
           </section>
 
-          <section className="adm-card" aria-labelledby="o-history">
-            <h2 id="o-history">История</h2>
+          {canWrite && itemsEditable ? (
+            <form action={editItemsAction} className="ak-card">
+              {hidden}
+              <h2>Изменить состав</h2>
+              <p className="ak-muted">Цены прежних позиций остаются как при оформлении; суммы и скидку купона пересчитает сервер. После передачи в доставку состав менять нельзя.</p>
+              {order.items.map((i) => (
+                <FormField key={i.id} name={`qty_${i.id}`} label={`${i.name} — количество (0 — убрать)`} type="number" min={0} max={20} defaultValue={i.qty} />
+              ))}
+              <div className="ak-form-grid">
+                <FormField name="addProductId" label="Добавить товар (ID товара)" inputMode="numeric" />
+                <FormField name="addQty" label="Количество" type="number" min={1} max={20} defaultValue={1} />
+              </div>
+              <FormField name="reason" label="Причина изменения" maxLength={500} required />
+              <button type="submit" className="ak-btn">Применить</button>
+            </form>
+          ) : null}
+
+          <section className="ak-card" aria-labelledby="o-comments">
+            <h2 id="o-comments">Внутренние комментарии</h2>
+            <p className="ak-muted">Покупатель их не видит.</p>
+            {comments.length === 0 ? <p className="ak-muted">Комментариев пока нет.</p> : null}
+            <ul className="ak-list">
+              {comments.map((c) => (
+                <li key={c.id}>
+                  <strong>{c.authorName ?? 'Сотрудник'}</strong> · {fmtTime(c.createdAt)}
+                  <br />
+                  {c.body}
+                </li>
+              ))}
+            </ul>
+            {canWrite ? (
+              <form action={addNoteAction}>
+                {hidden}
+                <TextAreaField name="note" label="Новый комментарий" rows={3} maxLength={500} required />
+                <button type="submit" className="ak-btn">Добавить</button>
+              </form>
+            ) : null}
+          </section>
+
+          <section className="ak-card" aria-labelledby="o-history">
+            <h2 id="o-history">История изменений</h2>
             <ol className="timeline">
               {events.map((e) => (
                 <li key={e.id}>
                   <span className="timeline__time">{fmtTime(e.at)}</span> —{' '}
-                  {e.kind === 'created'
-                    ? 'заказ оформлен'
-                    : e.kind === 'status'
-                      ? `${e.fromStatus ? STATUS_LABELS[e.fromStatus] : '—'} → ${e.toStatus ? STATUS_LABELS[e.toStatus] : '—'}`
-                      : e.kind === 'assigned'
-                        ? 'ответственный'
-                        : 'заметка'}{' '}
-                  ({e.actorType === 'staff' ? `сотрудник №${e.actorId}` : e.actorType === 'system' ? 'система' : 'покупатель'}){e.note ? `: ${e.note}` : ''}
+                  {e.kind === 'status' || e.kind === 'revert'
+                    ? `${e.kind === 'revert' ? 'возврат на шаг: ' : ''}${e.fromStatus ? STATUS_LABELS[e.fromStatus] : '—'} → ${e.toStatus ? STATUS_LABELS[e.toStatus] : '—'}`
+                    : (EVENT_TEXT[e.kind] ?? e.kind)}{' '}
+                  ({actor(e.actorType, e.actorId)}){e.note && e.kind !== 'note' ? `: ${e.note}` : ''}
                 </li>
               ))}
             </ol>
           </section>
         </div>
 
-        {canWrite ? (
-          <div className="adm-grid">
-            {nextStatuses.length > 0 ? (
-              <form action={changeStatusAction} className="adm-card">
+        <div className="ak-stack">
+          <section className="ak-card" aria-labelledby="o-pay">
+            <h2 id="o-pay">Оплата</h2>
+            <p>
+              {pay.paymentName}: <strong>{pay.isPaid ? 'оплачен' : 'не оплачен'}</strong>
+            </p>
+            <p className="ak-muted">Платёжный провайдер: {pay.providerConnected ? pay.provider : 'не подключён'}. {pay.providerNote ?? ''}</p>
+            {canWrite && !pay.isPaid && pay.paymentKind !== 'online' && order.status !== 'cancelled' && order.status !== 'refunded' ? (
+              <form action={markPaidAction}>
                 {hidden}
-                <h2>Сменить статус</h2>
-                <div className="adm-field">
-                  <label htmlFor="s-status">Новый статус</label>
-                  <select id="s-status" name="status" required>
-                    {nextStatuses.map((s) => (
-                      <option key={s} value={s}>
-                        {STATUS_LABELS[s]}
-                      </option>
-                    ))}
-                  </select>
+                <h3>Отметить оплаченным</h3>
+                <p className="ak-muted">Для оплаты при получении или вне системы. Действие попадёт в журнал. Онлайн-оплата подтверждается только платёжной системой.</p>
+                <TextAreaField name="comment" label="Комментарий (обязательно)" rows={2} maxLength={500} required />
+                <label>
+                  <input type="checkbox" name="confirm" required /> Подтверждаю, что оплата получена
+                </label>
+                <div>
+                  <button type="submit" className="ak-btn">Отметить оплаченным</button>
                 </div>
-                <div className="adm-field">
-                  <label htmlFor="s-note">Комментарий (необязательно)</label>
-                  <input id="s-note" name="note" maxLength={500} />
-                </div>
-                <button type="submit" className="button">
-                  Сменить статус
-                </button>
               </form>
             ) : null}
-
-            <form action={assignOrderAction} className="adm-card">
-              {hidden}
-              <h2>Ответственный</h2>
-              <div className="adm-field">
-                <label htmlFor="a-staff">Менеджер</label>
-                <select id="a-staff" name="staffId" defaultValue={order.assignedStaffId ?? ''}>
-                  <option value="">Не назначен</option>
-                  {staff.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button type="submit" className="button button--outline">
-                Назначить
-              </button>
-            </form>
-
-            <form action={addNoteAction} className="adm-card">
-              {hidden}
-              <h2>Заметка</h2>
-              <div className="adm-field">
-                <label htmlFor="n-note">Внутренняя заметка (покупатель её не видит)</label>
-                <textarea id="n-note" name="note" rows={3} maxLength={500} required />
-              </div>
-              <button type="submit" className="button button--outline">
-                Добавить
-              </button>
-            </form>
-
-            {canCancel ? (
-              <form action={cancelOrderAction} className="adm-card">
-                {hidden}
-                <h2>Отмена заказа</h2>
-                <div className="adm-field">
-                  <label htmlFor="c-note">Причина</label>
-                  <input id="c-note" name="note" maxLength={500} />
-                </div>
-                <button type="submit" className="button button--outline">
-                  Отменить заказ
-                </button>
-              </form>
+            {canRefund && order.isPaid ? (
+              pay.refundAvailable ? (
+                <form action={refundOrderAction}>
+                  {hidden}
+                  <h3>Возврат средств</h3>
+                  <p className="ak-muted">{pay.refundNote}</p>
+                  <FormField name="note" label="Комментарий" maxLength={500} />
+                  <button type="submit" className="ak-btn ak-btn--danger-outline">Вернуть деньги</button>
+                </form>
+              ) : (
+                <p className="ak-muted">Возврат средств: {pay.refundNote}</p>
+              )
             ) : null}
+          </section>
 
-            {canRefund ? (
-              <form action={refundOrderAction} className="adm-card">
+          {canWrite ? (
+            <>
+              {nextStatuses.length > 0 ? (
+                <form action={changeStatusAction} className="ak-card">
+                  {hidden}
+                  <h2>Сменить статус</h2>
+                  <SelectField name="status" label="Новый статус" options={nextStatuses.map((s) => ({ value: s, label: STATUS_LABELS[s] }))} required />
+                  <FormField name="note" label="Комментарий (необязательно)" maxLength={500} />
+                  <button type="submit" className="ak-btn ak-btn--primary">Сменить статус</button>
+                </form>
+              ) : null}
+              {revertTo.length > 0 ? (
+                <form action={revertStatusAction} className="ak-card">
+                  {hidden}
+                  <h2>Вернуть на предыдущий шаг</h2>
+                  <p className="ak-muted">Исправление ошибки: история сохраняется, причина обязательна.</p>
+                  <SelectField name="status" label="Вернуть в статус" options={revertTo.map((s) => ({ value: s, label: STATUS_LABELS[s] }))} required />
+                  <FormField name="note" label="Причина" maxLength={500} required />
+                  <button type="submit" className="ak-btn">Вернуть</button>
+                </form>
+              ) : null}
+              <form action={assignOrderAction} className="ak-card">
                 {hidden}
-                <h2>Возврат средств</h2>
-                <p>Только администратор. Возврат идёт через платёжную систему.</p>
-                <div className="adm-field">
-                  <label htmlFor="r-note">Комментарий</label>
-                  <input id="r-note" name="note" maxLength={500} />
-                </div>
-                <button type="submit" className="button button--outline">
-                  Вернуть деньги
-                </button>
+                <h2>Ответственный</h2>
+                <SelectField name="staffId" label="Менеджер" defaultValue={order.assignedStaffId ? String(order.assignedStaffId) : ''} placeholder="Не назначен" options={staff.map((s) => ({ value: String(s.id), label: s.label }))} />
+                <button type="submit" className="ak-btn">Назначить</button>
               </form>
-            ) : null}
-          </div>
-        ) : null}
+              {canCancel ? (
+                <form action={cancelOrderAction} className="ak-card">
+                  {hidden}
+                  <h2>Отмена заказа</h2>
+                  <FormField name="note" label="Причина" maxLength={500} />
+                  <button type="submit" className="ak-btn ak-btn--danger-outline">Отменить заказ</button>
+                </form>
+              ) : null}
+            </>
+          ) : null}
+        </div>
       </div>
     </>
   );

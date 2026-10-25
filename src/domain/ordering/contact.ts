@@ -9,7 +9,7 @@ export function phoneDigits(phone: string): string {
 
 const emptyToNull = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? null : v);
 
-const contactSchema = z.object({
+export const contactSchema = z.object({
   name: z.string({ error: 'Укажите имя' }).trim().min(2, 'Укажите имя (не короче 2 символов)').max(100, 'Слишком длинное имя'),
   email: z
     .string({ error: 'Укажите email' })

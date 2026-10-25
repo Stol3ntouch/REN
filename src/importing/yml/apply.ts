@@ -31,7 +31,8 @@ export type ApplyOptions = {
  * Бренд товара — только из данных файла (<vendor>). Бренд ищется по названию без учёта регистра, иначе создаётся (source=yml).
  * Бренд, назначенный администратором вручную (не из импорта), не перезаписывается; нет <vendor> — ничего не меняется.
  */
-function bindBrand(db: Db, productId: number, vendor: string | null | undefined, takenSlugs: Set<string>, nowIso: string): void {
+function bindBrand(db: Db, productId: number, vendor: string | null | undefined, takenSlugs: Set<string>, nowIso: string, lockedFields: readonly string[] = []): void {
+  if (lockedFields.includes('brand')) return; // бренд правили вручную (C04)
   const name = (vendor ?? '').trim();
   if (name === '') return;
   let brand = brandsRepo.findByName(db, name);
@@ -152,7 +153,7 @@ export async function applyImport(plan: ImportPlan, db: Db, opts: ApplyOptions =
           }
 
           touchedProducts.set(existing.id, offer.externalId);
-          bindBrand(db, existing.id, offer.vendor, takenBrandSlugs, nowIso);
+          bindBrand(db, existing.id, offer.vendor, takenBrandSlugs, nowIso, existing.lockedFields);
           // Решение принимается по текущему состоянию БД (план мог устареть) и актуальному locked_fields.
           const diff = diffProduct(db, existing, offer);
           report.products.lockedFieldsSkipped += diff.lockedSkipped.length;

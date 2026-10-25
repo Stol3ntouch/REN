@@ -40,6 +40,8 @@ export const repairSchema = z
     phone,
     email: optionalEmail,
     equipmentType: text('Тип техники', 2, 100),
+    brand: z.preprocess((v) => (typeof v === 'string' && v.trim() === '' ? undefined : v), text('Бренд', 1, 80).optional()),
+    model: z.preprocess((v) => (typeof v === 'string' && v.trim() === '' ? undefined : v), text('Модель', 1, 80).optional()),
     description: text('Описание неисправности', 10, 2000),
     preferredContact: z.enum(['phone', 'email', 'messenger'], { error: 'Выберите способ связи' }).default('phone'),
     consent,
@@ -69,7 +71,8 @@ export const reviewSchema = z.object({
 });
 
 export const requestUpdateSchema = z.object({
-  status: z.enum(['new', 'in_work', 'done', 'cancelled'], { error: 'Неизвестный статус' }).optional(),
+  // 'done' — прежнее название «закрыто/завершена»: принимается как псевдоним (см. requestsAdmin.update)
+  status: z.enum(['new', 'in_work', 'waiting', 'closed', 'diagnostics', 'awaiting_approval', 'in_repair', 'awaiting_parts', 'ready', 'completed', 'cancelled', 'done'], { error: 'Неизвестный статус' }).optional(),
   note: z.string().trim().max(2000, 'Заметка не длиннее 2000 знаков').optional(),
 });
 

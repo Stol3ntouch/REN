@@ -502,3 +502,13 @@
   color: inherit;
   text-decoration: underline;
 }
+
+/* Режим обслуживания: плашка для сотрудника над шапкой. */
+.maintenance-banner {
+  background: #fff4cc;
+  color: #5c4500;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  border-bottom: 1px solid #e6cf7a;
+}

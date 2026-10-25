@@ -2,6 +2,9 @@ import { NextRequest } from 'next/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { proxy } from '@/proxy';
 
+// Переключатели магазина читают БД; эти тесты проверяют только HTTPS/CSP/заголовки (ворота — tests/seo/store-gate.test.ts).
+vi.mock('@/domain/content/store-gate', () => ({ decideStoreGate: () => ({ kind: 'pass' }), gatePageFor: () => ({ html: '', headers: {} }) }));
+
 const req = (url: string, headers: Record<string, string> = {}) => new NextRequest(url, { headers });
 
 afterEach(() => vi.unstubAllEnvs());

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
+import { getStoreFlags } from '@/domain/content/store-flags';
 import { compare, MAX_COMPARE } from '@/domain/customers/compare';
 import { resolveOwner } from '@/domain/customers/session';
 import { formatRub } from '@/domain/pricing/format';
@@ -33,6 +34,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
     );
   }
 
+  const showPrices = getStoreFlags().showPrices;
   const rows = onlyDiff ? table.rows.filter((r) => r.differs) : table.rows;
   const hasDiffs = table.rows.some((r) => r.differs);
 
@@ -65,7 +67,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
             </tr>
           </thead>
           <tbody>
-            <tr>
+            {showPrices ? <tr>
               <th scope="row">Цена</th>
               {table.products.map((p) => (
                 <td key={p.id}>
@@ -73,7 +75,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
                   <span className="price">{formatRub(p.unitKopecks)}</span>
                 </td>
               ))}
-            </tr>
+            </tr> : null}
             <tr>
               <th scope="row">Наличие</th>
               {table.products.map((p) => (
@@ -96,7 +98,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
               {table.products.map((p) => (
                 <td key={p.id}>
                   <div className="compare__actions">
-                    <AddToCartButton productId={p.id} inStock={p.inStock} name={p.name} compact />
+                    {showPrices ? <AddToCartButton productId={p.id} inStock={p.inStock} name={p.name} compact /> : null}
                     <form action={removeCompareAction}>
                       <input type="hidden" name="productId" value={p.id} />
                       <button type="submit" className="link-button" aria-label={`Убрать из сравнения: ${p.name}`}>

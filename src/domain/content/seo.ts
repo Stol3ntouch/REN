@@ -13,6 +13,8 @@ export type SeoInput = {
   path: string;
   image?: CatalogImage | null;
   type?: 'website' | 'article';
+  /** Название сайта в Open Graph (настройка «Название сайта»); по умолчанию «РемТехСад». */
+  siteName?: string;
   /** Задан админом: канонический адрес вместо path. */
   canonical?: string | null;
   /** Закрыть страницу от индексации (robots noindex). */
@@ -48,7 +50,7 @@ export function contentMetadata(input: SeoInput): Metadata {
       title,
       description,
       url: input.path,
-      siteName: 'РемТехСад',
+      siteName: input.siteName ?? 'РемТехСад',
       locale: 'ru_RU',
       type: input.type ?? 'website',
       ...(input.image ? { images: [{ url: input.image.src, alt: input.image.alt }] } : {}),

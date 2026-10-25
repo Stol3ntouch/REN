@@ -10,7 +10,8 @@ import { visibleProductSql } from '@/server/db/repositories/products';
 import { listCategoryRows } from './category-rows';
 import { toCatalogImage } from './images';
 import { getPopularitySql } from './popularity';
-import type { CatalogImage, FacetContext, ProductCard, SortKey } from './types';
+import { originalPrice } from './price-display';
+import { asAvailability, type CatalogImage, type FacetContext, type ProductCard, type SortKey } from './types';
 
 export { ensureFold };
 
@@ -52,6 +53,9 @@ export type Scope = FacetContext & {
   match: string | null;
 };
 
+/** Товар лежит в одной из категорий: основной или дополнительной (product_categories содержит и основную). */
+export const IN_CATEGORIES = 'EXISTS (SELECT 1 FROM product_categories pcx WHERE pcx.product_id = p.id AND pcx.category_id IN (SELECT value FROM json_each(?)))';
+
 type Built = { joins: string; where: string; params: SqlValue[] };
 
 const SCORE_JOIN = `JOIN (SELECT rowid AS id, bm25(product_search, 10.0, 6.0, 8.0) AS score FROM product_search WHERE product_search MATCH ?) m ON m.id = p.id`;
@@ -87,11 +91,11 @@ export function buildScope(s: Scope, omitAttr?: string): Built {
     params.push(s.match);
   }
   if (s.categoryIds) {
-    where.push('p.category_id IN (SELECT value FROM json_each(?))');
+    where.push(IN_CATEGORIES);
     params.push(JSON.stringify(s.categoryIds));
   }
   if (s.subCategoryIds && omitAttr !== 'sub') {
-    where.push('p.category_id IN (SELECT value FROM json_each(?))');
+    where.push(IN_CATEGORIES);
     params.push(JSON.stringify(s.subCategoryIds));
   }
   if (s.brands && s.brands.length > 0 && omitAttr !== 'brand') {
@@ -138,6 +142,10 @@ export type CardRow = {
   price_kopecks: number;
   discount_price_kopecks: number | null;
   in_stock: number;
+  old_price_kopecks: number | null;
+  is_new: number;
+  is_promo: number;
+  availability: string;
   img_path: string | null;
   img_variants: string | null;
   img_url: string | null;
@@ -145,14 +153,17 @@ export type CardRow = {
 };
 
 export const CARD_COLUMNS = `p.id, p.slug, p.name, p.sku, p.price_kopecks, p.discount_price_kopecks, p.in_stock,
+  p.old_price_kopecks, p.is_new, p.is_promo, p.availability,
   pi.path AS img_path, pi.variants AS img_variants, pi.url_source AS img_url, pi.alt AS img_alt`;
 export const CARD_JOIN = `LEFT JOIN product_images pi ON pi.id = (SELECT i.id FROM product_images i WHERE i.product_id = p.id ORDER BY i.sort, i.id LIMIT 1)`;
 
 /** Разбор JSON вариантов фото — одна реализация в репозитории images; реэкспорт для прежних импортов. */
 export { parseVariants };
 
-export function unitPrice(price: number, discount: number | null): { unitKopecks: number; originalKopecks?: number } {
-  return discount !== null && discount < price ? { unitKopecks: discount, originalKopecks: price } : { unitKopecks: price };
+export function unitPrice(price: number, discount: number | null, oldPrice: number | null = null): { unitKopecks: number; originalKopecks?: number } {
+  const unitKopecks = discount !== null && discount < price ? discount : price;
+  const originalKopecks = originalPrice(unitKopecks, price, discount, oldPrice);
+  return originalKopecks !== undefined ? { unitKopecks, originalKopecks } : { unitKopecks };
 }
 
 export function mapCard(r: CardRow): ProductCard {
@@ -160,7 +171,18 @@ export function mapCard(r: CardRow): ProductCard {
   if (r.img_url !== null) {
     image = toCatalogImage({ path: r.img_path, variants: parseVariants(r.img_variants), urlSource: r.img_url, alt: r.img_alt }, 'card', r.name);
   }
-  return { id: r.id, slug: r.slug, name: r.name, sku: r.sku, ...unitPrice(r.price_kopecks, r.discount_price_kopecks), inStock: r.in_stock === 1, image };
+  return {
+    id: r.id,
+    slug: r.slug,
+    name: r.name,
+    sku: r.sku,
+    ...unitPrice(r.price_kopecks, r.discount_price_kopecks, r.old_price_kopecks),
+    inStock: r.in_stock === 1,
+    availability: asAvailability(r.availability),
+    isNew: r.is_new === 1,
+    isPromo: r.is_promo === 1,
+    image,
+  };
 }
 
 function orderBy(db: Db, sort: SortKey, hasText: boolean): { join: string; order: string } {

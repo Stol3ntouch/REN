@@ -1,4 +1,5 @@
 import { cookies, headers } from 'next/headers';
+import { assertPricesShown, isSpamProtectionOn } from '@/domain/content/store-flags';
 import { resolveOrCreateOwner } from '@/domain/customers/session';
 import { AppError, RateLimitError, ValidationError } from '@/server/http/errors';
 import { assertOrigin } from '@/server/http/origin';
@@ -13,6 +14,7 @@ import type { CartFormState } from './state';
 export async function prepareCartAction(scope: string, limit = 120): Promise<{ owner: OwnerRef; ip: string }> {
   const h = await headers();
   assertOrigin({ method: 'POST', headers: h });
+  assertPricesShown(); // «Показывать цены» выключен: корзина и оформление закрыты на сервере
   const ip = clientIp(h);
   enforceRateLimitByIp(`form:${scope}`, ip, limit, 600);
   const owner = resolveOrCreateOwner((await cookies()) as unknown as CookieStore);
@@ -30,6 +32,7 @@ export function formStr(form: FormData, name: string): string {
 }
 
 export function isHoneypotTripped(form: FormData): boolean {
+  if (!isSpamProtectionOn()) return false;
   return formStr(form, 'website').trim() !== '';
 }
 

@@ -1,3 +1,4 @@
+import { assertPricesShown } from '@/domain/content/store-flags';
 import { applyPromo, normalizePromoCode, PROMO_MESSAGES, resolvePrice, type Promo, type PromoError, type PricedCart } from '@/domain/pricing';
 import { formatRub } from '@/domain/pricing/format';
 import { priceLinesWithPromotions } from '@/domain/pricing/promotion-rules';
@@ -196,6 +197,7 @@ export const cart = {
   add(owner: OwnerRef, input: { productId: number; qty: number }, opts: Opts = {}): CartView {
     const db = opts.db ?? getDb();
     const now = opts.now ?? Date.now();
+    assertPricesShown({ db, now });
     const productId = assertProductId(input.productId);
     const qty = assertQty(input.qty);
     let notice: string | undefined;

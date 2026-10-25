@@ -7,7 +7,7 @@ import { buildCatalogQueryString, parseCatalogParams } from '@/domain/catalog/pa
 import { searchProducts } from '@/domain/catalog/search';
 import type { CategoryNode } from '@/domain/catalog/types';
 import { breadcrumbJsonLd } from '@/domain/seo/jsonld';
-import { categoryMetadata } from '@/domain/seo/metadata';
+import { categoryMetadata, loadCategorySeoContext } from '@/domain/seo/metadata';
 import { resolveSiteUrl } from '@/domain/seo/site-url';
 import { JsonLd } from '@/ui/seo/JsonLd';
 import { Breadcrumbs } from '@/ui/catalog/Breadcrumbs';
@@ -28,7 +28,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const { slug } = await params;
   const category = await getCategoryBySlug(slug);
   if (!category) return { title: 'Категория не найдена', robots: { index: false } };
-  return categoryMetadata(category, await searchParams);
+  return categoryMetadata(category, await searchParams, loadCategorySeoContext(category.id));
 }
 
 export default async function CategoryPage({ params, searchParams }: Props) {

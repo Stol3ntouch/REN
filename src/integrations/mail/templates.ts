@@ -7,7 +7,7 @@ import type { OutboxAudience } from '@/server/db/repositories/email-outbox';
  * События почты и тексты писем (русские). Тело собирается ПРИ ОТПРАВКЕ из payload, в БД не хранится.
  * Письма менеджерам не содержат полных email и телефона клиента — только номер и ссылку в админку.
  *
- * События: order.created, order.status_changed, auth.password_reset, repair.created, callback.created,
+ * События: order.created, order.status_changed, auth.password_reset, auth.email_confirm, repair.created, callback.created,
  * contact.created, question.created, review.created, integration.failed.
  */
 export type Payload = Record<string, unknown>;
@@ -33,12 +33,14 @@ const KNOWN = new Set([
   'order.created',
   'order.status_changed',
   'auth.password_reset',
+  'auth.email_confirm',
   'repair.created',
   'callback.created',
   'contact.created',
   'question.created',
   'review.created',
   'integration.failed',
+  'request.status_changed',
 ]);
 export const isKnownMailEvent = (event: string): boolean => KNOWN.has(event);
 
@@ -47,12 +49,14 @@ const REQUIRED_FIELDS: Record<string, string[]> = {
   'order.created': ['orderNumber'],
   'order.status_changed': ['orderNumber', 'toStatus'],
   'auth.password_reset': ['resetUrl'],
+  'auth.email_confirm': ['confirmUrl'],
   'repair.created': ['number'],
   'callback.created': ['number'],
   'contact.created': ['number'],
   'question.created': ['number'],
   'review.created': ['reviewId'],
   'integration.failed': ['integration'],
+  'request.status_changed': ['number', 'statusLabel'],
 };
 
 /** Имена обязательных полей события, которых нет в payload (пусто/не задано). Пустой payload — все поля. */
@@ -94,6 +98,10 @@ export function planMessages(event: string, p: Payload): PlannedMessage[] {
       const to = email(p.to);
       return to ? [{ audience: 'customer', to, subject: 'Сброс пароля на сайте «РемТехСад»' }] : [];
     }
+    case 'auth.email_confirm': {
+      const to = email(p.to);
+      return to ? [{ audience: 'customer', to, subject: 'Подтвердите email на сайте «РемТехСад»' }] : [];
+    }
     case 'repair.created':
     case 'callback.created':
     case 'contact.created':
@@ -103,6 +111,11 @@ export function planMessages(event: string, p: Payload): PlannedMessage[] {
       const to = email(p.to);
       if (to) out.unshift({ audience: 'customer', to, subject: `Мы получили ваше обращение ${s(p.number)}` });
       return out;
+    }
+    case 'request.status_changed': {
+      // C09: письмо клиенту о смене статуса обращения или заявки на ремонт (только если указан email)
+      const to = email(p.to);
+      return to ? [{ audience: 'customer', to, subject: `Заявка ${s(p.number)}: ${s(p.statusLabel)}` }] : [];
     }
     case 'review.created':
       return [{ audience: 'manager', to: null, subject: `Новый отзыв на модерации (товар: ${s(p.productName) || '—'})` }];
@@ -150,6 +163,11 @@ export function renderBody(event: string, audience: OutboxAudience, p: Payload):
       if (n(p.expiresAt) > 0) lines.push(`Ссылка действует до ${fmtDate(n(p.expiresAt))} (МСК) и сработает один раз.`);
       lines.push('Если вы не запрашивали сброс — просто проигнорируйте это письмо.');
       break;
+    case 'auth.email_confirm':
+      lines.push(greet, 'Вы зарегистрировались на сайте. Перейдите по ссылке, чтобы подтвердить адрес электронной почты:', s(p.confirmUrl));
+      if (n(p.expiresAt) > 0) lines.push(`Ссылка действует до ${fmtDate(n(p.expiresAt))} (МСК) и сработает один раз.`);
+      lines.push('Если вы не регистрировались — просто проигнорируйте это письмо.');
+      break;
     case 'repair.created':
     case 'callback.created':
     case 'contact.created':
@@ -166,6 +184,11 @@ export function renderBody(event: string, audience: OutboxAudience, p: Payload):
       lines.push(`Открыть в админке: ${adminUrl(s(p.adminPath) || '/admin/requests')}`);
       break;
     }
+    case 'request.status_changed':
+      lines.push(greet, `Статус вашей заявки ${s(p.number)} изменился: ${s(p.statusLabel)}.`);
+      if (s(p.title)) lines.push(`Тема: ${s(p.title)}.`);
+      lines.push('Если есть вопросы — позвоните или ответьте на это письмо.');
+      break;
     case 'review.created':
       lines.push(greet, `Новый отзыв на модерации: товар «${s(p.productName)}», оценка ${n(p.rating)} из 5.`, `Модерация: ${adminUrl('/admin/reviews')}`);
       break;
