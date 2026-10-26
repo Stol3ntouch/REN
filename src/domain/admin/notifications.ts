@@ -100,12 +100,18 @@ export function notify(input: NotifyInput, opts: Opts & { dedupWindowMs?: number
 }
 
 /** Уведомления сотрудника: только адресованные ему (по audience), новые сверху; read — прочитано ли именно им. */
-export function listForStaff(staffId: number, f: { unreadOnly?: boolean; limit?: number; offset?: number } = {}, opts: Opts = {}): NotificationForStaff[] {
+export function listForStaff(
+  staffId: number,
+  f: { unreadOnly?: boolean; readOnly?: boolean; type?: string; limit?: number; offset?: number } = {},
+  opts: Opts = {},
+): NotificationForStaff[] {
   const db = opts.db ?? getDb();
   const perms = permissionsOfStaff(db, staffId);
   if (perms.length === 0) return [];
   return notificationsRepo.listForStaff(db, staffId, perms, {
     unreadOnly: f.unreadOnly ?? false,
+    readOnly: f.readOnly ?? false,
+    ...(f.type ? { type: f.type } : {}),
     limit: Math.min(Math.max(f.limit ?? 20, 1), NOTIFICATIONS_MAX_LIMIT),
     offset: Math.max(f.offset ?? 0, 0),
   });
@@ -115,6 +121,19 @@ export function unreadCount(staffId: number, opts: Opts = {}): number {
   const db = opts.db ?? getDb();
   const perms = permissionsOfStaff(db, staffId);
   return perms.length === 0 ? 0 : notificationsRepo.countForStaff(db, staffId, perms, true);
+}
+
+/** Сколько уведомлений под фильтр (для страниц); типы, доступные сотруднику, — typesForStaff. */
+export function countFiltered(staffId: number, f: { unreadOnly?: boolean; readOnly?: boolean; type?: string } = {}, opts: Opts = {}): number {
+  const db = opts.db ?? getDb();
+  const perms = permissionsOfStaff(db, staffId);
+  return perms.length === 0 ? 0 : notificationsRepo.countForStaff(db, staffId, perms, f.unreadOnly ?? false, { readOnly: f.readOnly ?? false, ...(f.type ? { type: f.type } : {}) });
+}
+
+export function typesForStaff(staffId: number, opts: Opts = {}): string[] {
+  const db = opts.db ?? getDb();
+  const perms = permissionsOfStaff(db, staffId);
+  return perms.length === 0 ? [] : notificationsRepo.typesForStaff(db, perms);
 }
 
 export function totalCount(staffId: number, opts: Opts = {}): number {

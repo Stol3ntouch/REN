@@ -5,6 +5,11 @@ import { categoryHeading, getCategoryBreadcrumbs, getCategoryBySlug, getCategory
 import { facetContext, getFacets } from '@/domain/catalog/facets';
 import { buildCatalogQueryString, parseCatalogParams } from '@/domain/catalog/params';
 import { searchProducts } from '@/domain/catalog/search';
+import { getCategoryBanners } from '@/domain/content/queries';
+import { getDb } from '@/server/db/connection';
+import { categoryLinksRepo } from '@/server/db/repositories/category-links';
+import { BannerBlock } from '@/ui/home/BannerBlock';
+import { CategoryRelated } from '@/ui/catalog/CategoryRelated';
 import type { CategoryNode } from '@/domain/catalog/types';
 import { breadcrumbJsonLd } from '@/domain/seo/jsonld';
 import { categoryMetadata, loadCategorySeoContext } from '@/domain/seo/metadata';
@@ -47,13 +52,18 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     redirect(qs === '' ? basePath : `${basePath}?${qs}`);
   }
 
-  const [facets, tree, crumbs, siblings] = await Promise.all([
+  const [facets, tree, fullTree, crumbs, siblings] = await Promise.all([
     getFacets(category.id, facetContext(query)),
     getCategoryTree(),
+    getCategoryTree({ all: true }),
     getCategoryBreadcrumbs(slug),
     getSiblingCategories(slug),
   ]);
-  const node = findNode(tree, slug);
+  // сама категория ищется в полном дереве (она могла быть убрана из дерева каталога флагом); плитки подкатегорий — только «показывать в каталоге»
+  const node = findNode(fullTree, slug);
+  const subcategories = node?.children.filter((c) => c.showInCatalog) ?? [];
+  const banners = getCategoryBanners(category.id);
+  const related = categoryLinksRepo.listRelatedVisible(getDb(), category.id);
 
   return (
     <>
@@ -61,9 +71,9 @@ export default async function CategoryPage({ params, searchParams }: Props) {
       <Breadcrumbs items={[{ name: 'Каталог', href: '/catalog' }, ...crumbs.slice(0, -1)]} current={category.name} />
       <h1>{categoryHeading(category)}</h1>
 
-      {node && node.children.length > 0 ? (
-        <CategoryTiles nodes={node.children} label="Подкатегории" />
-      ) : null}
+      <BannerBlock banners={banners} label="Баннеры категории" />
+
+      {subcategories.length > 0 ? <CategoryTiles nodes={subcategories} label="Подкатегории" /> : null}
 
       <CatalogListing
         basePath={basePath}
@@ -98,6 +108,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
       />
 
       <CategorySeoText name={category.name} text={category.seoText} />
+      <CategoryRelated items={related} />
     </>
   );
 }

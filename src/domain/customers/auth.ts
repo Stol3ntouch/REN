@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { enqueueMail } from '@/domain/admin/mail-enqueue';
+import { emailTemplatesRepo } from '@/server/db/repositories/email-templates';
 import { assertRegistrationOpen, getStoreFlags } from '@/domain/content/store-flags';
 import { getConfig } from '@/server/config';
 import { getDb, withTransaction } from '@/server/db/connection';
@@ -107,6 +108,10 @@ export async function register(input: unknown, ctx: AuthCtx & { siteUrl?: string
     consent.record({ kind: 'privacy', source: 'register', userId: id }, { db, now });
     return id;
   });
+
+  // C12: приветственное письмо (по умолчанию выключено в настройках почты)
+  // Событие ставится только если администратор явно включил его в настройках почты — иначе очередь не засоряется.
+  if (emailTemplatesRepo.findEnabled(db, 'auth.registered', 'customer') === true) enqueueMail('auth.registered', { to: data.email }, { db, now });
 
   // «Требовать подтверждение email»: аккаунт создан, но сессии нет — вход после перехода по ссылке из письма.
   if (getStoreFlags({ db, now }).emailConfirm) {

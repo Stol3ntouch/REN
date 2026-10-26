@@ -87,7 +87,7 @@ function subtreeIds(rows: CategoryRow[], rootId: number): Set<number> {
 }
 
 /**
- * Скрытие категорий каталога (F6). Чтение — catalog.read, запись — catalog.write (только admin).
+ * Скрытие категорий каталога (F6). Чтение — catalog.read, запись — categories.write (только admin).
  * Флаг catalog.manualEdit не нужен: видимость — решение о контенте сайта, а не правка данных 1С.
  * Импорт hidden_by_admin не трогает; effective_hidden (скрытость с учётом родителей) пересчитывается здесь и в конце импорта.
  */
@@ -115,12 +115,12 @@ export const categoryVisibilityOps = {
    * сменят видимость и сколько товаров (опубликованных и не скрытых вручную) появится или пропадёт. Для окна подтверждения.
    */
   impact(session: StaffSession | null, id: number, hidden: boolean, opts: Opts = {}): VisibilityImpact {
-    requirePermission(session, 'catalog.write');
+    requirePermission(session, 'categories.write');
     const db = opts.db ?? getDb();
     const rows = categoriesRepo.listAll(db);
     if (!rows.some((r) => r.id === id)) throw new NotFoundError('Категория не найдена');
-    const before = computeEffectiveHidden(rows.map((r) => ({ id: r.id, parentId: r.parentId, hiddenByAdmin: r.hiddenByAdmin })));
-    const after = computeEffectiveHidden(rows.map((r) => ({ id: r.id, parentId: r.parentId, hiddenByAdmin: r.id === id ? hidden : r.hiddenByAdmin })));
+    const before = computeEffectiveHidden(rows.map((r) => ({ id: r.id, parentId: r.parentId, hiddenByAdmin: r.hiddenByAdmin, inactive: !r.active })));
+    const after = computeEffectiveHidden(rows.map((r) => ({ id: r.id, parentId: r.parentId, hiddenByAdmin: r.id === id ? hidden : r.hiddenByAdmin, inactive: !r.active })));
     const live = productCounts(db).live;
     let categories = 0;
     let products = 0;
@@ -137,7 +137,7 @@ export const categoryVisibilityOps = {
    * Повтор того же действия — { changed: false } без записи в аудит. Аудит category.visibility (id категории, признак).
    */
   setHidden(session: StaffSession | null, id: unknown, hidden: unknown, opts: Opts = {}): { changed: boolean } {
-    requirePermission(session, 'catalog.write');
+    requirePermission(session, 'categories.write');
     const categoryId = parse(idSchema, id);
     const flag = parse(flagSchema, hidden);
     const db = opts.db ?? getDb();

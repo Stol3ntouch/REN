@@ -84,7 +84,7 @@ export function categoryMetadata(category: CategoryInfo, raw: RawParams, ctx: Se
   const t = ctx.settings.templates;
   const title = category.seoTitle?.trim() || (t.categoryTitle ? renderSeoTemplate(t.categoryTitle, vars) : '') || category.name;
   const description = category.seoDescription?.trim() || (t.categoryDescription ? renderSeoTemplate(t.categoryDescription, vars) : '') || null;
-  const meta = contentMetadata({
+  const built = contentMetadata({
     title: page > 1 ? `${title} — страница ${page}` : title,
     seoDescription: description,
     path,
@@ -92,6 +92,11 @@ export function categoryMetadata(category: CategoryInfo, raw: RawParams, ctx: Se
     type: ctx.settings.ogType,
     image: defaultOgImage(ctx),
   });
+  // canonical, заданный в админке (C06), главнее вычисленного
+  const manualCanonical = category.canonical?.trim();
+  const meta: Metadata = manualCanonical ? { ...built, alternates: { ...built.alternates, canonical: manualCanonical } } : built;
+  // «Индексация» выключена в карточке категории — noindex на всех её страницах
+  if (category.indexable === false) return { ...meta, robots: { index: false, follow: true } };
   const emptyNoindex = ctx.settings.noindexEmptyCategories && ctx.categoryTotal === 0;
   if (emptyNoindex) return { ...meta, robots: { index: false, follow: true } };
   return filtered && ctx.settings.noindexFilters ? { ...meta, robots: { index: false, follow: true } } : meta;

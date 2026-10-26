@@ -40,7 +40,7 @@ export function listSitemapEntries(opts: { db?: Db; siteUrl: string; now?: numbe
     seen.add(id);
     return (direct.get(id) ?? 0) + (children.get(id) ?? []).reduce((s, c) => s + total(c, seen), 0);
   };
-  if (on.categories) for (const c of rows) if (total(c.id) > 0) paths.push({ path: `/catalog/${c.slug}` });
+  if (on.categories) for (const c of rows) if (c.indexable && total(c.id) > 0) paths.push({ path: `/catalog/${c.slug}` });
 
   for (const p of on.products ? listPublishedProductStamps(db) : []) {
     const t = Date.parse(p.updatedAt);

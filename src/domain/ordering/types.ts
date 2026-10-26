@@ -57,7 +57,12 @@ export type Order = {
   discountKopecks: number;
   /** Стоимость доставки; 0, пока её рассчитывает менеджер (delivery.pending). */
   deliveryKopecks: number;
-  /** Товары − скидка + известная доставка. */
+  /** Комиссия способа оплаты (C12); 0, если её нет. */
+  paymentFeeKopecks: number;
+  /** Налог по заказу (C12): внутри цены или сверху; 0 — налога нет. */
+  taxKopecks: number;
+  taxMode: 'included' | 'added' | null;
+  /** Товары − скидка + известная доставка + комиссия + налог сверху. */
   totalKopecks: number;
   promoCode: string | null;
   assignedStaffId: number | null;

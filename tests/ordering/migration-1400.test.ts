@@ -32,7 +32,9 @@ describe('миграция 1400: заказы без потери данных',
 
     runMigrations(db, { dir: MIGRATIONS });
 
-    expect(db.prepare('SELECT * FROM orders ORDER BY id').all()).toEqual(before);
+    // Позднейшие миграции (C12) добавляют колонки: сравниваем исходные колонки, их значения не должны измениться.
+    const after = (db.prepare('SELECT * FROM orders ORDER BY id').all() as Record<string, unknown>[]).map((row) => Object.fromEntries(Object.keys((before[0] ?? {}) as object).map((k) => [k, row[k]])));
+    expect(after).toEqual(before);
     expect(db.prepare('SELECT COUNT(*) AS c FROM order_items WHERE order_id = ?').get(a.id)).toEqual({ c: 1 });
     expect(db.prepare('SELECT kind FROM order_events WHERE order_id = ?').all(a.id)).toEqual([{ kind: 'created' }]);
     expect(db.prepare('SELECT COUNT(*) AS c FROM payments WHERE order_id = ?').get(a.id)).toEqual({ c: 1 });

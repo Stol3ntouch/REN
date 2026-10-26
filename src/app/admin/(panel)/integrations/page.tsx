@@ -4,7 +4,8 @@ import { requireStaffPage } from '@/ui/admin/guard';
 import { EmptyState } from '@/ui/states';
 import { integrationsOps } from '../_lib/integrations-ops';
 import { Flash, fmtTime, INTEGRATION_NAV, str, SubNav } from '../_lib/ui';
-import { retryRunAction, runIntegrationAction } from './actions';
+import { STATE_LABELS } from '@/domain/admin/integrations';
+import { checkIntegrationAction, retryRunAction, runIntegrationAction } from './actions';
 
 export const metadata: Metadata = { title: 'Интеграции' };
 export const dynamic = 'force-dynamic';
@@ -16,7 +17,13 @@ const KIND_LABELS: Record<string, string> = {
   'payment.create_payment': 'Оплата: создание платежа',
   'payment.webhook': 'Оплата: webhook',
   'payment.refund': 'Оплата: возврат',
+  'check.payment': 'Проверка соединения: оплата',
+  'check.delivery': 'Проверка соединения: доставка',
+  'check.mail': 'Проверка соединения: почта',
+  'check.onec': 'Проверка соединения: 1С',
+  'mail.test': 'Почта: тестовая отправка',
 };
+const STATE_CLS = { not_configured: '', configured_unverified: 'ops-badge--warn', connected: 'ops-badge--ok', error: 'ops-badge--error' } as const;
 const STATUS_LABELS: Record<string, { text: string; cls: string }> = {
   ok: { text: 'успешно', cls: 'ops-badge--ok' },
   partial: { text: 'частично', cls: 'ops-badge--warn' },
@@ -37,7 +44,40 @@ export default async function AdminIntegrationsPage({ searchParams }: { searchPa
       <SubNav items={INTEGRATION_NAV} current="/admin/integrations" />
       <Flash ok={str(sp.ok)} error={str(sp.error)} okText="Запуск выполнен — результат в журнале ниже." />
 
-      <h2>Состояние</h2>
+      <h2>Сервисы</h2>
+      <p className="ops-muted">Статус «Подключено» ставится только после успешной проверки соединения. Заглушки и тестовые режимы подключёнными не считаются. Ключи и пароли здесь не показываются — только «задан / не задан».</p>
+      <div className="adm-cards">
+        {view.cards.map((c) => (
+          <section key={c.key} className="adm-card" aria-labelledby={`int-${c.key}`}>
+            <h3 id={`int-${c.key}`}>{c.label}</h3>
+            <p>
+              <span className={`ops-badge ${STATE_CLS[c.state]}`}>{STATE_LABELS[c.state]}</span>
+              {c.checkedAt ? ` · проверено ${fmtTime(c.checkedAt)}` : ''}
+            </p>
+            {c.message ? <p className="ops-muted">{c.message}</p> : null}
+            <p className="ops-muted">{c.description}</p>
+            {c.env.length > 0 ? (
+              <ul>
+                {c.env.map((e) => (
+                  <li key={e.name}>
+                    <code>{e.name}</code>: {e.set ? 'задан' : 'не задан'}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {canRun && c.state !== 'not_configured' ? (
+              <form action={checkIntegrationAction}>
+                <input type="hidden" name="key" value={c.key} />
+                <button type="submit" className="button button--outline">
+                  Проверить соединение
+                </button>
+              </form>
+            ) : null}
+          </section>
+        ))}
+      </div>
+
+      <h2>Состояние портов</h2>
       <div className="adm-table-wrap">
         <table className="adm-table">
           <caption className="visually-hidden">Состояние интеграций</caption>

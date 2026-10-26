@@ -12,6 +12,7 @@ import { promosRepo, type PromoRow } from '@/server/db/repositories/promos';
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError, type FieldErrors } from '@/server/http/errors';
 import { contactSchema, phoneDigits } from './contact';
 import { toOrder } from './order-view';
+import { recalcCharges } from './pricing-rules';
 import { CONTACT_EDITABLE_STATUSES, ITEMS_EDITABLE_STATUSES, STATUS_LABELS } from './status';
 import { MAX_QTY, type Actor, type Opts, type Order } from './types';
 
@@ -235,8 +236,16 @@ export function editItems(orderId: number, input: ItemsInput, actor: Actor, opts
         ).discount;
       }
     }
-    const total = subtotal - discount + (row.deliveryKopecks ?? 0);
-    ordersRepo.setTotals(db, row.id, { subtotalKopecks: subtotal, discountKopecks: discount, totalKopecks: total }, now);
+    // C12: комиссия и налог пересчитываются по правилам, зафиксированным в заказе при оформлении (заказы до C12 — без надбавок).
+    const charges = recalcCharges(row.chargesJson, { lines: finalItems.map((i) => i.lineKopecks), discountKopecks: discount, deliveryKopecks: row.deliveryKopecks });
+    const total = charges.totalKopecks;
+    ordersRepo.setTotals(
+      db,
+      row.id,
+      { subtotalKopecks: subtotal, discountKopecks: discount, totalKopecks: total, paymentFeeKopecks: charges.feeKopecks, taxKopecks: charges.taxKopecks, taxMode: charges.taxMode },
+      now,
+    );
+    finalItems.forEach((it, idx) => ordersRepo.setItemTax(db, it.id, charges.rules.tax?.rateBp ?? null, charges.lineTaxKopecks[idx] ?? null));
 
     // новые товары с включённым учётом резервируются (C04, идемпотентно по заказу и товару); не хватает — вся правка откатывается
     if (priced.length > 0) stock.reserveForOrder(row.id, priced.map((x) => ({ productId: x.productId, qty: x.qty })), { db, now });

@@ -25,6 +25,16 @@ export type ApplyOptions = {
   actorId?: number | null;
   /** Скачивать фото (по умолчанию нет: хранится только url_source). */
   images?: false | ImageIngestOptions;
+  /** Мастер: запись журнала уже создана — обновить её, а не вставлять новую. */
+  runId?: number;
+  /** create_only — существующие товары пропускаются. */
+  mode?: 'create_only' | 'update';
+  /** Перезаписывать поля из locked_fields. */
+  overrideLocked?: boolean;
+  /** true (по умолчанию, CLI) — одна транзакция; false — категории отдельно, товары пакетами по 500 с передышкой между ними. */
+  atomic?: boolean;
+  /** Сколько товаров обработано (после каждого пакета). */
+  onProgress?: (processed: number) => void;
 };
 
 /**
@@ -75,13 +85,14 @@ export async function applyImport(plan: ImportPlan, db: Db, opts: ApplyOptions =
   };
   const touchedProducts = new Map<number, string>(); // id → externalId
 
-  withTransaction(db, () => {
+  const atomic = opts.atomic !== false;
+  const takenCategorySlugs = categoriesRepo.allSlugs(db);
+  const idByExternal = new Map<string, number>();
+  const created = new Set<string>();
+  const touchedCategories = new Set<string>();
+  const categoriesPhase = () => {
     // --- категории: сначала создаём/переименовываем, затем расставляем родителей (порядок в файле не важен)
-    const takenCategorySlugs = categoriesRepo.allSlugs(db);
-    const idByExternal = new Map<string, number>();
     for (const c of categoriesRepo.listAll(db)) if (c.source === YML_SOURCE) idByExternal.set(c.externalId, c.id);
-    const created = new Set<string>();
-    const touchedCategories = new Set<string>();
 
     for (const pc of plan.categories) {
       const cat = pc.data;
@@ -119,10 +130,11 @@ export async function applyImport(plan: ImportPlan, db: Db, opts: ApplyOptions =
     // скрытие категорий администратором (F6) наследуется: новая подкатегория или перенос под скрытого родителя скрывают её
     categoriesRepo.recomputeEffectiveHidden(db);
 
-    // --- товары
-    const takenProductSlugs = productsRepo.allSlugs(db);
-    const takenBrandSlugs = brandsRepo.allSlugs(db);
-    for (const pp of plan.products) {
+  };
+  const takenProductSlugs = productsRepo.allSlugs(db);
+  const takenBrandSlugs = brandsRepo.allSlugs(db);
+  const productsPhase = (list: typeof plan.products) => {
+    for (const pp of list) {
       const offer = pp.data;
       try {
         withTransaction(db, () => {
@@ -155,7 +167,11 @@ export async function applyImport(plan: ImportPlan, db: Db, opts: ApplyOptions =
           touchedProducts.set(existing.id, offer.externalId);
           bindBrand(db, existing.id, offer.vendor, takenBrandSlugs, nowIso, existing.lockedFields);
           // Решение принимается по текущему состоянию БД (план мог устареть) и актуальному locked_fields.
-          const diff = diffProduct(db, existing, offer);
+          if (opts.mode === 'create_only') {
+            report.products.unchanged++;
+            return;
+          }
+          const diff = diffProduct(db, existing, offer, { overrideLocked: opts.overrideLocked });
           report.products.lockedFieldsSkipped += diff.lockedSkipped.length;
           if (diff.changes.length === 0) {
             report.products.unchanged++;
@@ -180,7 +196,26 @@ export async function applyImport(plan: ImportPlan, db: Db, opts: ApplyOptions =
         errors.push({ kind: 'offer', externalId: offer.externalId, position: offer.position, message: `Товар ${offer.externalId}: не записан — ${errorText(e)}` });
       }
     }
-  });
+  };
+  if (atomic) {
+    withTransaction(db, () => {
+      categoriesPhase();
+      productsPhase(plan.products);
+    });
+    opts.onProgress?.(plan.products.length);
+  } else {
+    withTransaction(db, categoriesPhase);
+    for (let i = 0; i < plan.products.length; i += 500) {
+      const chunk = plan.products.slice(i, i + 500);
+      try {
+        withTransaction(db, () => productsPhase(chunk));
+      } catch (e) {
+        errors.push({ kind: 'offer', position: chunk[0]?.data.position, message: `Пакет товаров ${i + 1}–${i + chunk.length} откатан: ${errorText(e)}` });
+      }
+      opts.onProgress?.(Math.min(plan.products.length, i + chunk.length));
+      await new Promise((r) => setImmediate(r));
+    }
+  }
 
   // --- фото: после записи, вне транзакции; сбои идут в отчёт и ничего не откатывают
   const productIds = [...touchedProducts.keys()];
@@ -190,9 +225,9 @@ export async function applyImport(plan: ImportPlan, db: Db, opts: ApplyOptions =
   clearCategoryImageCache();
 
   report.finishedAt = (opts.now ?? new Date()).toISOString();
-  report.runId = importRunsRepo.insert(db, {
+  const journal = {
     fileName: plan.fileName,
-    mode: 'apply',
+    mode: 'apply' as const,
     actorId: opts.actorId ?? null,
     startedAt: report.startedAt,
     finishedAt: report.finishedAt,
@@ -205,7 +240,13 @@ export async function applyImport(plan: ImportPlan, db: Db, opts: ApplyOptions =
     imagesFailed: report.images.failed,
     errors,
     errorCount: errors.length,
-  });
+  };
+  if (opts.runId !== undefined) {
+    importRunsRepo.update(db, opts.runId, { ...journal, status: 'done', progress: plan.products.length, rowsTotal: plan.products.length });
+    report.runId = opts.runId;
+  } else {
+    report.runId = importRunsRepo.insert(db, { ...journal, format: 'yml' });
+  }
   return report;
 }
 

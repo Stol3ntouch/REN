@@ -28,7 +28,7 @@ export function clearCategoryImageCache(): void {
  * Порядок выбора детерминирован: товар в наличии, затем меньший id товара, затем порядок фото.
  */
 function build(db: Db, now: number): Snapshot {
-  const cats = db.prepare('SELECT id, parent_id, name FROM categories').all() as { id: number; parent_id: number | null; name: string }[];
+  const cats = db.prepare('SELECT id, parent_id, name, image_path, image_variants FROM categories').all() as { id: number; parent_id: number | null; name: string; image_path: string | null; image_variants: string | null }[];
   const rows = db
     .prepare(
       `SELECT p.category_id AS cid, p.in_stock AS in_stock, p.id AS pid, i.path AS path, i.variants AS variants, i.url_source AS url
@@ -50,6 +50,8 @@ function build(db: Db, now: number): Snapshot {
       if (!picks.has(id)) picks.set(id, pick);
     }
   }
+  // собственное изображение категории (C06, загружено в админке) главнее фото товара; подкатегории без своего берут фото товаров
+  for (const c of cats) if (c.image_path) picks.set(c.id, { path: c.image_path, variants: parseVariants(c.image_variants), urlSource: '' });
   return { at: now, names: new Map(cats.map((c) => [c.id, c.name])), picks };
 }
 

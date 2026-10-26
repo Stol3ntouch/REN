@@ -37,7 +37,7 @@ function toValidation(error: z.ZodError): ValidationError {
 
 /**
  * SEO-поля категорий — контент сайта, а не данные 1С: флаг catalog.manualEdit не нужен,
- * импорт YML эти поля не перезаписывает. Чтение — catalog.read, запись — catalog.write.
+ * импорт YML эти поля не перезаписывает. Чтение — catalog.read, запись — categories.write.
  */
 export const categorySeoOps = {
   /** Дерево категорий (родитель перед детьми) с глубиной и признаком «SEO-текст заполнен». */
@@ -70,7 +70,7 @@ export const categorySeoOps = {
 
   /** Сохраняет четыре SEO-поля; аудит (до/после только изменённых полей) пишется, если что-то изменилось. */
   update(session: StaffSession | null, id: number, input: unknown, opts: Opts = {}): { changed: string[] } {
-    requirePermission(session, 'catalog.write');
+    requirePermission(session, 'categories.write');
     const parsed = schema.safeParse(input);
     if (!parsed.success) throw toValidation(parsed.error);
     const next = parsed.data;

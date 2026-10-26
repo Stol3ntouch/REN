@@ -3,12 +3,13 @@ import Link from 'next/link';
 /** Вкладки «Настройки магазина»: ведут на страницы своих разделов (C11 — основные и SEO, остальные — C12). */
 export const SETTINGS_TABS = [
   { key: 'store', label: 'Основные настройки', href: '/admin/settings/store' },
-  { key: 'shipping', label: 'Доставка и оплата', href: '/admin/settings/shipping' },
+  { key: 'shipping', label: 'Доставка', href: '/admin/settings/shipping' },
   { key: 'payments', label: 'Способы оплаты', href: '/admin/settings/payments' },
-  { key: 'warehouses', label: 'Склады и остатки', href: '/admin/warehouse' },
+  { key: 'warehouses', label: 'Склады и остатки', href: '/admin/settings/warehouses' },
   { key: 'taxes', label: 'Налоги и цены', href: '/admin/settings/taxes' },
-  { key: 'email', label: 'Email и уведомления', href: '/admin/mail' },
+  { key: 'email', label: 'Email и уведомления', href: '/admin/settings/email' },
   { key: 'seo', label: 'SEO и метаданные', href: '/admin/settings/seo' },
+  { key: 'backup', label: 'Резервные копии', href: '/admin/settings/backup' },
 ] as const;
 
 export function SettingsTabs({ current }: { current: (typeof SETTINGS_TABS)[number]['key'] }) {

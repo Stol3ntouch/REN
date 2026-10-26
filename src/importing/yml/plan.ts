@@ -14,7 +14,7 @@ export type ProductDiff = {
 };
 
 /** Сравнивает сохранённый товар с данными из файла. Единая логика для предпросмотра и применения. */
-export function diffProduct(db: Db, existing: ProductRow, offer: ParsedOffer): ProductDiff {
+export function diffProduct(db: Db, existing: ProductRow, offer: ParsedOffer, opts: { overrideLocked?: boolean } = {}): ProductDiff {
   const differing: LockableField[] = [];
   if (existing.name !== offer.name) differing.push('name');
   if ((existing.sku ?? null) !== offer.sku) differing.push('sku');
@@ -27,7 +27,7 @@ export function diffProduct(db: Db, existing: ProductRow, offer: ParsedOffer): P
   const storedUrls = JSON.stringify(imagesRepo.listByProduct(db, existing.id).map((i) => i.urlSource));
   if (storedUrls !== JSON.stringify(offer.pictures)) differing.push('images');
 
-  const locked = new Set(existing.lockedFields);
+  const locked = new Set(opts.overrideLocked ? [] : existing.lockedFields);
   return {
     changes: differing.filter((f) => !locked.has(f)),
     lockedSkipped: differing.filter((f) => locked.has(f)),
@@ -46,7 +46,7 @@ export function categorySlugBase(cat: Pick<ParsedCategory, 'name'>): string {
 /**
  * Предпросмотр импорта: что будет создано, обновлено, пропущено и какие строки с ошибками. В БД ничего не пишет.
  */
-export function planImport(parsed: ParsedYml, db: Db, opts: { fileName?: string | null; now?: Date } = {}): ImportPlan {
+export function planImport(parsed: ParsedYml, db: Db, opts: { fileName?: string | null; now?: Date; mode?: 'create_only' | 'update'; overrideLocked?: boolean } = {}): ImportPlan {
   const errors: RowError[] = [...parsed.errors];
 
   // Категории
@@ -81,7 +81,11 @@ export function planImport(parsed: ParsedYml, db: Db, opts: { fileName?: string 
       plannedProducts.push({ action: 'create', externalId: offer.externalId, name: offer.name, slug, changes: [], lockedSkipped: [], data: offer });
       continue;
     }
-    const diff = diffProduct(db, existing, offer);
+    if (opts.mode === 'create_only') {
+      plannedProducts.push({ action: 'unchanged', externalId: offer.externalId, name: offer.name, slug: existing.slug, changes: [], lockedSkipped: [], data: offer });
+      continue;
+    }
+    const diff = diffProduct(db, existing, offer, { overrideLocked: opts.overrideLocked });
     plannedProducts.push({
       action: diff.changes.length > 0 ? 'update' : 'unchanged',
       externalId: offer.externalId,

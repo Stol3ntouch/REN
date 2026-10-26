@@ -130,8 +130,8 @@ async function main(): Promise<number> {
     const r = await http(p, { cookies: new Map() });
     check(`${p} без входа → редирект на вход`, [302, 303, 307, 308].includes(r.status) && /login/.test(r.headers.get('location') ?? ''), `${r.status} ${r.headers.get('location') ?? ''}`);
   }
-  const adminApi = await http('/admin/import/apply', { method: 'POST', cookies: new Map(), body: new FormData() });
-  check('POST /admin/import/apply без сессии → 401/403/редирект', [401, 403, 302, 303, 307].includes(adminApi.status), String(adminApi.status));
+  const adminApi = await http('/admin/api/import/upload', { method: 'POST', cookies: new Map(), body: new FormData() });
+  check('POST /admin/api/import/upload без сессии → 401/403/редирект', [401, 403, 302, 303, 307].includes(adminApi.status), String(adminApi.status));
   return finish();
 }
 

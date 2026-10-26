@@ -52,7 +52,7 @@ export function loadShellContext(opts: Opts = {}): ShellContext {
     socials: shop.socials.map((s) => ({ href: s.href, label: s.label })),
     nav,
     catalogLinks: listCategoryRows(db)
-      .filter((c) => c.parentId === null)
+      .filter((c) => c.parentId === null && c.showInMenu)
       .slice(0, 6)
       .map((c) => ({ href: `/catalog/${c.slug}`, label: c.name })),
     buyerLinks: [

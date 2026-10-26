@@ -7,6 +7,8 @@ export interface MailPort {
   name: string;
   status(): PortStatus;
   send(m: Mail): Promise<void>;
+  /** Реальная проверка соединения с сервером (бросает при ошибке). Нет метода — проверить нельзя. */
+  verify?(): Promise<void>;
 }
 
 /** Реальная отправка невозможна: SMTP не настроен. Письмо остаётся в очереди (попытка не тратится). */

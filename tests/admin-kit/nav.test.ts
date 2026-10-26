@@ -108,8 +108,8 @@ describe('активный пункт и хлебные крошки', () => {
 });
 
 describe('конфигурация верхней панели', () => {
-  it('поиск и уведомления выключены, пока их не включит C10', () => {
-    expect(TOPBAR_FEATURES).toEqual({ search: false, notifications: false });
+  it('поиск и уведомления включены (C10)', () => {
+    expect(TOPBAR_FEATURES).toEqual({ search: true, notifications: true });
   });
 
   it('все группы меню из схемы присутствуют, у пунктов есть иконки', () => {

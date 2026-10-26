@@ -68,28 +68,38 @@ export const notificationsRepo = {
       .get(v.type, v.entity, v.entityId, v.since) as { id: number } | undefined;
     return r?.id ?? null;
   },
-  listForStaff(db: Db, staffId: number, permissions: readonly string[], f: { unreadOnly: boolean; limit: number; offset: number }): NotificationForStaff[] {
+  listForStaff(
+    db: Db,
+    staffId: number,
+    permissions: readonly string[],
+    f: { unreadOnly: boolean; readOnly?: boolean; type?: string; limit: number; offset: number },
+  ): NotificationForStaff[] {
     const a = audienceSql(permissions);
     const rows = db
       .prepare(
         `SELECT n.*, r.read_at FROM admin_notifications n
            LEFT JOIN admin_notification_reads r ON r.notification_id = n.id AND r.staff_id = ?
-          WHERE ${a.sql} ${f.unreadOnly ? 'AND r.read_at IS NULL' : ''}
+          WHERE ${a.sql} ${f.unreadOnly ? 'AND r.read_at IS NULL' : ''} ${f.readOnly ? 'AND r.read_at IS NOT NULL' : ''} ${f.type ? 'AND n.type = ?' : ''}
           ORDER BY n.created_at DESC, n.id DESC LIMIT ? OFFSET ?`,
       )
-      .all(staffId, ...a.args, f.limit, f.offset) as Raw[];
+      .all(staffId, ...a.args, ...(f.type ? [f.type] : []), f.limit, f.offset) as Raw[];
     return rows.map((r) => ({ ...map(r), read: r.read_at !== null && r.read_at !== undefined, readAt: r.read_at ?? null }));
   },
-  countForStaff(db: Db, staffId: number, permissions: readonly string[], unreadOnly: boolean): number {
+  countForStaff(db: Db, staffId: number, permissions: readonly string[], unreadOnly: boolean, f: { readOnly?: boolean; type?: string } = {}): number {
     const a = audienceSql(permissions);
     const row = db
       .prepare(
         `SELECT COUNT(*) AS n FROM admin_notifications n
            LEFT JOIN admin_notification_reads r ON r.notification_id = n.id AND r.staff_id = ?
-          WHERE ${a.sql} ${unreadOnly ? 'AND r.read_at IS NULL' : ''}`,
+          WHERE ${a.sql} ${unreadOnly ? 'AND r.read_at IS NULL' : ''} ${f.readOnly ? 'AND r.read_at IS NOT NULL' : ''} ${f.type ? 'AND n.type = ?' : ''}`,
       )
-      .get(staffId, ...a.args) as { n: number };
+      .get(staffId, ...a.args, ...(f.type ? [f.type] : [])) as { n: number };
     return Number(row.n);
+  },
+  /** Типы уведомлений, видимые сотруднику (для фильтра на странице). */
+  typesForStaff(db: Db, permissions: readonly string[]): string[] {
+    const a = audienceSql(permissions);
+    return (db.prepare(`SELECT DISTINCT n.type FROM admin_notifications n WHERE ${a.sql} ORDER BY n.type`).all(...a.args) as { type: string }[]).map((r) => r.type);
   },
   /** Видно ли уведомление сотруднику (по audience). */
   isVisible(db: Db, id: number, permissions: readonly string[]): boolean {

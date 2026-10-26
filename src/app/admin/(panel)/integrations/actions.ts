@@ -1,5 +1,6 @@
 'use server';
 
+import { integrationsAdmin } from '@/domain/admin/integrations';
 import { ValidationError } from '@/server/http/errors';
 import { integrationsOps, type IntegrationAction } from '../_lib/integrations-ops';
 import { field, runAction } from '../_lib/run-action';
@@ -17,5 +18,12 @@ export async function retryRunAction(form: FormData): Promise<never> {
     const id = Number(field(form, 'runId'));
     if (!Number.isInteger(id) || id < 1) throw new ValidationError('Запуск не найден');
     await integrationsOps.retry(session, id);
+  });
+}
+
+/** «Проверить соединение»: реальная проверка порта. «Подключено» появляется только после успеха. Право integrations.run. */
+export async function checkIntegrationAction(form: FormData): Promise<never> {
+  return runAction('/admin/integrations', async (session) => {
+    await integrationsAdmin.check(session, field(form, 'key'));
   });
 }

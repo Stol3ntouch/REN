@@ -68,11 +68,9 @@ export async function getHomeData(opts: Opts = {}): Promise<HomeData> {
   const now = opts.now ?? new Date();
   const nowMs = now.getTime();
 
-  const tree = await getCategoryTree({ db });
-  const top = tree
-    .filter((c) => c.productCount > 0)
-    .sort((a, b) => b.productCount - a.productCount || a.name.localeCompare(b.name, 'ru'))
-    .slice(0, HOME_CATEGORIES);
+  // плитки главной: «Показывать на главной» (show_on_home) независимо от показа в каталоге; порядок — приоритет и позиция из админки
+  const tree = await getCategoryTree({ db, all: true });
+  const top = tree.filter((c) => c.showOnHome && c.productCount > 0).slice(0, HOME_CATEGORIES);
   // фото категории — фото первого товара её поддерева (общий помощник каталога, с кэшем)
   const images = getCategoryImages(top.map((c) => c.id), { db, now: nowMs });
   const categories: HomeCategory[] = top.map((c) => ({ id: c.id, slug: c.slug, name: c.name, productCount: c.productCount, image: images.get(c.id) ?? null }));

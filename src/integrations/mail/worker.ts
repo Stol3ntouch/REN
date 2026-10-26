@@ -2,6 +2,7 @@ import { maskPii } from '@/domain/admin/mask';
 import type { Db } from '@/server/db/connection';
 import { emailOutboxRepo } from '@/server/db/repositories/email-outbox';
 import { resolveRecipients } from './outbox';
+import { customBody } from './settings';
 import { missingPayloadFields, renderBody, type Payload } from './templates';
 import { MailNotConfiguredError, type MailPort } from './types';
 
@@ -75,7 +76,7 @@ export async function processOutbox(o: { db: Db; port: MailPort; now?: number; s
     }
 
     try {
-      await port.send({ to, subject: job.subject, text: renderBody(job.event, job.audience, payload) });
+      await port.send({ to, subject: job.subject, text: customBody(db, job.event, job.audience, payload) ?? renderBody(job.event, job.audience, payload) });
       emailOutboxRepo.markSent(db, id, now);
       res.sent += 1;
     } catch (e) {

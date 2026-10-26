@@ -1,107 +1,115 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { hasPermission } from '@/domain/admin/permissions';
+import { AVAILABILITIES, AVAILABILITY_LABELS, filterToParams, parseProductListQuery } from '@/domain/catalog/products-list';
+import { AppError } from '@/server/http/errors';
 import { requireStaffPage } from '@/ui/admin/guard';
-import { EmptyState } from '@/ui/states';
-import { catalogOps } from '../_lib/catalog-ops';
-import { CATALOG_NAV, Flash, int, str, SubNav } from '../_lib/ui';
+import { ErrorState, FilterPanel, firstParam, FlashToast, FormField, PageHeader, SearchInput, SelectField, type SearchParams } from '@/ui/admin/kit';
+import { productListOps } from '../_lib/product-list-ops';
+import { productOps } from '../_lib/product-ops';
 import { ProductTable } from './ProductTable';
 
-export const metadata: Metadata = { title: 'Каталог' };
+export const metadata: Metadata = { title: 'Товары' };
 export const dynamic = 'force-dynamic';
 
-const triState = (v: string): boolean | undefined => (v === '1' ? true : v === '0' ? false : undefined);
+const can = (session: Parameters<typeof hasPermission>[0], ...perms: Parameters<typeof hasPermission>[1][]) => perms.some((p) => hasPermission(session, p));
 
-export default async function AdminCatalogPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const session = await requireStaffPage('catalog.read');
+export default async function AdminCatalogPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const session = await requireStaffPage('products.read');
   const sp = await searchParams;
-  const categoryId = int(sp.category, 0);
-  const filter = {
-    q: str(sp.q).trim().slice(0, 100) || undefined,
-    categoryId: categoryId || undefined,
-    published: triState(str(sp.published)),
-    hiddenOnly: str(sp.hidden) === '1' || undefined,
-    page: int(sp.page, 1),
-  };
-  const result = catalogOps.list(session, filter, {});
-  const categories = catalogOps.categories(session);
-  const manualEdit = catalogOps.isManualEditEnabled();
-  const canWrite = hasPermission(session, 'catalog.write');
-  const pages = Math.max(1, Math.ceil(result.total / result.pageSize));
-  const link = (page: number) => {
+  const query = parseProductListQuery(sp);
+  const canWrite = can(session, 'products.write', 'catalog.write');
+  const canDelete = can(session, 'products.delete');
+  const canExport = can(session, 'export.run');
+  const options = productOps.formOptions(session);
+
+  let result = null;
+  let error: string | null = null;
+  try {
+    result = productListOps.list(session, query);
+  } catch (e) {
+    error = e instanceof AppError ? e.message : 'Не удалось загрузить товары. Обновите страницу.';
+  }
+
+  const back = (() => {
     const p = new URLSearchParams();
-    for (const k of ['q', 'category', 'published', 'hidden']) if (str(sp[k])) p.set(k, str(sp[k]));
-    p.set('page', String(page));
-    return `/admin/catalog?${p.toString()}`;
-  };
-  const backPath = link(result.page);
+    for (const [k, v] of Object.entries(sp)) if (!['ok', 'error', 'done'].includes(k) && firstParam(v)) p.set(k, firstParam(v));
+    const s = p.toString();
+    return s ? `/admin/catalog?${s}` : '/admin/catalog';
+  })();
+  const exportHref = `/admin/api/products/export?${new URLSearchParams(filterToParams(query)).toString()}`;
+  const done = firstParam(sp.done);
 
   return (
     <>
-      <h1>Каталог</h1>
-      <SubNav items={CATALOG_NAV} current="/admin/catalog" />
-      <Flash ok={str(sp.ok)} error={str(sp.error)} okText="Готово: видимость на сайте обновлена." />
-      <p>
-        Всего товаров: {result.counts.all}, скрыто с сайта: {result.counts.hidden}.
-      </p>
-      <p className="ops-muted">
-        {manualEdit ? 'Ручное редактирование включено: цены, публикацию и описания можно править в карточке товара.' : 'Источник данных — импорт YML / 1С: поля только для чтения. Ручное редактирование включается в настройках.'}
-      </p>
-      <form method="get" className="adm-filters" role="search" aria-label="Поиск и фильтры товаров">
-        <div className="adm-field">
-          <label htmlFor="c-q">Название или артикул</label>
-          <input id="c-q" name="q" type="search" defaultValue={str(sp.q)} maxLength={100} />
-        </div>
-        <div className="adm-field">
-          <label htmlFor="c-cat">Категория</label>
-          <select id="c-cat" name="category" defaultValue={str(sp.category)}>
-            <option value="">Все</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="adm-field">
-          <label htmlFor="c-pub">Публикация</label>
-          <select id="c-pub" name="published" defaultValue={str(sp.published)}>
-            <option value="">Любая</option>
-            <option value="1">Опубликован</option>
-            <option value="0">Скрыт</option>
-          </select>
-        </div>
-        <div className="adm-field">
-          <label htmlFor="c-hid">
-            <input id="c-hid" name="hidden" type="checkbox" value="1" defaultChecked={str(sp.hidden) === '1'} /> Только скрытые
+      <FlashToast ok={firstParam(sp.ok)} error={firstParam(sp.error)} okText={done || 'Готово.'} />
+      <PageHeader
+        title="Товары"
+        description={result ? `Найдено: ${result.total}` : undefined}
+        actions={
+          <>
+            {canExport ? (
+              <a href={exportHref} className="ak-btn ak-btn--outline" download>
+                Экспорт CSV
+              </a>
+            ) : null}
+            {canWrite ? (
+              <Link href="/admin/catalog/products/new" className="ak-btn ak-btn--primary">
+                Добавить
+              </Link>
+            ) : null}
+          </>
+        }
+      />
+      <div className="ak-toolbar">
+        <SearchInput label="Поиск товаров" placeholder="Название, артикул или штрихкод" defaultValue={query.q ?? ''} />
+      </div>
+      <FilterPanel basePath="/admin/catalog" params={sp} title="Фильтр товаров" preserve={['q', 'sort', 'dir', 'pageSize']}>
+        <SelectField name="category" label="Категория (с подкатегориями)" placeholder="Все" defaultValue={String(query.categoryId ?? '')} options={options.categories.map((c) => ({ value: String(c.id), label: c.label }))} />
+        <SelectField name="brand" label="Бренд" placeholder="Все" defaultValue={String(query.brandId ?? '')} options={options.brands.map((b) => ({ value: String(b.id), label: b.name }))} />
+        <SelectField name="availability" label="Наличие" placeholder="Любое" defaultValue={query.availability ?? ''} options={AVAILABILITIES.map((a) => ({ value: a, label: AVAILABILITY_LABELS[a] }))} />
+        <SelectField
+          name="published"
+          label="Публикация"
+          placeholder="Любая"
+          defaultValue={query.published === undefined ? '' : query.published ? '1' : '0'}
+          options={[
+            { value: '1', label: 'Опубликованные' },
+            { value: '0', label: 'Не опубликованные' },
+          ]}
+        />
+        <SelectField
+          name="hidden"
+          label="Скрытие"
+          placeholder="Любое"
+          defaultValue={query.hidden === undefined ? '' : query.hidden ? '1' : '0'}
+          options={[
+            { value: '1', label: 'Скрытые с сайта' },
+            { value: '0', label: 'Не скрытые' },
+          ]}
+        />
+        <FormField name="priceMin" label="Цена от, ₽" inputMode="decimal" defaultValue={firstParam(sp.priceMin)} />
+        <FormField name="priceMax" label="Цена до, ₽" inputMode="decimal" defaultValue={firstParam(sp.priceMax)} />
+        <div className="pl-flags" role="group" aria-label="Признаки">
+          <label>
+            <input type="checkbox" name="new" value="1" defaultChecked={query.isNew === true} /> Новинка
+          </label>
+          <label>
+            <input type="checkbox" name="featured" value="1" defaultChecked={query.featured === true} /> Рекомендуемый
+          </label>
+          <label>
+            <input type="checkbox" name="promo" value="1" defaultChecked={query.isPromo === true} /> Акция
           </label>
         </div>
-        <div className="adm-inline">
-          <button type="submit" className="button">
-            Найти
-          </button>
-          <Link href="/admin/catalog" className="button button--outline">
-            Сбросить
-          </Link>
-        </div>
-      </form>
-
-      {result.rows.length === 0 ? (
-        <EmptyState title="Товаров не найдено">
-          <p>Измените условия поиска или загрузите каталог в разделе «Импорт».</p>
-        </EmptyState>
+      </FilterPanel>
+      {result ? (
+        <ProductTable result={result} query={query} params={sp} canWrite={canWrite} canDelete={canDelete} back={back} options={options} />
       ) : (
-        <>
-          <p>Найдено: {result.total}</p>
-          <ProductTable rows={result.rows} canWrite={canWrite} back={backPath} />
-          <nav className="adm-pager" aria-label="Страницы">
-            {result.page > 1 ? <Link href={link(result.page - 1)}>← Назад</Link> : null}
-            <span>
-              Страница {result.page} из {pages}
-            </span>
-            {result.page < pages ? <Link href={link(result.page + 1)}>Вперёд →</Link> : null}
-          </nav>
-        </>
+        <div className="ak-card">
+          <ErrorState title="Не удалось загрузить товары">
+            <p>{error}</p>
+          </ErrorState>
+        </div>
       )}
     </>
   );

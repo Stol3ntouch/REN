@@ -2,6 +2,7 @@ import { visibleProductSql } from '@/server/db/repositories/products';
 import { getDb, type Db } from '@/server/db/connection';
 import { facetsConfigRepo, type StorefrontFilter } from '@/server/db/repositories/facets-config';
 import { ancestorsOf } from './attributes';
+import { applyCategoryFilterSettings } from './category-filters';
 import { listCategoryRows } from './category-rows';
 import { DEFAULT_MAX_VALUES, DEFAULT_MIN_PRODUCTS, filterAppliesToCategory } from './filters';
 import { buildMatchQuery } from './fts';
@@ -45,9 +46,12 @@ export async function getFacets(categoryId: number | null, ctx: FacetContext = {
   const categoryIds = categoryId === null ? undefined : descendantIds(rows, categoryId);
   const chain = categoryId === null ? null : ancestorsOf(categoryId, new Map(rows.map((r) => [r.id, r.parentId])));
 
-  const applicable = facetsConfigRepo
-    .listEnabled(db)
-    .filter((f) => filterAppliesToCategory(f.categoryIds, chain) && (categoryId !== null || (f.kind !== 'attribute' && f.kind !== 'category')));
+  const applicable = applyCategoryFilterSettings(
+    facetsConfigRepo
+      .listEnabled(db)
+      .filter((f) => filterAppliesToCategory(f.categoryIds, chain) && (categoryId !== null || (f.kind !== 'attribute' && f.kind !== 'category'))),
+    chain ?? [],
+  );
   if (applicable.length === 0) return [];
 
   const text = (ctx.text ?? '').trim();

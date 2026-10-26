@@ -1,30 +1,34 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { parseBucket, parseRange } from '@/domain/analytics';
+import { dashboard } from '@/domain/analytics/dashboard';
+import { PERIOD_LABELS, PERIOD_PRESETS, parseDashboardPeriod } from '@/domain/analytics/period';
 import { formatRub } from '@/domain/pricing/format';
+import { STATUS_LABELS, isOrderStatus } from '@/domain/ordering/status';
+import { SalesChart } from '@/ui/admin/SalesChart';
 import { requireStaffPage } from '@/ui/admin/guard';
-import { ErrorState, EmptyState } from '@/ui/states';
 import { visibleNav } from '@/ui/admin/nav';
-import { overviewOps } from './_lib/overview-ops';
-import { Stat } from './_lib/ui';
+import { ErrorState, EmptyState } from '@/ui/states';
+import { Stat, fmtTime } from './_lib/ui';
 import './_lib/ops.css';
+import '@/ui/admin/c10.css';
 import '@/ui/cart/admin-orders.css';
 
 export const metadata: Metadata = { title: 'Обзор' };
 export const dynamic = 'force-dynamic';
 
-const BUCKET_LABELS = { day: 'по дням', week: 'по неделям', month: 'по месяцам' } as const;
+const statusLabel = (s: string): string => (isOrderStatus(s) ? STATUS_LABELS[s] : s);
 
-/** Обзор: показатели за период из реальных заказов; блоки скрыты, если у роли нет права. */
+/** Панель управления: показатели за период по реальным данным БД; каждый блок скрыт, если у роли нет права. */
 export default async function AdminOverviewPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const session = await requireStaffPage();
   const sp = await searchParams;
-  const range = parseRange(sp);
-  const by = parseBucket(sp.by);
-  const view = overviewOps.get(session, range, by);
+  const { preset, range } = parseDashboardPeriod(sp);
+  const by = (Array.isArray(sp.by) ? sp.by[0] : sp.by) === 'week' ? 'week' : 'day';
+  const d = dashboard(session, range, by);
   const sections = visibleNav(session).filter((i) => i.href !== '/admin');
-  const maxRevenue = Math.max(1, ...(view.series ?? []).map((r) => r.revenueKopecks));
-  const requestsTotal = view.requests.repair + view.requests.callback + view.requests.question + view.requests.reviewsPending;
+  const c = d.cards;
+  const periodText = `${range.fromStr} — ${range.toStr}`;
+  const keep = by === 'week' ? '&by=week' : '';
 
   return (
     <>
@@ -35,99 +39,181 @@ export default async function AdminOverviewPage({ searchParams }: { searchParams
         </ErrorState>
       ) : null}
 
-      {view.orders ? (
-        <form method="get" className="adm-filters" aria-label="Период обзора">
+      <nav aria-label="Период">
+        <ul className="dash-period">
+          {PERIOD_PRESETS.filter((p) => p !== 'custom').map((p) => (
+            <li key={p}>
+              <Link href={`/admin?period=${p}${keep}`} aria-current={preset === p ? 'true' : undefined}>
+                {PERIOD_LABELS[p]}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <form method="get" className="adm-filters" aria-label="Свой период и группировка">
+        <div className="adm-field">
+          <label htmlFor="ov-from">С даты</label>
+          <input id="ov-from" name="from" type="date" defaultValue={range.fromStr} required />
+        </div>
+        <div className="adm-field">
+          <label htmlFor="ov-to">По дату (включительно)</label>
+          <input id="ov-to" name="to" type="date" defaultValue={range.toStr} required />
+        </div>
+        {c.revenue ? (
           <div className="adm-field">
-            <label htmlFor="ov-from">С даты</label>
-            <input id="ov-from" name="from" type="date" defaultValue={range.fromStr} required />
+            <label htmlFor="ov-by">График</label>
+            <select id="ov-by" name="by" defaultValue={by}>
+              <option value="day">по дням</option>
+              <option value="week">по неделям</option>
+            </select>
           </div>
-          <div className="adm-field">
-            <label htmlFor="ov-to">По дату (включительно)</label>
-            <input id="ov-to" name="to" type="date" defaultValue={range.toStr} required />
-          </div>
-          {view.money ? (
-            <div className="adm-field">
-              <label htmlFor="ov-by">Динамика</label>
-              <select id="ov-by" name="by" defaultValue={by}>
-                {(Object.keys(BUCKET_LABELS) as (keyof typeof BUCKET_LABELS)[]).map((k) => (
-                  <option key={k} value={k}>
-                    {BUCKET_LABELS[k]}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : null}
-          <div className="adm-inline">
-            <button type="submit" className="button">
-              Показать
-            </button>
-          </div>
-        </form>
-      ) : null}
+        ) : null}
+        <div className="adm-inline">
+          <button type="submit" className="button">
+            Показать
+          </button>
+        </div>
+      </form>
+      <p className="dash-muted">
+        {preset === 'custom' ? PERIOD_LABELS.custom : PERIOD_LABELS[preset]}: {periodText}. Границы суток — по Москве. Показатели — из заказов, клиентов и обращений в базе магазина.
+      </p>
 
-      {view.orders ? (
-        view.empty ? (
-          <EmptyState title="Нет данных">
-            <p>За выбранный период ({range.fromStr} — {range.toStr}) заказов не было.</p>
-          </EmptyState>
-        ) : (
-          <ul className="ops-stats">
-            {view.money ? <Stat label="Выручка" value={formatRub(view.money.revenueKopecks)} hint={`оплаченных заказов: ${view.money.paidOrders}`} /> : null}
-            <Stat label="Заказов (без отменённых)" value={view.orders.counted} hint={`создано всего: ${view.orders.created}`} />
-            {view.money ? <Stat label="Средний чек" value={view.money.averageCheckKopecks === null ? 'нет данных' : formatRub(view.money.averageCheckKopecks)} /> : null}
-          </ul>
-        )
+      {d.hints.length > 0 ? (
+        <section aria-label="Что делать дальше">
+          <h2>Что делать дальше</h2>
+          {d.hints.map((h) => (
+            <p key={h.href} className="dash-hint">
+              {h.text} <Link href={h.href}>{h.linkLabel}</Link>
+            </p>
+          ))}
+        </section>
       ) : null}
 
       <ul className="ops-stats">
-        <Stat
-          label="Новые заявки"
-          value={view.requests.available ? requestsTotal : 'нет данных'}
-          hint={view.requests.available ? `ремонт ${view.requests.repair}, звонок ${view.requests.callback}, вопросы ${view.requests.question}, отзывы на модерации ${view.requests.reviewsPending}` : 'раздел заявок ещё не подключён'}
-        />
-        {view.attention ? (
+        {c.orders ? <Stat label="Заказов за период" value={c.orders.counted} hint={`создано всего: ${c.orders.created}, без отменённых и возвратов`} /> : null}
+        {c.revenue ? (
           <Stat
-            label="Ошибки интеграций"
-            value={view.attention.total}
-            hint={`запусков с ошибкой за 7 дней ${view.attention.failedRuns7d}, платежей ${view.attention.paymentErrors}, уведомлений ${view.attention.webhookAlerts}`}
+            label="Выручка"
+            value={formatRub(c.revenue.kopecks)}
+            hint={`оплаченных заказов: ${c.revenue.paidOrders}${c.revenue.averageCheckKopecks === null ? '' : `, средний чек ${formatRub(c.revenue.averageCheckKopecks)}`}`}
           />
         ) : null}
+        {c.products ? <Stat label="Товаров на сайте" value={`${c.products.visible} из ${c.products.total}`} hint="видимых покупателям / всего" /> : null}
+        {c.outOfStock !== undefined ? <Stat label="Нет в наличии" value={c.outOfStock} /> : null}
+        {c.newCustomers !== undefined ? <Stat label="Новые клиенты" value={c.newCustomers} hint="зарегистрировались за период" /> : null}
+        {c.newInquiries !== undefined ? <Stat label="Новые обращения" value={c.newInquiries} hint="сообщения, звонки, вопросы" /> : null}
+        {c.newRepairs !== undefined ? <Stat label="Заявки на ремонт" value={c.newRepairs} hint="за период" /> : null}
       </ul>
 
-      {view.series && view.series.length > 0 ? (
-        <>
-          <h2>Динамика {BUCKET_LABELS[by]}</h2>
-          <div className="adm-table-wrap">
-            <table className="adm-table">
-              <caption className="visually-hidden">Заказы и выручка по периодам</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Период</th>
-                  <th scope="col" className="num">
-                    Заказов
-                  </th>
-                  <th scope="col" className="num">
-                    Выручка
-                  </th>
-                  <th scope="col" aria-hidden="true" />
-                </tr>
-              </thead>
-              <tbody>
-                {view.series.map((r) => (
-                  <tr key={r.bucket}>
-                    <td>{r.bucket}</td>
-                    <td className="num">{r.orders}</td>
-                    <td className="num">{formatRub(r.revenueKopecks)}</td>
-                    <td className="ops-bar-cell" aria-hidden="true">
-                      <span className="ops-bar" style={{ width: `${Math.round((r.revenueKopecks / maxRevenue) * 100)}%` }} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
+      {c.revenue ? (
+        <section aria-labelledby="dash-sales" className="dash-card">
+          <h2 id="dash-sales">Продажи {by === 'week' ? 'по неделям' : 'по дням'}</h2>
+          {d.sales && d.sales.series.length > 0 ? (
+            <SalesChart points={d.sales.series} caption={`Выручка ${by === 'week' ? 'по неделям' : 'по дням'}, ${periodText}`} />
+          ) : (
+            <EmptyState title="Нет данных">
+              <p>За выбранный период заказов не было. График появится после первых заказов.</p>
+            </EmptyState>
+          )}
+        </section>
       ) : null}
+
+      <div className="dash-grid">
+        {d.attention.orders ? (
+          <section aria-labelledby="dash-attention" className="dash-card">
+            <h2 id="dash-attention">Требуют внимания</h2>
+            {d.attention.orders.total === 0 ? (
+              <p className="dash-muted">Просроченных заказов нет: все новые и неоплаченные заказы моложе {d.attention.afterHours} ч.</p>
+            ) : (
+              <>
+                <p className="dash-warn">
+                  Ждут дольше {d.attention.afterHours} ч: {d.attention.orders.total}
+                </p>
+                <ul className="dash-list">
+                  {d.attention.orders.items.map((o) => (
+                    <li key={o.number}>
+                      <Link href={`/admin/orders/${encodeURIComponent(o.number)}`}>{o.number}</Link>
+                      <span className="dash-muted">
+                        {statusLabel(o.status)}, {fmtTime(o.createdAt)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {d.attention.integrations && d.attention.integrations.total > 0 ? (
+              <p className="dash-warn">
+                Интеграции и платежи с предупреждениями: {d.attention.integrations.total} (ошибок запуска за 7 дней {d.attention.integrations.failedRuns7d}, платежей {d.attention.integrations.paymentErrors}, уведомлений платёжной системы{' '}
+                {d.attention.integrations.webhookAlerts}). <Link href="/admin/integrations">Открыть интеграции</Link>
+              </p>
+            ) : null}
+          </section>
+        ) : null}
+
+        {d.recentOrders ? (
+          <section aria-labelledby="dash-recent" className="dash-card">
+            <h2 id="dash-recent">Последние заказы</h2>
+            {d.recentOrders.length === 0 ? (
+              <p className="dash-muted">Заказов пока нет.</p>
+            ) : (
+              <ul className="dash-list">
+                {d.recentOrders.map((o) => (
+                  <li key={o.number}>
+                    <span>
+                      <Link href={`/admin/orders/${encodeURIComponent(o.number)}`}>{o.number}</Link> · {o.contactName}
+                    </span>
+                    <span className="dash-muted">
+                      {statusLabel(o.status)} · {formatRub(o.totalKopecks)} · {fmtTime(o.createdAt)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ) : null}
+
+        {d.popular ? (
+          <section aria-labelledby="dash-popular" className="dash-card">
+            <h2 id="dash-popular">Популярные товары</h2>
+            {d.popular.length === 0 ? (
+              <p className="dash-muted">За период оплаченных заказов нет.</p>
+            ) : (
+              <ol className="dash-list">
+                {d.popular.map((p, i) => (
+                  <li key={p.productId ?? `x${i}`}>
+                    <span>{p.productId !== null ? <Link href={`/admin/catalog/${p.productId}`}>{p.name}</Link> : p.name}</span>
+                    <span className="dash-muted">продано: {p.units}</span>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </section>
+        ) : null}
+
+        {d.audit ? (
+          <section aria-labelledby="dash-audit" className="dash-card">
+            <h2 id="dash-audit">Последние события администрирования</h2>
+            {d.audit.length === 0 ? (
+              <p className="dash-muted">Журнал пуст.</p>
+            ) : (
+              <ul className="dash-list">
+                {d.audit.map((a, i) => (
+                  <li key={`${a.at}-${i}`}>
+                    <span>
+                      {a.action} · {a.entity}
+                      {a.entityId ? ` ${a.entityId}` : ''}
+                    </span>
+                    <span className="dash-muted">
+                      {a.actor ?? 'система'} · {fmtTime(a.at)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Link href="/admin/audit">Весь журнал</Link>
+          </section>
+        ) : null}
+      </div>
 
       <h2>Разделы</h2>
       <ul className="admin-cards">

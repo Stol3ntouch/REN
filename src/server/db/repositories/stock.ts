@@ -1,4 +1,5 @@
 import type { Db } from '../connection';
+import { warehousesRepo } from './warehouses';
 
 export const AVAILABILITY_VALUES = ['in_stock', 'out_of_stock', 'preorder', 'discontinued'] as const;
 export type Availability = (typeof AVAILABILITY_VALUES)[number];
@@ -29,6 +30,10 @@ export type StockMovementRow = {
   ref: string | null;
   staffId: number | null;
   createdAt: string;
+  /** C12: склад операции; null — общая операция по заказу (резерв/списание делится между складами). */
+  warehouseId?: number | null;
+  toWarehouseId?: number | null;
+  movedQty?: number | null;
 };
 
 export type NewStockMovement = Omit<StockMovementRow, 'id'>;
@@ -56,6 +61,9 @@ type MoveRaw = {
   ref: string | null;
   staff_id: number | null;
   created_at: string;
+  warehouse_id: number | null;
+  to_warehouse_id: number | null;
+  moved_qty: number | null;
 };
 
 const parseLocked = (json: string): string[] => {
@@ -89,10 +97,12 @@ export const stockRepo = {
   },
 
   /** Записывает остаток, резерв и итоговое наличие (учёт при этом включается). Закрепляет in_stock за ручной правкой. */
-  save(db: Db, id: number, s: { stockQty: number; reservedQty: number; availability: Availability; lockedFields: string[]; now: string }): void {
+  save(db: Db, id: number, s: { stockQty: number; reservedQty: number; availability: Availability; lockedFields: string[]; now: string; warehouseId?: number | null }): void {
     db.prepare(
       `UPDATE products SET stock_qty = ?, reserved_qty = ?, stock_tracked = 1, availability = ?, in_stock = ?, locked_fields = ?, updated_at = ? WHERE id = ?`,
     ).run(s.stockQty, s.reservedQty, s.availability, isSellable(s.availability) ? 1 : 0, JSON.stringify(s.lockedFields), s.now, id);
+    // C12: остатки по складам следуют за итогом товара (сумма по складам = stock_qty); изменение со склада-цели идёт именно на него.
+    warehousesRepo.reconcile(db, id, s.stockQty, s.reservedQty, s.warehouseId ?? null);
   },
 
   /** Только наличие (без остатка): для ручного статуса и возврата на «авто». */
@@ -103,10 +113,10 @@ export const stockRepo = {
   insertMovement(db: Db, m: NewStockMovement): number {
     const r = db
       .prepare(
-        `INSERT INTO stock_movements (product_id, delta, qty_after, reserved_delta, reserved_after, reason, ref, staff_id, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO stock_movements (product_id, delta, qty_after, reserved_delta, reserved_after, reason, ref, staff_id, created_at, warehouse_id, to_warehouse_id, moved_qty)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
-      .run(m.productId, m.delta, m.qtyAfter, m.reservedDelta, m.reservedAfter, m.reason, m.ref, m.staffId, m.createdAt);
+      .run(m.productId, m.delta, m.qtyAfter, m.reservedDelta, m.reservedAfter, m.reason, m.ref, m.staffId, m.createdAt, m.warehouseId ?? null, m.toWarehouseId ?? null, m.movedQty ?? null);
     return Number(r.lastInsertRowid);
   },
 
@@ -114,7 +124,7 @@ export const stockRepo = {
   listMovements(db: Db, productId: number, limit: number): StockMovementRow[] {
     const rows = db
       .prepare(
-        `SELECT id, product_id, delta, qty_after, reserved_delta, reserved_after, reason, ref, staff_id, created_at
+        `SELECT id, product_id, delta, qty_after, reserved_delta, reserved_after, reason, ref, staff_id, created_at, warehouse_id, to_warehouse_id, moved_qty
          FROM stock_movements WHERE product_id = ? ORDER BY id DESC LIMIT ?`,
       )
       .all(productId, limit) as MoveRaw[];
@@ -129,6 +139,9 @@ export const stockRepo = {
       ref: r.ref,
       staffId: r.staff_id,
       createdAt: r.created_at,
+      warehouseId: r.warehouse_id,
+      toWarehouseId: r.to_warehouse_id,
+      movedQty: r.moved_qty,
     }));
   },
 

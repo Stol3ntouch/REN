@@ -33,6 +33,9 @@ export function createSmtpMailPort(cfg: SmtpConfig): MailPort {
   return {
     name: 'smtp',
     status: () => ({ connected: true, mode: 'live', note: 'SMTP настроен (соединение проверяется при отправке)' }),
+    async verify() {
+      await (await get()).verify();
+    },
     async send(m: Mail) {
       const t = await get();
       await t.sendMail({ from: cfg.from, to: m.to.join(', '), subject: m.subject, text: m.text });

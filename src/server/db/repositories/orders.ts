@@ -40,6 +40,11 @@ export type OrderRow = {
   subtotalKopecks: number;
   discountKopecks: number;
   totalKopecks: number;
+  /** C12: комиссия способа оплаты, налог и снимок правил (JSON) — для пересчёта при правке состава. */
+  paymentFeeKopecks: number;
+  taxKopecks: number;
+  taxMode: 'included' | 'added' | null;
+  chargesJson: string | null;
   promoId: number | null;
   promoCode: string | null;
   /** Использование промокода уже возвращено (заказ отменён). */
@@ -101,6 +106,10 @@ type Raw = Record<string, unknown> & {
   subtotal_kopecks: number;
   discount_kopecks: number;
   total_kopecks: number;
+  payment_fee_kopecks: number;
+  tax_kopecks: number;
+  tax_mode: 'included' | 'added' | null;
+  charges_json: string | null;
   promo_id: number | null;
   promo_code: string | null;
   promo_released: number;
@@ -136,6 +145,10 @@ const mapOrder = (r: Raw | undefined): OrderRow | null =>
         subtotalKopecks: r.subtotal_kopecks,
         discountKopecks: r.discount_kopecks,
         totalKopecks: r.total_kopecks,
+        paymentFeeKopecks: r.payment_fee_kopecks ?? 0,
+        taxKopecks: r.tax_kopecks ?? 0,
+        taxMode: r.tax_mode ?? null,
+        chargesJson: r.charges_json ?? null,
         promoId: r.promo_id,
         promoCode: r.promo_code,
         promoReleased: r.promo_released === 1,
@@ -161,6 +174,8 @@ export type NewOrder = {
   subtotalKopecks: number;
   discountKopecks: number;
   totalKopecks: number;
+  /** C12: надбавки; без них (старые вызовы, тесты) комиссия и налог равны нулю. */
+  charges?: { paymentFeeKopecks: number; taxKopecks: number; taxMode: 'included' | 'added' | null; chargesJson: string };
   promo: { id: number; code: string } | null;
   idempotencyKey: string;
   now: number;
@@ -175,6 +190,9 @@ export type NewOrderItem = {
   unitKopecks: number;
   qty: number;
   lineKopecks: number;
+  /** C12: ставка и налог по строке на момент оформления (null — налога нет). */
+  taxRateBp?: number | null;
+  taxKopecks?: number | null;
 };
 
 export type OrderListFilter = {
@@ -257,6 +275,10 @@ export const ordersRepo = {
     const id = Number(r.lastInsertRowid);
     const number = formatOrderNumber(id);
     db.prepare('UPDATE orders SET number = ? WHERE id = ?').run(number, id);
+    // Колонки C12 пишутся отдельно: вставка без надбавок работает и на схеме без них (тесты миграций).
+    if (o.charges) {
+      db.prepare('UPDATE orders SET payment_fee_kopecks = ?, tax_kopecks = ?, tax_mode = ?, charges_json = ? WHERE id = ?').run(o.charges.paymentFeeKopecks, o.charges.taxKopecks, o.charges.taxMode, o.charges.chargesJson, id);
+    }
     return { id, number };
   },
   insertItem(db: Db, orderId: number, i: NewOrderItem): void {
@@ -264,6 +286,13 @@ export const ordersRepo = {
       `INSERT INTO order_items (order_id, product_id, name, sku, price_kopecks, discount_price_kopecks, unit_kopecks, qty, line_kopecks)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     ).run(orderId, i.productId, i.name, i.sku, i.priceKopecks, i.discountPriceKopecks, i.unitKopecks, i.qty, i.lineKopecks);
+  },
+  /** Id последней вставленной строки состава (для налога по строке). */
+  insertItemWithTax(db: Db, orderId: number, i: NewOrderItem): void {
+    ordersRepo.insertItem(db, orderId, i);
+    if (i.taxRateBp !== undefined && i.taxRateBp !== null) {
+      db.prepare('UPDATE order_items SET tax_rate_bp = ?, tax_kopecks = ? WHERE id = (SELECT MAX(id) FROM order_items WHERE order_id = ?)').run(i.taxRateBp, i.taxKopecks ?? null, orderId);
+    }
   },
   insertEvent(
     db: Db,
@@ -420,14 +449,20 @@ export const ordersRepo = {
     ).run(v.name, v.name.toLowerCase(), v.email, v.phone, v.phoneDigits, v.address, v.comment, now, id);
   },
   /** Новые суммы после правки состава (доставка и способы остаются). */
-  setTotals(db: Db, id: number, v: { subtotalKopecks: number; discountKopecks: number; totalKopecks: number }, now: number): void {
-    db.prepare('UPDATE orders SET subtotal_kopecks = ?, discount_kopecks = ?, total_kopecks = ?, updated_at = ? WHERE id = ?').run(
-      v.subtotalKopecks,
-      v.discountKopecks,
-      v.totalKopecks,
-      now,
-      id,
-    );
+  setTotals(
+    db: Db,
+    id: number,
+    v: { subtotalKopecks: number; discountKopecks: number; totalKopecks: number; paymentFeeKopecks?: number; taxKopecks?: number; taxMode?: 'included' | 'added' | null },
+    now: number,
+  ): void {
+    db.prepare('UPDATE orders SET subtotal_kopecks = ?, discount_kopecks = ?, total_kopecks = ?, updated_at = ? WHERE id = ?').run(v.subtotalKopecks, v.discountKopecks, v.totalKopecks, now, id);
+    if (v.paymentFeeKopecks !== undefined) {
+      db.prepare('UPDATE orders SET payment_fee_kopecks = ?, tax_kopecks = ?, tax_mode = ? WHERE id = ?').run(v.paymentFeeKopecks, v.taxKopecks ?? 0, v.taxMode ?? null, id);
+    }
+  },
+  /** C12: налог по строке (после пересчёта состава заказа). */
+  setItemTax(db: Db, itemId: number, taxRateBp: number | null, taxKopecks: number | null): void {
+    db.prepare('UPDATE order_items SET tax_rate_bp = ?, tax_kopecks = ? WHERE id = ?').run(taxRateBp, taxKopecks, itemId);
   },
   updateItem(db: Db, itemId: number, qty: number, lineKopecks: number): void {
     db.prepare('UPDATE order_items SET qty = ?, line_kopecks = ? WHERE id = ?').run(qty, lineKopecks, itemId);

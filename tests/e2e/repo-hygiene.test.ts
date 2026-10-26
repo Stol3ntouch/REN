@@ -72,6 +72,11 @@ describe('в коде и сидах нет секретов и выдуманн�
         expect(text, rel(f)).not.toMatch(/INSERT\s+INTO\s+products|quantity_in_stock|остаток\s*[:=]\s*\d/i);
         continue;
       }
+      // C12: миграция складов только переносит уже существующий остаток учитываемых товаров на склад по умолчанию (INSERT … SELECT), чисел не вносит
+      if (rel(f).endsWith('1560_warehouses.sql')) {
+        expect(text, rel(f)).not.toMatch(/quantity_in_stock|остаток\s*[:=]\s*\d|VALUES\s*\([^)]*stock_qty/i);
+        continue;
+      }
       expect(text, rel(f)).not.toMatch(/stock_qty|quantity_in_stock|остаток\s*[:=]\s*\d/i);
     }
     // способы получения заведены миграцией без цены доставки: «стоимость рассчитает менеджер»

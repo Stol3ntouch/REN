@@ -3,6 +3,7 @@ import { getConfig } from '@/server/config';
 import type { Db } from '@/server/db/connection';
 import { emailOutboxRepo, type OutboxAudience } from '@/server/db/repositories/email-outbox';
 import { adminFlagsRepo, staffAdminRepo } from '@/server/db/repositories/staff-admin';
+import { effectiveSubject, isMailEnabled } from './settings';
 import { isKnownMailEvent, planMessages, type Payload } from './templates';
 
 /** Стабильная сериализация: порядок ключей не влияет на ключ дедупликации. */
@@ -27,12 +28,15 @@ export function enqueueMailEvent(db: Db, event: string, payload: Payload, opts: 
   const now = opts.now ?? Date.now();
   let queued = 0;
   for (const m of planMessages(event, payload)) {
+    // C12: событие × получатель можно отключить в настройках; свой шаблон задаёт тему
+    if (!isMailEnabled(db, event, m.audience)) continue;
+    const subject = effectiveSubject(db, event, m.audience, payload, m.subject);
     const dedupeKey = createHash('sha256').update(`${event}|${m.audience}|${m.to ?? ''}|${canonical(payload)}`).digest('hex');
     const inserted = emailOutboxRepo.insertIfNew(db, {
       event,
       audience: m.audience,
       toAddr: m.to,
-      subject: m.subject,
+      subject,
       payloadJson: JSON.stringify(payload),
       dedupeKey,
       now,

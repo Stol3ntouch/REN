@@ -4,6 +4,9 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { getSession, resolveOwner } from '@/domain/customers/session';
 import { cart, checkout } from '@/domain/ordering';
+import { quoteDelivery } from '@/domain/ordering/delivery';
+import { activeTaxRule, readPricingSettings } from '@/domain/ordering/pricing-rules';
+import { getDb } from '@/server/db/connection';
 import { formatRub } from '@/domain/pricing/format';
 import '@/ui/cart/cart.css';
 import { EmptyState, ErrorState } from '@/ui/states';
@@ -74,8 +77,22 @@ export default async function CheckoutPage() {
     <div className="checkout-page container">
       <h1>Оформление заказа</h1>
       <CheckoutForm
-        delivery={methods.delivery.map((d) => ({ id: d.id, name: d.name, description: d.description, priceKopecks: d.priceKopecks, requiresAddress: d.requiresAddress }))}
-        payment={methods.payment.map((p) => ({ id: p.id, name: p.name, description: p.description }))}
+        delivery={methods.delivery.map((d) => {
+          // C12: порог бесплатной доставки и минимальная сумма — по настройкам, считает сервер
+          const q = quoteDelivery(d, view.totalKopecks, null);
+          return {
+            id: d.id,
+            name: d.name,
+            description: d.description,
+            priceKopecks: q.ok ? q.priceKopecks : d.priceKopecks,
+            requiresAddress: d.requiresAddress,
+            etaText: d.etaText,
+            unavailable: q.ok ? null : q.message,
+            free: q.ok ? q.free : false,
+          };
+        })}
+        payment={methods.payment.map((p) => ({ id: p.id, name: p.name, description: p.description, feePercentBp: p.feePercentBp, feeFixedKopecks: p.feeFixedKopecks, minKopecks: p.minKopecks, maxKopecks: p.maxKopecks }))}
+        charges={{ lines: view.items.map((i) => i.lineKopecks), tax: activeTaxRule(getDb()), rounding: readPricingSettings(getDb()).rounding }}
         idempotencyKey={randomUUID()}
         defaultEmail={getSession(jar)?.email ?? ''}
         totals={{ subtotalKopecks: view.subtotalKopecks, discountKopecks: view.discountKopecks, promoCode: view.promo?.code ?? null, totalKopecks: view.totalKopecks }}

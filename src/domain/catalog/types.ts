@@ -104,6 +104,10 @@ export type CategoryNode = {
   parentId: number | null;
   /** Опубликованные товары категории вместе с подкатегориями. */
   productCount: number;
+  /** Настройки показа (C06): меню и подвал / плитки главной / дерево и листинг каталога. */
+  showInMenu: boolean;
+  showOnHome: boolean;
+  showInCatalog: boolean;
   children: CategoryNode[];
 };
 
@@ -116,6 +120,11 @@ export type CategoryInfo = {
   seoDescription: string | null;
   seoText: string | null;
   parentId: number | null;
+  /** Canonical, заданный в админке (C06); пусто — адрес самой страницы. */
+  canonical?: string | null;
+  /** false — noindex на странице категории (по умолчанию true). */
+  indexable?: boolean;
+  description?: string | null;
 };
 
 export type Breadcrumb = { name: string; href: string };

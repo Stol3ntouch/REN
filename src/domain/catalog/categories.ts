@@ -9,7 +9,7 @@ export function categoryHref(slug: string): string {
 }
 
 export function toCategoryInfo(c: CategoryRow): CategoryInfo {
-  return { id: c.id, slug: c.slug, name: c.name, h1: c.h1, seoTitle: c.seoTitle, seoDescription: c.seoDescription, seoText: c.seoText, parentId: c.parentId };
+  return { id: c.id, slug: c.slug, name: c.name, h1: c.h1, seoTitle: c.seoTitle, seoDescription: c.seoDescription, seoText: c.seoText, parentId: c.parentId, canonical: c.canonical, indexable: c.indexable, description: c.description };
 }
 
 /** SEO-текст категории → абзацы (разделитель — пустая строка). Пустой текст — пустой массив. */
@@ -26,10 +26,11 @@ export function categoryHeading(c: { name: string; h1: string | null }): string 
 }
 
 /**
- * Дерево категорий (порядок sort, затем id). productCount — опубликованные товары
- * категории вместе со всеми подкатегориями.
+ * Дерево категорий (порядок: приоритет, позиция, id). productCount — опубликованные товары
+ * категории вместе со всеми подкатегориями. По умолчанию — дерево каталога: категории с show_in_catalog = 0 вместе с
+ * ветками не попадают в него (счётчики родителей остаются полными); all: true — все видимые покупателю (для страницы категории).
  */
-export async function getCategoryTree(opts: { db?: Db } = {}): Promise<CategoryNode[]> {
+export async function getCategoryTree(opts: { db?: Db; all?: boolean } = {}): Promise<CategoryNode[]> {
   const db = opts.db ?? getDb();
   const rows = listCategoryRows(db);
   // Товар считается в основной и дополнительных категориях; в поддереве — один раз (множества id, а не суммы).
@@ -44,7 +45,7 @@ export async function getCategoryTree(opts: { db?: Db } = {}): Promise<CategoryN
   const direct = new Map<number, number>([...sets].map(([k, v]) => [k, v.size]));
 
   const nodes = new Map<number, CategoryNode>(
-    rows.map((r) => [r.id, { id: r.id, slug: r.slug, name: r.name, parentId: r.parentId, productCount: direct.get(r.id) ?? 0, children: [] }]),
+    rows.map((r) => [r.id, { id: r.id, slug: r.slug, name: r.name, parentId: r.parentId, productCount: direct.get(r.id) ?? 0, showInMenu: r.showInMenu, showOnHome: r.showOnHome, showInCatalog: r.showInCatalog, children: [] }]),
   );
   const roots: CategoryNode[] = [];
   for (const r of rows) {
@@ -60,7 +61,9 @@ export async function getCategoryTree(opts: { db?: Db } = {}): Promise<CategoryN
     return acc;
   };
   roots.forEach(union);
-  return roots;
+  if (opts.all) return roots;
+  const prune = (list: CategoryNode[]): CategoryNode[] => list.filter((n) => n.showInCatalog).map((n) => ({ ...n, children: prune(n.children) }));
+  return prune(roots);
 }
 
 /** Путь от корня до категории включительно (без «Главной» и «Каталога»). Неизвестный slug — пусто. */

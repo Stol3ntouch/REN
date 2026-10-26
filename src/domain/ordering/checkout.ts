@@ -1,9 +1,11 @@
 import { assertPricesShown } from '@/domain/content/store-flags';
 import { audit } from '@/domain/admin/audit';
 import { enqueueMail } from '@/domain/admin/mail-enqueue';
+import { notify } from '@/domain/admin/notifications';
 import { stock } from '@/domain/catalog/stock';
 import { consent } from '@/domain/customers/consent';
 import type { PricedCart } from '@/domain/pricing';
+import { orderCharges } from '@/domain/pricing/charges';
 import { getPaymentPort, isProductionEnv } from '@/integrations/payment/select';
 import { getDb, withTransaction, type Db } from '@/server/db/connection';
 import { cartsRepo, type CartRow } from '@/server/db/repositories/carts';
@@ -15,6 +17,9 @@ import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@
 import type { OwnerRef } from '@/server/http/owner';
 import { cart as cartApi, computeCart } from './cart';
 import { parsePlaceInput, phoneDigits } from './contact';
+import { quoteDelivery } from './delivery';
+import { paymentLimitProblem } from './payment-methods';
+import { chargeRulesFor, serializeRules } from './pricing-rules';
 import { orderUrlFor, toOrder } from './orders';
 import type { CartView, Change, Opts, Order } from './types';
 
@@ -134,6 +139,17 @@ export const checkout = {
         throw new ValidationError('Укажите адрес доставки', { 'contact.address': ['Укажите адрес доставки'] });
       }
 
+      // C12: стоимость доставки, порог бесплатной, минимальная сумма и география — по настройкам, на сервере.
+      const subtotal = computed.priced.subtotal;
+      const discount = computed.discount;
+      const quote = quoteDelivery(delivery, subtotal - discount, address);
+      if (!quote.ok) throw new ValidationError(quote.message, { deliveryMethodId: [quote.message] });
+      const deliveryKopecks = quote.priceKopecks;
+      const limitProblem = paymentLimitProblem(payment, subtotal - discount + (deliveryKopecks ?? 0));
+      if (limitProblem) throw new ValidationError(limitProblem, { paymentMethodId: [limitProblem] });
+      const rules = chargeRulesFor(db, payment);
+      const charges = orderCharges({ lines: computed.items.map((i) => i.unit * i.row.qty), discountKopecks: discount, deliveryKopecks, rules });
+
       if (computed.promo) {
         if (!promosRepo.tryConsume(db, computed.promo.id)) {
           throw new CheckoutChangesError([
@@ -142,9 +158,7 @@ export const checkout = {
         }
       }
 
-      const subtotal = computed.priced.subtotal;
-      const discount = computed.discount;
-      const total = subtotal - discount + (delivery.priceKopecks ?? 0);
+      const total = charges.totalKopecks;
 
       const { id } = ordersRepo.insert(db, {
         owner,
@@ -155,18 +169,19 @@ export const checkout = {
         phoneDigits: phoneDigits(input.contact.phone),
         comment: input.contact.comment ?? null,
         address,
-        delivery: { id: delivery.id, code: delivery.code, name: delivery.name, kind: delivery.kind, kopecks: delivery.priceKopecks },
+        delivery: { id: delivery.id, code: delivery.code, name: delivery.name, kind: delivery.kind, kopecks: deliveryKopecks },
         payment: { id: payment.id, code: payment.code, name: payment.name, kind: payment.kind },
         subtotalKopecks: subtotal,
         discountKopecks: discount,
         totalKopecks: total,
+        charges: { paymentFeeKopecks: charges.feeKopecks, taxKopecks: charges.taxKopecks, taxMode: charges.taxMode, chargesJson: serializeRules(rules) },
         promo: computed.promo ? { id: computed.promo.id, code: computed.promo.code } : null,
         idempotencyKey: input.idempotencyKey,
         now,
       });
 
-      for (const i of computed.items) {
-        ordersRepo.insertItem(db, id, {
+      computed.items.forEach((i, idx) => {
+        ordersRepo.insertItemWithTax(db, id, {
           productId: i.row.productId,
           name: i.row.product.name,
           sku: i.row.product.sku,
@@ -175,8 +190,10 @@ export const checkout = {
           unitKopecks: i.unit,
           qty: i.row.qty,
           lineKopecks: i.unit * i.row.qty,
+          taxRateBp: rules.tax?.rateBp ?? null,
+          taxKopecks: rules.tax ? (charges.lineTaxKopecks[idx] ?? 0) : null,
         });
-      }
+      });
       // C04 (ADR-014): резерв остатка для товаров с включённым учётом; не хватает — оформление отклоняется
       stock.reserveForOrder(
         id,
@@ -218,6 +235,15 @@ export const checkout = {
 
     if (result.created) {
       const o = result.order;
+      // C10: уведомление сотрудникам о новом заказе (колокольчик админки); сбой уведомления не должен ронять оформление
+      try {
+        notify(
+          { type: 'order.created', title: `Новый заказ ${o.number}`, href: `/admin/orders/${encodeURIComponent(o.number)}`, entity: 'order', entityId: o.number, audience: 'permission:orders.read' },
+          { db, now },
+        );
+      } catch {
+        /* уведомление вторично */
+      }
       enqueueMail(
         'order.created',
         {

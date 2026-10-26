@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { requirePermission, type StaffSession } from '@/domain/admin/permissions';
+import { integrationsAdmin, type IntegrationCard } from '@/domain/admin/integrations';
 import { getOnecPort, integrationsStatus, type IntegrationStatusEntry } from '@/integrations';
 import { runPullCatalog, runPullStatuses, runPushOrders, type RunResult } from '@/integrations/onec/service';
 import type { OneCPort } from '@/integrations/onec/types';
@@ -35,6 +36,8 @@ export function envStatuses(env: Env = process.env): EnvStatus[] {
 }
 
 export type IntegrationsView = {
+  /** C12: карточки сервисов со статусами «не настроено / не проверено / подключено / ошибка». */
+  cards: IntegrationCard[];
   ports: IntegrationStatusEntry[];
   onec: { pendingOrders: number; exportedOrders: number };
   runs: IntegrationRunRow[];
@@ -60,6 +63,7 @@ export const integrationsOps = {
     const db = opts.db ?? getDb();
     const env = opts.env ?? process.env;
     return {
+      cards: integrationsAdmin.cards(session, { db, env, now: opts.now }),
       ports: integrationsStatus({ env }),
       onec: { pendingOrders: onecExportsRepo.countPending(db), exportedOrders: onecExportsRepo.count(db) },
       runs: integrationRunsRepo.list(db, { limit: 30 }),

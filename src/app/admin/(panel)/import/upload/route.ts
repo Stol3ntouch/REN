@@ -1,6 +1,6 @@
-import { createImportHandlers } from '../../_lib/import-handlers';
+import { withStaffPermission } from '@/domain/admin/guard';
 
 export const dynamic = 'force-dynamic';
 
-/** POST /admin/import/upload — multipart; Origin, сессия и право integrations.run проверяются внутри. */
-export const POST = createImportHandlers().upload;
+/** Старый адрес мастера YML: загрузка переехала в /admin/api/import/upload. Побочных действий нет — только возврат в раздел (после проверки Origin и права import.run). */
+export const POST = withStaffPermission('import.run', () => new Response(null, { status: 303, headers: { Location: '/admin/import' } }));

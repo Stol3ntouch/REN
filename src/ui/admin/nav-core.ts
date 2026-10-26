@@ -120,17 +120,17 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
         interim: { href: '/admin/content/settings', label: 'Настройки сайта' },
         aliases: ['/admin/content/settings'],
         children: [
-          { key: 'taxes', label: 'Налоги и цены', href: '/admin/settings/taxes', permission: 'settings.write', pending: true },
+          { key: 'taxes', label: 'Налоги и цены', href: '/admin/settings/taxes', permission: 'settings.write' },
           { key: 'seo', label: 'SEO', href: '/admin/settings/seo', permission: 'seo.write' },
           { key: 'service-settings', label: 'Служебные настройки', href: '/admin/settings', permission: 'settings.write' },
         ],
       },
-      { key: 'shipping', label: 'Доставка и оплата', href: '/admin/settings/shipping', icon: 'truck', permission: 'settings.write', pending: true },
+      { key: 'shipping', label: 'Доставка и оплата', href: '/admin/settings/shipping', icon: 'truck', permission: 'shipping.write', aliases: ['/admin/settings/payments'] },
       { key: 'staff', label: 'Пользователи', href: '/admin/staff', icon: 'user', permission: 'users.manage' },
       { key: 'roles', label: 'Роли', href: '/admin/roles', icon: 'shield', permission: 'roles.manage' },
       { key: 'integrations', label: 'Интеграции', href: '/admin/integrations', icon: 'plug', permission: 'integrations.read' },
-      { key: 'mail', label: 'Почта', href: '/admin/mail', icon: 'mail', permission: 'integrations.run' },
-      { key: 'backup', label: 'Резервные копии', href: '/admin/settings/backup', icon: 'database', permission: 'settings.write', pending: true },
+      { key: 'mail', label: 'Почта', href: '/admin/settings/email', icon: 'mail', permission: 'email.write', aliases: ['/admin/mail'] },
+      { key: 'backup', label: 'Резервные копии', href: '/admin/settings/backup', icon: 'database', permission: 'backup.run' },
       { key: 'audit', label: 'Логи', href: '/admin/audit', icon: 'history', permission: 'audit.read' },
     ],
   },
@@ -142,8 +142,8 @@ export const ADMIN_EXTRA_PAGES: Readonly<Record<string, string>> = {
   '/admin/staff/new': 'Новый пользователь',
 };
 
-/** Флаги верхней панели: включает C10 (поиск и уведомления), пока выключено — ничего фиктивного не показывается. */
-export const TOPBAR_FEATURES = { search: false, notifications: false } as const;
+/** Флаги верхней панели: поиск и уведомления включены (C10). Выключенный флаг ничего фиктивного не показывает. */
+export const TOPBAR_FEATURES = { search: true, notifications: true } as const;
 
 /** Пункт меню вместе с родителем — плоский вид для поиска и тестов. */
 export type NavEntry = AdminNavLeaf & { icon?: AdminIconName; parentKey: string | null; groupKey: string };

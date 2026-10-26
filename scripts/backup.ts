@@ -207,7 +207,8 @@ export type BackupResult = { file: string; bytes: number; files: number; migrati
  * Создаёт копию. Работает при запущенном приложении: VACUUM INTO даёт согласованный снимок БД (включая данные из WAL),
  * приложению он не мешает. Исходные файлы не меняются.
  */
-export async function createBackup(o: { databasePath: string; dataDir: string; outDir?: string; now?: number }): Promise<BackupResult> {
+export async function createBackup(o: { databasePath: string; dataDir: string; outDir?: string; now?: number; /** Ход работы, 0–100 (для задачи в админке). */ onProgress?: (percent: number) => void }): Promise<BackupResult> {
+  const progress = o.onProgress ?? (() => undefined);
   const databasePath = resolve(o.databasePath);
   const dataDir = resolve(o.dataDir);
   if (!existsSync(databasePath)) throw new Error('Файл базы данных не найден — нечего копировать. Сначала выполните npm run db:migrate.');
@@ -224,6 +225,7 @@ export async function createBackup(o: { databasePath: string; dataDir: string; o
     } finally {
       src.close();
     }
+    progress(30);
     // проверяем сам снимок, а не источник
     const copy = new DatabaseSync(snapshot, { readOnly: true });
     let migrationVersion: number | null = null;
@@ -243,7 +245,9 @@ export async function createBackup(o: { databasePath: string; dataDir: string; o
       for (const rel of walkFiles(root)) entries.push({ name: `${dir}/${rel}`, path: join(root, rel) });
     }
     const files: Record<string, string> = {};
+    progress(50);
     for (const e of entries) files[e.name] = await sha256File(e.path as string);
+    progress(70);
     const manifest = {
       format: BACKUP_FORMAT,
       version: BACKUP_VERSION,
@@ -255,6 +259,7 @@ export async function createBackup(o: { databasePath: string; dataDir: string; o
 
     const file = join(outDir, backupFileName(o.now ?? Date.now()));
     await writeTarGz(file, entries);
+    progress(95);
     return { file, bytes: statSync(file).size, files: entries.length - 1, migrationVersion };
   } finally {
     rmSync(stage, { recursive: true, force: true });

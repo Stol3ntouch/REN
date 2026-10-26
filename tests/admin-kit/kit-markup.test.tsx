@@ -89,7 +89,7 @@ describe('Sidebar и Topbar', () => {
   });
 
   it('Topbar: название, подпись, «Перейти на сайт» в новой вкладке, имя и роль; поиск и уведомления скрыты флагами', () => {
-    const out = html(<ShellProvider initialCollapsed={false}><Topbar session={admin} logout={noop} /></ShellProvider>);
+    const out = html(<ShellProvider initialCollapsed={false}><Topbar session={admin} logout={noop} features={{ search: false, notifications: false }} /></ShellProvider>);
     expect(out).toContain('Админ-панель');
     expect(out).toContain('Управление интернет-магазином');
     expect(out).toMatch(/href="\/"[^>]*target="_blank"[^>]*rel="noopener noreferrer"|target="_blank"[^>]*rel="noopener noreferrer"/);

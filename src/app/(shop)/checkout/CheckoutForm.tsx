@@ -1,7 +1,9 @@
 'use client';
 
 import { useActionState, useRef, useState, useSyncExternalStore } from 'react';
+import { orderCharges, type TaxRule } from '@/domain/pricing/charges';
 import { formatRub } from '@/domain/pricing/format';
+import type { Rounding } from '@/domain/pricing/money';
 import { Totals } from '@/ui/cart/Totals';
 import { CART_IDLE } from '@/ui/cart/state';
 import { ErrorState } from '@/ui/states';
@@ -9,21 +11,25 @@ import { acknowledgeChangesAction } from '../cart/actions';
 import { placeOrderAction } from './actions';
 
 export type MethodOption = { id: number; name: string; description: string | null };
-export type DeliveryOption = MethodOption & { priceKopecks: number | null; requiresAddress: boolean };
+/** priceKopecks уже учитывает порог бесплатной доставки; unavailable — причина, по которой способ сейчас недоступен. */
+export type DeliveryOption = MethodOption & { priceKopecks: number | null; requiresAddress: boolean; etaText?: string | null; unavailable?: string | null; free?: boolean };
+export type PaymentOption = MethodOption & { feePercentBp?: number; feeFixedKopecks?: number; minKopecks?: number | null; maxKopecks?: number | null };
 
 type Props = {
   delivery: DeliveryOption[];
-  payment: MethodOption[];
+  payment: PaymentOption[];
   idempotencyKey: string;
   defaultEmail: string;
   totals: { subtotalKopecks: number; discountKopecks: number; promoCode: string | null; totalKopecks: number };
+  /** Для показа комиссии и налога (сервер пересчитывает сам и этим числам не верит). */
+  charges?: { lines: number[]; tax: TaxRule | null; rounding: Rounding };
 };
 
 /**
  * Оформление в два шага (эталон: «Контакты и получение» → «Проверка и подтверждение»).
  * Без JS оба шага видны на одной странице и форма отправляется целиком.
  */
-export function CheckoutForm({ delivery, payment, idempotencyKey, defaultEmail, totals }: Props) {
+export function CheckoutForm({ delivery, payment, idempotencyKey, defaultEmail, totals, charges: chargeInfo }: Props) {
   const [state, action, pending] = useActionState(placeOrderAction, CART_IDLE);
   const formRef = useRef<HTMLFormElement>(null);
   // До гидратации (и без JS) step = 0: оба шага видны, форма отправляется целиком.
@@ -34,12 +40,23 @@ export function CheckoutForm({ delivery, payment, idempotencyKey, defaultEmail, 
   );
   const [stepState, setStep] = useState<1 | 2>(1);
   const step: 0 | 1 | 2 = hydrated ? stepState : 0;
-  const [deliveryId, setDeliveryId] = useState<number>(delivery[0]?.id ?? 0);
+  const [deliveryId, setDeliveryId] = useState<number>((delivery.find((d) => !d.unavailable) ?? delivery[0])?.id ?? 0);
   const [paymentId, setPaymentId] = useState<number>(payment[0]?.id ?? 0);
   const [review, setReview] = useState<Record<string, string>>({});
 
   const selectedDelivery = delivery.find((d) => d.id === deliveryId);
   const selectedPayment = payment.find((p) => p.id === paymentId);
+  const charges = chargeInfo
+    ? orderCharges({
+        lines: chargeInfo.lines,
+        discountKopecks: totals.discountKopecks,
+        deliveryKopecks: selectedDelivery?.priceKopecks ?? null,
+        rules: { fee: { percentBp: selectedPayment?.feePercentBp ?? 0, fixedKopecks: selectedPayment?.feeFixedKopecks ?? 0 }, tax: chargeInfo.tax, rounding: chargeInfo.rounding },
+      })
+    : null;
+  const payableBase = totals.totalKopecks + (selectedDelivery?.priceKopecks ?? 0);
+  const limitText = (p: PaymentOption): string | null =>
+    p.minKopecks != null && payableBase < p.minKopecks ? `доступно для заказов от ${formatRub(p.minKopecks)}` : p.maxKopecks != null && payableBase > p.maxKopecks ? `доступно для заказов до ${formatRub(p.maxKopecks)}` : null;
   const fieldError = (name: string) => state.fields?.[name] ?? state.fields?.[`contact.${name}`];
 
   function goReview() {
@@ -115,11 +132,12 @@ export function CheckoutForm({ delivery, payment, idempotencyKey, defaultEmail, 
             <legend>Получение</legend>
             {delivery.map((d) => (
               <label key={d.id} className="option">
-                <input type="radio" name="deliveryMethodId" value={d.id} checked={deliveryId === d.id} onChange={() => setDeliveryId(d.id)} required />
+                <input type="radio" name="deliveryMethodId" value={d.id} checked={deliveryId === d.id} onChange={() => setDeliveryId(d.id)} required disabled={Boolean(d.unavailable)} />
                 <span className="option__text">
                   <span>{d.name}</span>
                   <span className="option__hint">
-                    {d.priceKopecks === null ? 'Стоимость рассчитает менеджер' : d.priceKopecks === 0 ? 'Бесплатно' : formatRub(d.priceKopecks)}
+                    {d.unavailable ? d.unavailable : d.priceKopecks === null ? 'Стоимость рассчитает менеджер' : d.priceKopecks === 0 ? 'Бесплатно' : formatRub(d.priceKopecks)}
+                    {d.etaText ? ` · срок: ${d.etaText}` : ''}
                     {d.description ? ` · ${d.description}` : ''}
                   </span>
                 </span>
@@ -137,10 +155,12 @@ export function CheckoutForm({ delivery, payment, idempotencyKey, defaultEmail, 
             <legend>Оплата</legend>
             {payment.map((p) => (
               <label key={p.id} className="option">
-                <input type="radio" name="paymentMethodId" value={p.id} checked={paymentId === p.id} onChange={() => setPaymentId(p.id)} required />
+                <input type="radio" name="paymentMethodId" value={p.id} checked={paymentId === p.id} onChange={() => setPaymentId(p.id)} required disabled={Boolean(limitText(p))} />
                 <span className="option__text">
                   <span>{p.name}</span>
                   {p.description ? <span className="option__hint">{p.description}</span> : null}
+                  {limitText(p) ? <span className="option__hint">{limitText(p)}</span> : null}
+                  {(p.feePercentBp ?? 0) > 0 || (p.feeFixedKopecks ?? 0) > 0 ? <span className="option__hint">Комиссия за способ оплаты включается в итог</span> : null}
                 </span>
               </label>
             ))}
@@ -205,8 +225,11 @@ export function CheckoutForm({ delivery, payment, idempotencyKey, defaultEmail, 
           discountKopecks={totals.discountKopecks}
           promoCode={totals.promoCode}
           delivery={selectedDelivery ? { name: selectedDelivery.name, kopecks: selectedDelivery.priceKopecks, pending: selectedDelivery.priceKopecks === null } : null}
-          totalKopecks={totals.totalKopecks + (selectedDelivery?.priceKopecks ?? 0)}
-        />
+          totalKopecks={charges ? charges.totalKopecks : totals.totalKopecks + (selectedDelivery?.priceKopecks ?? 0)}
+        >
+          {charges && charges.feeKopecks > 0 ? <p>Комиссия за способ оплаты: {formatRub(charges.feeKopecks)}</p> : null}
+          {charges && charges.taxKopecks > 0 ? <p>{charges.taxMode === 'included' ? 'В том числе налог' : 'Налог'}: {formatRub(charges.taxKopecks)}</p> : null}
+        </Totals>
       </aside>
     </form>
   );

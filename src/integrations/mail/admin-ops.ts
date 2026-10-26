@@ -1,6 +1,12 @@
 import { audit } from '@/domain/admin/audit';
 import { maskEmail } from '@/domain/admin/mask';
-import { requirePermission, type StaffSession } from '@/domain/admin/permissions';
+import { hasPermission, requirePermission, type StaffSession } from '@/domain/admin/permissions';
+
+/** integrations.run (как раньше) либо email.write (C12). */
+function requireMailAccess(session: StaffSession | null): asserts session is StaffSession {
+  if (session && hasPermission(session, 'email.write')) return;
+  requirePermission(session, 'integrations.run');
+}
 import { getDb, type Db } from '@/server/db/connection';
 import { emailOutboxRepo, type OutboxAudience, type OutboxStatus } from '@/server/db/repositories/email-outbox';
 import { ConflictError } from '@/server/http/errors';
@@ -33,7 +39,7 @@ export type MailOverview = { status: PortStatus; warnings: string[]; counts: Rec
  */
 export const mailAdmin = {
   overview(session: StaffSession | null, opts: Opts = {}): MailOverview {
-    requirePermission(session, 'integrations.run');
+    requireMailAccess(session);
     const db = opts.db ?? getDb();
     const port = opts.port ?? selectMailPort();
     const status = port.status();
@@ -66,7 +72,7 @@ export const mailAdmin = {
 
   /** Вернуть упавшее письмо в очередь (попытки с нуля). */
   retry(session: StaffSession | null, id: number, opts: Opts = {}): void {
-    requirePermission(session, 'integrations.run');
+    requireMailAccess(session);
     const db = opts.db ?? getDb();
     const now = opts.now ?? Date.now();
     if (!emailOutboxRepo.requeue(db, id, now)) {

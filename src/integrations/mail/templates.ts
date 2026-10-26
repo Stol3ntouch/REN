@@ -8,14 +8,14 @@ import type { OutboxAudience } from '@/server/db/repositories/email-outbox';
  * Письма менеджерам не содержат полных email и телефона клиента — только номер и ссылку в админку.
  *
  * События: order.created, order.status_changed, auth.password_reset, auth.email_confirm, repair.created, callback.created,
- * contact.created, question.created, review.created, integration.failed.
+ * contact.created, question.created, review.created, integration.failed, request.status_changed, auth.registered.
  */
 export type Payload = Record<string, unknown>;
 export type PlannedMessage = { audience: OutboxAudience; to: string | null; subject: string };
 
-const s = (v: unknown): string => (typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '');
-const n = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
-const email = (v: unknown): string | null => {
+export const s = (v: unknown): string => (typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '');
+export const n = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+export const email = (v: unknown): string | null => {
   const t = s(v).trim();
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t) ? t : null;
 };
@@ -27,7 +27,7 @@ function siteBase(): string {
     return '';
   }
 }
-const adminUrl = (path: string): string => `${siteBase()}${path}`;
+export const adminUrl = (path: string): string => `${siteBase()}${path}`;
 
 const KNOWN = new Set([
   'order.created',
@@ -41,6 +41,7 @@ const KNOWN = new Set([
   'review.created',
   'integration.failed',
   'request.status_changed',
+  'auth.registered',
 ]);
 export const isKnownMailEvent = (event: string): boolean => KNOWN.has(event);
 
@@ -57,6 +58,7 @@ const REQUIRED_FIELDS: Record<string, string[]> = {
   'review.created': ['reviewId'],
   'integration.failed': ['integration'],
   'request.status_changed': ['number', 'statusLabel'],
+  'auth.registered': [],
 };
 
 /** Имена обязательных полей события, которых нет в payload (пусто/не задано). Пустой payload — все поля. */
@@ -117,6 +119,10 @@ export function planMessages(event: string, p: Payload): PlannedMessage[] {
       const to = email(p.to);
       return to ? [{ audience: 'customer', to, subject: `Заявка ${s(p.number)}: ${s(p.statusLabel)}` }] : [];
     }
+    case 'auth.registered': {
+      const to = email(p.to);
+      return to ? [{ audience: 'customer', to, subject: 'Вы зарегистрировались на сайте «РемТехСад»' }] : [];
+    }
     case 'review.created':
       return [{ audience: 'manager', to: null, subject: `Новый отзыв на модерации (товар: ${s(p.productName) || '—'})` }];
     case 'integration.failed':
@@ -127,9 +133,9 @@ export function planMessages(event: string, p: Payload): PlannedMessage[] {
 }
 
 const MSK = 'Europe/Moscow';
-const fmtDate = (ms: number): string => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'short', timeStyle: 'short', timeZone: MSK }).format(new Date(ms));
+export const fmtDate = (ms: number): string => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'short', timeStyle: 'short', timeZone: MSK }).format(new Date(ms));
 
-function orderLines(p: Payload): string[] {
+export function orderLines(p: Payload): string[] {
   const items = Array.isArray(p.items) ? (p.items as Payload[]) : [];
   return items.map((i) => `— ${s(i.name)} × ${n(i.qty)} = ${formatRub(n(i.lineKopecks))}`);
 }
@@ -188,6 +194,9 @@ export function renderBody(event: string, audience: OutboxAudience, p: Payload):
       lines.push(greet, `Статус вашей заявки ${s(p.number)} изменился: ${s(p.statusLabel)}.`);
       if (s(p.title)) lines.push(`Тема: ${s(p.title)}.`);
       lines.push('Если есть вопросы — позвоните или ответьте на это письмо.');
+      break;
+    case 'auth.registered':
+      lines.push(greet, 'Вы зарегистрировались на сайте «РемТехСад». Спасибо!');
       break;
     case 'review.created':
       lines.push(greet, `Новый отзыв на модерации: товар «${s(p.productName)}», оценка ${n(p.rating)} из 5.`, `Модерация: ${adminUrl('/admin/reviews')}`);

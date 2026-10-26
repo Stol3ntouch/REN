@@ -1,8 +1,12 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('next/navigation', () => ({ usePathname: () => '/admin/catalog', useRouter: () => ({ replace: () => undefined, push: () => undefined }), redirect: () => undefined }));
 import { audit } from '@/domain/admin/audit';
 import { catalogOps } from '@/app/admin/(panel)/_lib/catalog-ops';
 import { ProductTable } from '@/app/admin/(panel)/catalog/ProductTable';
+import { productListOps } from '@/app/admin/(panel)/_lib/product-list-ops';
+import { parseProductListQuery } from '@/domain/catalog/products-list';
 import { clearCategoryImageCache, getCategoryImages } from '@/domain/catalog/category-images';
 import { getCategoryTree, getFacets, getProductBySlug, getRelatedProducts, searchProducts } from '@/domain/catalog';
 import { getHomeData } from '@/domain/content/home';
@@ -281,16 +285,17 @@ describe('админка: список, пометка и счётчики', () 
   it('таблица: у менеджера нет флажков и кнопок скрытия, у админа есть; скрытый помечен', () => {
     const { db, ids } = adminShop();
     catalogOps.setHidden(admin, [ids[0]!], true, opts(db));
-    const { rows } = catalogOps.list(admin, {}, { db });
-    const asManager = renderToStaticMarkup(<ProductTable rows={rows} canWrite={false} />);
-    const asAdmin = renderToStaticMarkup(<ProductTable rows={rows} canWrite />);
-    expect(asManager).toContain('скрыт');
-    expect(asManager).not.toContain('Скрыть');
-    expect(asManager).not.toContain('Показать');
+    const result = productListOps.list(admin, parseProductListQuery({}), { db });
+    const view = (canWrite: boolean) => renderToStaticMarkup(<ProductTable result={result} query={{ sort: 'date', dir: 'desc' }} params={{}} canWrite={canWrite} canDelete={false} back="/admin/catalog" options={{ categories: [], brands: [] }} />);
+    const asManager = view(false);
+    const asAdmin = view(true);
+    expect(asManager).toContain('Скрыт');
+    expect(asManager).not.toContain('Скрыть с сайта');
+    expect(asManager).not.toContain('Показать на сайте');
     expect(asManager).not.toContain('type="checkbox"');
-    expect(asAdmin).toContain('Скрыть выбранные');
-    expect(asAdmin).toContain('Показать выбранные');
+    expect(asAdmin).toContain('Скрыть с сайта');
+    expect(asAdmin).toContain('Показать на сайте');
     expect(asAdmin).toContain('type="checkbox"');
-    expect(asAdmin).toContain('скрыт');
+    expect(asAdmin).toContain('Скрыт');
   });
 });

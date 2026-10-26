@@ -11,6 +11,7 @@
  *  - каждая операция пишется в stock_movements с причиной, автором и ссылкой (order:<id>).
  */
 import { withTransaction, getDb, type Db } from '@/server/db/connection';
+import { warehousesRepo } from '@/server/db/repositories/warehouses';
 import { stockRepo, isSellable, type Availability, type StockMovementRow, type StockRow } from '@/server/db/repositories/stock';
 import { ConflictError, NotFoundError, ValidationError } from '@/server/http/errors';
 
@@ -19,7 +20,7 @@ export type { Availability, StockMovementRow };
 export const MAX_STOCK = 1_000_000_000;
 export const MAX_REASON_LENGTH = 300;
 
-type Opts = { db?: Db; now?: number; ref?: string | null };
+type Opts = { db?: Db; now?: number; ref?: string | null; /** C12: операция на конкретном складе (иначе — склад по умолчанию). */ warehouseId?: number | null };
 
 /** Изменить остаток на delta или задать значение; reserved — новое значение резерва (необязательно). */
 export type StockChange = ({ delta: number } | { set: number }) & { reserved?: number };
@@ -85,7 +86,7 @@ export const stock = {
       if (delta === 0 && reservedDelta === 0) return state(productId, row.stockQty, row.reservedQty, row.availability, false);
 
       const availability = derive(row, nextStock, nextReserved);
-      stockRepo.save(db, productId, { stockQty: nextStock, reservedQty: nextReserved, availability, lockedFields: lock(row), now: iso(now) });
+      stockRepo.save(db, productId, { stockQty: nextStock, reservedQty: nextReserved, availability, lockedFields: lock(row), now: iso(now), warehouseId: opts.warehouseId ?? null });
       stockRepo.insertMovement(db, {
         productId,
         delta,
@@ -96,6 +97,7 @@ export const stock = {
         ref: opts.ref ?? null,
         staffId: staff?.staffId ?? null,
         createdAt: iso(now),
+        warehouseId: opts.warehouseId ?? warehousesRepo.defaultId(db),
       });
       return state(productId, nextStock, nextReserved, availability, true);
     });
