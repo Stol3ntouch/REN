@@ -1100,6 +1100,8 @@ th[aria-sort='descending'] .ak-sortlink {
 /* ───────────── вкладки ───────────── */
 .ak-tabs {
   margin-bottom: var(--ak-gap);
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
   border-bottom: 1px solid var(--ak-border);
   overflow-x: auto;
 }
@@ -1547,6 +1549,11 @@ th[aria-sort='descending'] .ak-sortlink {
 .ak-grid-2 {
   display: grid;
   gap: var(--ak-gap);
+  grid-template-columns: minmax(0, 1fr); /* без этого широкая таблица раздвигает колонку и всю страницу */
+}
+
+.ak-grid-2 > * {
+  min-width: 0;
 }
 
 @media (min-width: 64rem) {
@@ -1738,4 +1745,534 @@ th[aria-sort='descending'] .ak-sortlink {
 
 .admin-card a:hover {
   border-color: var(--color-primary);
+}
+
+/* ───────────── M01: телефон и планшет ─────────────
+ * Проверяется tests/a11y/responsive-css.test.ts и scripts/check-responsive.ts (360 / 390 / 768 / 1024 / 1440 px).
+ * Принципы: страница не шире экрана (широкое — внутри .ak-tablewrap), поля >= 16px (iOS не зумит),
+ * цели касания >= 44px, шапка не перекрывает содержимое, вырезы экрана (safe-area) учтены.
+ */
+
+/* Поле формы — колонка, которая может сжиматься: длинный <select> не раздвигает карточку и не прячется за её край. */
+.ak-field,
+.adm-field,
+.admin-field,
+.ops-field {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.ak-field select,
+.adm-field select,
+.admin-field select,
+.ops-field select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  text-overflow: ellipsis;
+}
+
+/* Область прокрутки — контейнер для абсолютных потомков (.visually-hidden в ячейках): иначе они вылезают за экран
+   и телефон отдаляет страницу, подгоняя её под ширину таблицы. */
+.ak-tablewrap,
+.adm-table-wrap,
+.ak-tabs,
+.ak-pager__nav {
+  position: relative;
+}
+
+.ak-main img,
+.ak-main video,
+.ak-main canvas {
+  max-width: 100%;
+}
+
+.ak-main pre,
+.ak-main code {
+  overflow-wrap: anywhere;
+}
+
+.ak-main pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* вырезы экрана: шапка, выдвижное меню, содержимое, уведомления */
+.ak-topbar {
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+  padding-left: max(1.5rem, env(safe-area-inset-left));
+  padding-right: max(1.5rem, env(safe-area-inset-right));
+}
+
+.ak-main {
+  padding-left: max(1.5rem, env(safe-area-inset-left));
+  padding-right: max(1.5rem, env(safe-area-inset-right));
+  padding-bottom: max(2.5rem, calc(1rem + env(safe-area-inset-bottom)));
+}
+
+.ak-toasts {
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.ak-modal {
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+}
+
+.ak-dialog {
+  max-height: 100%;
+  max-height: 100dvh;
+  overflow-wrap: anywhere;
+}
+
+/* планшет и телефон (< 1024 px) */
+@media (max-width: 63.999rem) {
+  /* шапка: заголовок «Админ-панель» уступает место поиску */
+  .ak-topbar {
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+  }
+
+  .ak-topbar__slot {
+    min-width: 0;
+  }
+
+  .ak-searchbox {
+    max-width: none;
+    margin-inline: 0;
+  }
+
+  .ak-main {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-bottom: max(2rem, calc(1rem + env(safe-area-inset-bottom)));
+  }
+
+  /* поля >= 16px: iOS не приближает страницу при фокусе */
+  .ak-app input:not([type='checkbox'], [type='radio'], [type='hidden'], [type='file'], [type='range'], [type='color']),
+  .ak-app select,
+  .ak-app textarea {
+    font-size: 1rem;
+  }
+
+  /* цели касания >= 44px */
+  .ak-btn--sm,
+  .ak-app .button--small {
+    min-height: var(--ak-control-h);
+    font-size: 0.875rem;
+  }
+
+  .ak-nav__link,
+  .ak-nav__link--sub,
+  .ak-collapse,
+  .ak-menu__item {
+    min-height: 2.75rem;
+  }
+
+  .ak-nav__toggle {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .ak-tabs__tab,
+  .ak-app a.ak-tabs__tab,
+  .ak-main .ops-subnav a,
+  .ak-main .adm-tabs a {
+    min-height: 2.75rem;
+  }
+
+  .ak-switch::after {
+    inset: -0.625rem -0.5rem;
+  }
+
+  .ak-toggle {
+    min-height: 2.75rem;
+  }
+
+  .ak-app input[type='checkbox'],
+  .ak-app input[type='radio'] {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .ak-table__check {
+    width: 2.75rem;
+  }
+
+  /* подпись + флажок: вся строка — зона касания */
+  .ak-app label:has(> input[type='checkbox']),
+  .ak-app label:has(> input[type='radio']) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+  }
+
+  .ak-table td,
+  .ak-table th {
+    padding-block: 0.625rem;
+  }
+
+  /* ссылки в ячейках и заголовках сортировки — полноценная цель касания */
+  .ak-table td > a:not(.ak-btn),
+  .ak-table th .ak-sortlink {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+
+  .ak-crumbs a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+  }
+
+  .ak-pager {
+    justify-content: center;
+  }
+
+  .ak-pager__nav {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  /* панель сохранения прижата к нижнему краю и не перекрывает последнюю строку формы */
+  .ak-savebar--sticky {
+    bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  .ak-dialog {
+    width: min(32rem, 100%);
+  }
+
+  /* выпадающие панели поиска и уведомлений — на всю ширину экрана под шапкой, а не привязаны к узкому полю */
+  .ak-app .ak-searchbox__panel,
+  .ak-app .ak-bell__panel {
+    position: fixed;
+    top: auto;
+    left: max(0.5rem, env(safe-area-inset-left));
+    right: max(0.5rem, env(safe-area-inset-right));
+    width: auto;
+    max-height: min(70vh, 28rem);
+    max-height: min(70dvh, 28rem);
+    margin-top: 0.25rem;
+  }
+}
+
+/* телефон (< 768 px) */
+@media (max-width: 47.999rem) {
+  .ak-topbar__title {
+    display: none;
+  }
+
+  .ak-topbar__slot {
+    flex: 1 1 0;
+  }
+
+  .ak-filters {
+    padding: 0.75rem;
+  }
+
+  .ak-filters__fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ak-filters__actions > *,
+  .ak-form-grid {
+    min-width: 0;
+  }
+
+  .ak-form-grid,
+  .adm-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ak-search {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  .ak-toolbar > * {
+    min-width: 0;
+  }
+
+  /* окно подтверждения — снизу экрана, кнопки на всю ширину */
+  .ak-modal {
+    place-items: end center;
+  }
+
+  .ak-dialog {
+    width: 100%;
+    max-height: calc(100dvh - 1rem);
+  }
+
+  .ak-dialog__actions {
+    flex-direction: column-reverse;
+  }
+
+  .ak-dialog__actions > .ak-btn {
+    width: 100%;
+  }
+
+  .ak-savebar {
+    align-items: stretch;
+    padding: 0.5rem 0.75rem;
+  }
+
+  /* кнопки сохранения — в один ряд на всю ширину, а не стопкой: панель закреплена внизу и не должна закрывать форму */
+  .ak-savebar__actions {
+    width: 100%;
+    margin-left: 0;
+    flex-wrap: nowrap;
+  }
+
+  .ak-savebar__actions > .ak-btn,
+  .ak-savebar__actions > form {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .ak-savebar__actions > form > .ak-btn {
+    width: 100%;
+  }
+
+  .ak-savebar__note {
+    min-height: 0;
+  }
+
+  .ak-toasts {
+    left: max(1rem, env(safe-area-inset-left));
+    width: auto;
+  }
+
+  .ak-bulk__actions > .ak-btn {
+    flex: 1 1 auto;
+  }
+}
+
+/* узкий телефон (<= 480 px): поиск уходит во вторую строку шапки */
+@media (max-width: 29.999rem) {
+  .ak-topbar {
+    flex-wrap: wrap;
+    row-gap: 0.375rem;
+  }
+
+  .ak-topbar__actions {
+    margin-left: auto;
+  }
+
+  .ak-topbar__slot {
+    flex: 1 0 100%;
+    order: 3;
+  }
+
+  .ak-main h1 {
+    font-size: 1.25rem;
+  }
+}
+
+/* высота окна: на горизонтальном телефоне шапка не съедает экран */
+@media (max-width: 63.999rem) and (max-height: 30rem) {
+  .ak-topbar {
+    position: static;
+  }
+}
+
+/* ───────────── M01: вспомогательные классы страниц, у которых не было стилей ───────────── */
+.ak-stack {
+  display: grid;
+  gap: var(--ak-gap);
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  min-width: 0;
+}
+
+.ak-stack > * {
+  min-width: 0;
+}
+
+.ak-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ak-list > li {
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--ak-border);
+  overflow-wrap: anywhere;
+}
+
+.ak-muted {
+  color: var(--ak-muted);
+}
+
+.ak-inline,
+.ak-inline-form {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 100%;
+}
+
+.ak-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: var(--ak-control-h);
+}
+
+.ak-preview__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.adm-cards {
+  display: grid;
+  gap: var(--ak-gap);
+  grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
+}
+
+.ak-link {
+  overflow-wrap: anywhere;
+}
+
+/* ───────────── M01: цели касания второго уровня (планшет и телефон) ───────────── */
+@media (max-width: 63.999rem) {
+  .ak-app input[type='checkbox'],
+  .ak-app input[type='radio'] {
+    flex: none;
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+  }
+
+  .ak-app .dash-period a,
+  .ak-app .ak-main .rm-group__toggle,
+  .ak-app .rm-group__toggle {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+
+  .ak-app .ak-main summary {
+    padding-block: 0.75rem;
+    cursor: pointer;
+  }
+
+  .ak-app .ak-table td > a,
+  .ak-app .adm-table td > a {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .ak-app .ak-main details > summary {
+    min-height: 2.75rem;
+    box-sizing: border-box;
+  }
+
+  .ak-app .ak-btn--sm.ak-btn--outline {
+    min-width: 2.75rem;
+  }
+}
+
+@media (max-width: 63.999rem) {
+  /* флажки в строках таблиц: 24 px — минимум WCAG 2.2 (2.5.8); строка и ячейка при этом остаются высотой >= 44 px */
+  .ak-app .ak-table__check input[type='checkbox'],
+  .ak-app .ak-table td input[type='checkbox'],
+  .ak-app .ak-table th input[type='checkbox'] {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .ak-app .ak-table td a:not(.ak-btn),
+  .ak-app .adm-table td a:not(.button, .ak-btn),
+  .ak-app .dash-card a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+
+  .ak-app .ak-sortlink {
+    min-width: 2.75rem;
+  }
+
+  .ak-app .cat-tree__check input {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .ak-app .cat-tree__expand,
+  .ak-app .cat-tree__tool,
+  .ak-app .cat-tree__eye,
+  .ak-app .cat-tree__check {
+    flex: none;
+    min-width: 2.75rem;
+  }
+
+  .ak-app .cat-tree__all,
+  .ak-app a.cat-tree__name {
+    min-height: 2.75rem;
+  }
+}
+
+/* Поиск внутри рамки (дерево категорий, связанные категории): собственная рамка у обёртки, не у поля. */
+.ak-app .cat-tree__search input[type='search'],
+.ak-app .cat-related__search input[type='search'],
+.ak-app .cat-related__search input[type='text'] {
+  min-width: 0;
+  padding-left: 0;
+  border: 0;
+  background: transparent;
+}
+
+@media (max-width: 47.999rem) {
+  /* строка дерева: название получает ширину, кнопки при нехватке места уходят на вторую строку */
+  .ak-app .cat-tree__row {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+
+  .ak-app .cat-tree__name {
+    flex: 1 1 7rem;
+    min-width: 7rem;
+  }
+
+  .ak-app .cat-tree__list {
+    padding-left: 0.5rem;
+  }
+
+  .ak-app .cat-tree__tools {
+    margin-left: auto;
+  }
+}
+
+/* Сетки с одной неявной колонкой: колонка не растёт по самому широкому содержимому (таблице, длинному полю). */
+.cat-layout__card,
+.cat-tree,
+.cat-tab,
+.cat-form,
+.cat-create,
+.cat-form__fields,
+.cat-extra,
+.cat-head__side,
+.adm-grid,
+.adm-card,
+.admin-form,
+.ak-uploader,
+.ak-preview,
+.ak-card > form,
+.ak-state {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.adm-grid > *,
+.adm-card > *,
+.cat-layout__card > *,
+.cat-tab > * {
+  min-width: 0;
 }

@@ -982,3 +982,15 @@
 .category-related__list a:focus-visible {
   border-color: var(--color-primary, #1f6f43);
 }
+
+/* M01: телефон — крошки, сортировка и дерево категорий с целью касания 44px */
+@media (max-width: 47.999rem) {
+  .breadcrumbs a,
+  .sort-links a,
+  .category-tree summary,
+  .category-tree li > a,
+  .category-tree__leaf,
+  .category-tree li li {
+    min-height: var(--tap-size);
+  }
+}

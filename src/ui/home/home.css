@@ -1066,3 +1066,13 @@
   font-weight: 600;
   margin: 0 0 0.2rem;
 }
+
+/* M01: кнопки масштаба карты — цель касания 44px на телефоне и планшете */
+@media (max-width: 63.999rem) {
+  .shop-map .leaflet-bar a,
+  .shop-map .leaflet-touch .leaflet-bar a {
+    width: 2.75rem;
+    height: 2.75rem;
+    line-height: 2.75rem;
+  }
+}

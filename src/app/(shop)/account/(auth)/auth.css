@@ -64,3 +64,9 @@
   opacity: 0.7;
   cursor: progress;
 }
+
+.auth-links a {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap-size);
+}

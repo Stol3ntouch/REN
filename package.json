@@ -22,7 +22,8 @@
     "backup": "tsx scripts/backup.ts",
     "restore": "tsx scripts/restore.ts",
     "e2e:live": "tsx tests/e2e/live-check.ts",
-    "a11y:live": "tsx tests/a11y/js-budget.ts"
+    "a11y:live": "tsx tests/a11y/js-budget.ts",
+    "check:responsive": "tsx scripts/check-responsive.ts"
   },
   "dependencies": {
     "fast-xml-parser": "^5.11.2",

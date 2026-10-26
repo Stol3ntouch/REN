@@ -291,9 +291,10 @@
   justify-content: center;
   gap: 0.125rem;
   min-height: 3.5rem;
-  padding: var(--space-1);
+  padding: var(--space-1) 0.125rem;
   color: var(--color-muted);
-  font-size: 0.75rem;
+  font-size: clamp(0.6875rem, 3.3vw, 0.75rem); /* «Избранное» не переносится на 360 px */
+  white-space: nowrap;
   text-decoration: none;
 }
 
@@ -511,4 +512,44 @@
   text-align: center;
   font-size: 0.875rem;
   border-bottom: 1px solid #e6cf7a;
+}
+
+/* M01: телефон — логотип в подвале как цель касания */
+@media (max-width: 47.999rem) {
+  .site-footer__logo {
+    align-items: center;
+    min-height: var(--tap-size);
+  }
+}
+
+/*
+ * M01: планшет 48–64rem. Логотип, «Каталог», поиск и три счётчика в одной строке не помещаются:
+ * поиск сжимался до 40px. Первая строка — логотип и счётчики, вторая — «Каталог» и поиск на всю ширину.
+ */
+@media (min-width: 48rem) and (max-width: 63.999rem) {
+  .site-header__main {
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: var(--space-2);
+  }
+
+  .site-header__logo {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .header-counters {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .site-header__catalog {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .site-search {
+    grid-column: 2;
+    grid-row: 2;
+  }
 }

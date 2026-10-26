@@ -267,3 +267,74 @@ textarea {
 body {
   overflow-x: clip;
 }
+
+/* ---------- M01: телефон ----------
+ * Вырезы экрана (viewport-fit=cover в src/app/layout.tsx): содержимое не заходит под чёлку и скруглённые углы.
+ * Цели касания >= 44px: телефон, почта, мелкие кнопки и подписи флажков. Поля ввода >= 16px — iOS не приближает страницу.
+ */
+body {
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
+}
+
+input,
+select,
+textarea {
+  max-width: 100%;
+  font-size: max(1rem, 16px);
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  font-size: inherit;
+}
+
+@media (max-width: 63.999rem) {
+  a[href^='tel:'],
+  a[href^='mailto:'] {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-size);
+  }
+
+  .button--small {
+    min-height: var(--tap-size);
+  }
+
+  label:has(> input[type='checkbox']),
+  label:has(> input[type='radio']) {
+    min-height: var(--tap-size);
+  }
+}
+
+/*
+ * Сетки страниц на телефоне — одна сжимаемая колонка. Без minmax(0, 1fr) неявная колонка растёт по самому широкому
+ * содержимому (ряд миниатюр, таблица характеристик, длинное слово) и раздвигает страницу.
+ * Только до 48rem: на планшете и компьютере колонки задают стили самих блоков.
+ */
+@media (max-width: 47.999rem) {
+  .product-top,
+  .cart-layout,
+  .checkout-layout,
+  .cart-page,
+  .checkout-page,
+  .order-page,
+  .account,
+  .account-section,
+  .compare,
+  .home-about,
+  .home-contacts,
+  .info-grid,
+  .home-banners__list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .product-top > *,
+  .cart-layout > *,
+  .checkout-layout > *,
+  .account > *,
+  .home-about > *,
+  .home-contacts > * {
+    min-width: 0;
+  }
+}
