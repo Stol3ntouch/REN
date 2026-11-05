@@ -1,6 +1,7 @@
 import { withStaffPermission } from '@/domain/admin/guard';
 import { parseBucket, parseRange } from '@/domain/analytics';
-import { STATS_CSV_KINDS, statsOps, type StatsCsvKind } from '@/domain/analytics/stats';
+import { requirePermission } from '@/domain/admin/permissions';
+import { canStats, STATS_CSV_KINDS, statsOps, type StatsCsvKind } from '@/domain/analytics/stats';
 import type { Db } from '@/server/db/connection';
 import { ValidationError } from '@/server/http/errors';
 
@@ -13,6 +14,8 @@ export function createAnalyticsExportHandler(opts: { db?: Db; now?: number } = {
   return withStaffPermission(
     'staff.self',
     (req, session) => {
+      // Права — до разбора параметров: без права любой запрос получает 403, а не подсказки про допустимые значения.
+      if (!canStats(session)) requirePermission(session, 'stats.read');
       const url = new URL(req.url);
       const kind = url.searchParams.get('kind') ?? '';
       if (!(STATS_CSV_KINDS as readonly string[]).includes(kind)) throw new ValidationError('Неизвестный вид выгрузки');

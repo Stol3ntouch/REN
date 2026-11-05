@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(py -3 .autopilot/ap.py init --slug remtehsad-shop --title \"Интернет-магазин РемТехСад\" --mode semi --depth normal --memory-file AGENTS.md --memory-owner autopilot --skill-dir \"C:/Users/OxO/Desktop/RemTexSad/skills-2.2.0/skills/autopilot\" --check-update)",
+      "Bash(py -3 .autopilot/ap.py stage briefing)",
+      "Bash(py -3 .autopilot/ap.py ask briefing --note \"четыре вопроса — стек, роли, каталог-данные, объём интеграций\")"
+    ]
+  }
+}

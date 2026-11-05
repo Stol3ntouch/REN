@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+node_modules/
+vendor/
+.next/
+dist/
+build/
+coverage/
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+uploads/
+backups/

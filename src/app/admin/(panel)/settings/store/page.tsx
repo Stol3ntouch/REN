@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: 'Настройки магазина'
 export const dynamic = 'force-dynamic';
 
 export default async function StoreSettingsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const session = await requireStaffPage(null);
+  const session = await requireStaffPage('settings.write');
   const sp = await searchParams;
   const settings = getStoreSettings(session);
   return (

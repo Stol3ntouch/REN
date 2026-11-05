@@ -6,9 +6,7 @@ import type { AdminIconName } from './kit/icons';
  *
  * Как добавить или обновить пункт: правьте ADMIN_NAV_GROUPS ниже (key, label, href, icon, permission).
  * Страница пункта — `src/app/admin/(panel)/<путь>/page.tsx`, первой строкой `requireStaffPage(permission)`.
- * Пока страницы нет, у пункта стоит `pending: true`: ссылка ведёт на `interim.href` (старая работающая страница,
- * если она есть) либо на общую заглушку `[...soon]`, которая честно пишет «Раздел появится после завершения сборки».
- * Тикет-владелец страницы удаляет `pending` и `interim` — и пункт становится обычным.
+ * Заглушек нет: у каждого пункта есть настоящая страница (это проверяет tests/admin-kit/nav.test.ts).
  * Скрытие пункта по правам — только удобство: страницы и обработчики сами проверяют права на сервере.
  */
 export type AdminNavLeaf = {
@@ -18,10 +16,6 @@ export type AdminNavLeaf = {
   href: string;
   /** Право, при котором пункт показан (null — любому сотруднику). */
   permission: Permission | null;
-  /** Страница ещё не сдана своим тикетом. */
-  pending?: boolean;
-  /** Пока pending: существующая страница, на которую ведёт ссылка меню и которую заглушка предлагает открыть. */
-  interim?: { href: string; label: string };
   /** Другие адреса, на которых этот пункт подсвечен как активный (старые маршруты). */
   aliases?: readonly string[];
 };
@@ -48,7 +42,7 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
     key: 'catalog',
     label: 'Каталог',
     items: [
-      { key: 'products', label: 'Товары', href: '/admin/catalog', icon: 'box', permission: 'catalog.read' },
+      { key: 'products', label: 'Товары', href: '/admin/catalog', icon: 'box', permission: 'products.read' },
       { key: 'categories', label: 'Категории', href: '/admin/catalog/categories', icon: 'grid', permission: 'catalog.read' },
       { key: 'brands', label: 'Бренды', href: '/admin/catalog/brands', icon: 'tag', permission: 'catalog.read' },
       { key: 'attributes', label: 'Характеристики', href: '/admin/catalog/attributes', icon: 'list', permission: 'catalog.read' },
@@ -117,7 +111,6 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
         href: '/admin/settings/store',
         icon: 'settings',
         permission: 'settings.write',
-        interim: { href: '/admin/content/settings', label: 'Настройки сайта' },
         aliases: ['/admin/content/settings'],
         children: [
           { key: 'taxes', label: 'Налоги и цены', href: '/admin/settings/taxes', permission: 'settings.write' },
@@ -158,14 +151,14 @@ export const ADMIN_NAV_ENTRIES: readonly NavEntry[] = ADMIN_NAV_GROUPS.flatMap((
 /** Все пункты (верхнего уровня и вложенные) — плоским списком. Совместимо с прежним `ADMIN_NAV`. */
 export const ADMIN_NAV: readonly NavEntry[] = ADMIN_NAV_ENTRIES;
 
-/** Куда ведёт ссылка меню: у несданной страницы — на существующую `interim`, иначе на итоговый адрес. */
+/** Куда ведёт ссылка меню. */
 export function navTarget(leaf: AdminNavLeaf): string {
-  return leaf.pending && leaf.interim ? leaf.interim.href : leaf.href;
+  return leaf.href;
 }
 
 /** Адреса, на которых пункт считается активным. */
 export function navMatchHrefs(leaf: AdminNavLeaf): string[] {
-  return [leaf.href, ...(leaf.interim ? [leaf.interim.href] : []), ...(leaf.aliases ?? [])];
+  return [leaf.href, ...(leaf.aliases ?? [])];
 }
 
 const norm = (p: string): string => (p.length > 1 ? p.replace(/\/+$/, '') : p);
@@ -178,7 +171,7 @@ function matchLength(pathname: string, href: string): number {
   return path === h || path.startsWith(`${h}/`) ? h.length : 0;
 }
 
-/** Активный пункт для адреса: самое длинное совпадение среди всех адресов пунктов (учитываются interim и aliases). */
+/** Активный пункт для адреса: самое длинное совпадение среди всех адресов пунктов (учитываются aliases). */
 export function findActiveEntry(pathname: string, entries: readonly AdminNavLeaf[] = ADMIN_NAV_ENTRIES): AdminNavLeaf | null {
   let best: AdminNavLeaf | null = null;
   let bestLen = 0;
@@ -225,7 +218,7 @@ function decodeSegment(s: string): string {
   }
 }
 
-/** Пункт меню по точному адресу (итоговому, interim или alias) — для заглушки `[...soon]`. */
+/** Пункт меню по точному адресу. */
 export function findNavEntryByPath(pathname: string): NavEntry | null {
   const path = norm(pathname);
   return ADMIN_NAV_ENTRIES.find((e) => norm(e.href) === path) ?? null;

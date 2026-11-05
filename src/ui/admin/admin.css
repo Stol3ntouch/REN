@@ -1562,10 +1562,6 @@ th[aria-sort='descending'] .ak-sortlink {
   }
 }
 
-.ak-soon {
-  max-width: 40rem;
-}
-
 /* ───────────── страницы админки, написанные до kit: приводим к новому виду ───────────── */
 .ak-app .button {
   min-height: var(--ak-control-h);

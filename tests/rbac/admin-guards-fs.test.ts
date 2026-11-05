@@ -74,6 +74,42 @@ describe('защита страниц и обработчиков админки
     expect(excluded.every((r) => r.startsWith('(auth)/'))).toBe(true);
   });
 
+  // ── C13: каждая server action и каждая мутация защищены по отдельности, а не только «файл где-то содержит защиту» ──
+  const rel = (f: { file: string }) => relative(ADMIN, f.file).replace(/\\/g, '/');
+  const actionFiles = files.filter((f) => rel(f).endsWith('actions.ts') && !EXCLUDED(rel(f)));
+  /** Тело каждой экспортируемой функции файла: от «export async function name» до следующего экспорта. */
+  const exportedBodies = (source: string): { name: string; body: string }[] => {
+    const marks = [...source.matchAll(/^export\s+(?:async\s+)?function\s+(\w+)/gm)];
+    return marks.map((m, i) => ({ name: m[1]!, body: source.slice(m.index!, marks[i + 1]?.index ?? source.length) }));
+  };
+  const FUNCTION_GUARD = /\b(requirePermission|withStaffPermission|requireStaff|runAction|runStateAction|run|runStaffAction|\w+Action|\w*[oO]ps\.\w+|\w+Ops\.\w+|\w+Service\.\w+)\s*\(/;
+
+  it('каждая экспортируемая server action вызывает защиту (сессия/оболочка/операция с проверкой прав) в своём теле', () => {
+    const bad: string[] = [];
+    for (const f of actionFiles) for (const fn of exportedBodies(f.source)) if (!FUNCTION_GUARD.test(fn.body)) bad.push(`${rel(f)} → ${fn.name}`);
+    expect(bad).toEqual([]);
+  });
+
+  it('каждая server action проверяет Origin (CSRF): прямо или через общую оболочку файла', () => {
+    const ORIGIN = /\bassertOrigin\s*\(/;
+    const bad = actionFiles.filter((f) => !hasGuard(f.file, f.source, ORIGIN, true)).map(rel);
+    expect(bad).toEqual([]);
+  });
+
+  it('мутирующие route.ts (POST/PUT/PATCH/DELETE) проверяют Origin: assertOrigin, withStaffPermission или фабрика обработчиков', () => {
+    const MUTATING = /export\s+(?:const|async function)\s+(POST|PUT|PATCH|DELETE)\b/;
+    const ORIGIN = /\b(assertOrigin|withStaffPermission)\s*\(/;
+    const bad = files
+      .filter((f) => rel(f).endsWith('route.ts') && MUTATING.test(f.source))
+      .filter((f) => !hasGuard(f.file, f.source, ORIGIN, true))
+      .map(rel);
+    expect(bad).toEqual([]);
+  });
+
+  it('проверка ловит действие без защиты внутри функции и мутацию без Origin', () => {
+    expect(exportedBodies("export async function a() { return 1; }\nexport async function b() { requireStaff(c); }").map((f) => FUNCTION_GUARD.test(f.body))).toEqual([false, true]);
+  });
+
   it('проверка ловит незащищённые файлы', () => {
     const fake = (rel: string, source: string) => ({ file: join(ADMIN, rel), source });
     expect(findUnguarded([fake('(panel)/x/page.tsx', 'export default function P() { return null; }')])).toEqual(['(panel)/x/page.tsx']);

@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: 'SEO и метаданные' };
 export const dynamic = 'force-dynamic';
 
 export default async function SeoSettingsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const session = await requireStaffPage(null);
+  const session = await requireStaffPage('seo.write');
   const sp = await searchParams;
   const seo = getSeoSettingsView(session);
   return (

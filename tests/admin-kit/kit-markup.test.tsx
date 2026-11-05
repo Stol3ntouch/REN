@@ -36,7 +36,6 @@ import {
 } from '@/ui/admin/kit';
 import { Sidebar } from '@/ui/admin/kit/Sidebar';
 import { ShellProvider } from '@/ui/admin/kit/shell-context';
-import { SoonView } from '@/ui/admin/kit/SoonView';
 import { ADMIN_NAV_GROUPS, visibleNavGroups } from '@/ui/admin/nav';
 
 const html = (node: React.ReactElement) => renderToStaticMarkup(node);
@@ -142,20 +141,6 @@ describe('навигационные и служебные компоненты'
     expect(html(<PermissionGate session={admin} permission="staff.manage">секрет</PermissionGate>)).toBe('секрет');
     expect(html(<PermissionGate session={manager} permission="staff.manage" fallback="нет прав">секрет</PermissionGate>)).toBe('нет прав');
     expect(html(<PermissionGate session={null} permission="orders.read">секрет</PermissionGate>)).toBe('');
-  });
-
-  it('SoonView: честный текст и ссылка на работающий раздел; чужой адрес — 404', () => {
-    // любой пункт, который ещё ждёт своего тикета и имеет работающую замену (C09 свои пункты уже сдал)
-    const leaves = ADMIN_NAV_GROUPS.flatMap((g) => g.items.flatMap((i) => [i, ...(i.children ?? [])]));
-    const pending = leaves.find((i) => i.pending);
-    if (pending) {
-      const out = html(<SoonView href={pending.href} />);
-      expect(out).toContain('Раздел появится после завершения сборки');
-      if (pending.interim) expect(out).toContain(`href="${pending.interim.href}"`);
-    }
-    // сданные разделы (C09: обращения, ремонт) заглушкой не показываются
-    expect(() => html(<SoonView href="/admin/inquiries" />)).toThrow('NEXT_NOT_FOUND');
-    expect(() => html(<SoonView href="/admin/orders" />)).toThrow('NEXT_NOT_FOUND');
   });
 });
 

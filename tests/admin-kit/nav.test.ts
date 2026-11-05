@@ -26,44 +26,17 @@ function pageFile(href: string): string | null {
   return walk(PANEL, segments);
 }
 
-const isStub = (file: string): boolean => readFileSync(file, 'utf8').includes('<SoonView');
-
-describe('меню админки: каждый пункт ведёт на настоящую страницу или на честную заглушку', () => {
-  it('пункты без метки pending имеют настоящую страницу в src/app/admin/(panel), а не заглушку', () => {
+describe('меню админки: каждый пункт ведёт на настоящую страницу', () => {
+  it('у каждого пункта есть page.tsx в src/app/admin/(panel), без заглушек и без меток «в разработке»', () => {
     const bad = ADMIN_NAV_ENTRIES.filter((e) => {
-      if (e.pending) return false;
       const f = pageFile(e.href);
-      return !f || isStub(f);
+      return !f || /Раздел в разработке|появится после завершения/.test(readFileSync(f, 'utf8'));
     }).map((e) => e.href);
     expect(bad).toEqual([]);
   });
 
-  it('у пунктов pending страницы нет или это заглушка SoonView (сдал страницу — снимите pending и interim в nav-core.ts)', () => {
-    const stale = ADMIN_NAV_ENTRIES.filter((e) => {
-      if (!e.pending) return false;
-      const f = pageFile(e.href);
-      return f !== null && !isStub(f);
-    }).map((e) => e.href);
-    expect(stale).toEqual([]);
-  });
-
-  it('pending-пункт не уходит в 404: либо страница-заглушка по адресу, либо ни одного динамического маршрута, перехватывающего адрес', () => {
-    for (const e of ADMIN_NAV_ENTRIES.filter((x) => x.pending)) {
-      const f = pageFile(e.href);
-      // Адрес без собственной страницы обслуживает [...soon]; но тогда его не должен перехватить динамический [param]-маршрут.
-      expect(f === null || isStub(f), e.href).toBe(true);
-    }
-  });
-
-  it('ссылка pending-пункта ведёт на существующую страницу interim, а без неё — на адрес заглушки', () => {
-    for (const e of ADMIN_NAV_ENTRIES.filter((x) => x.pending)) {
-      const target = navTarget(e);
-      if (e.interim) expect(pageFile(target), `${e.key} → ${target}`).not.toBeNull();
-      else expect(target).toBe(e.href);
-    }
-  });
-
-  it('заглушка находит пункт по адресу', () => {
+  it('ссылка пункта ведёт на его адрес; пункт находится по адресу', () => {
+    for (const e of ADMIN_NAV_ENTRIES) expect(navTarget(e)).toBe(e.href);
     expect(findNavEntryByPath('/admin/catalog/brands/')?.key).toBe('brands');
     expect(findNavEntryByPath('/admin/nope')).toBeNull();
   });
@@ -77,7 +50,7 @@ describe('активный пункт и хлебные крошки', () => {
     expect(findActiveEntry('/admin/orders/RTS-000123')?.key).toBe('orders');
   });
 
-  it('старые адреса подсвечивают свой пункт (aliases, interim)', () => {
+  it('старые адреса подсвечивают свой пункт (aliases)', () => {
     expect(findActiveEntry('/admin/requests')?.key).toBe('inquiries');
     expect(findActiveEntry('/admin/questions')?.key).toBe('inquiries');
     expect(findActiveEntry('/admin/content/slides')?.key).toBe('banners');
